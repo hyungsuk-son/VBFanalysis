@@ -56,7 +56,7 @@ int main( int argc, char* argv[] ) {
   job.sampleHandler( sh );
 //  job.options()->setDouble (EL::Job::optMaxEvents, 500);
   job.options()->setDouble (EL::Job::optRetries, 30);
-  job.options()->setDouble (EL::Job::optCacheSize, 50*1024*1024);
+  job.options()->setDouble (EL::Job::optCacheSize, 10*1024*1024);
   job.options()->setDouble (EL::Job::optCacheLearnEntries, 50);
 
 /*  

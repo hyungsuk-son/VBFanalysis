@@ -475,6 +475,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   if(isData){
     if(   (eventInfo->errorState(xAOD::EventInfo::LAr)==xAOD::EventInfo::Error ) 
         || (eventInfo->errorState(xAOD::EventInfo::Tile)==xAOD::EventInfo::Error ) 
+        || (eventInfo->errorState(xAOD::EventInfo::SCT) == xAOD::EventInfo::Error) 
         || (eventInfo->isEventFlagBitSet(xAOD::EventInfo::Core, 18) )  )
     {
       return EL::StatusCode::SUCCESS; // go to the next event
@@ -521,6 +522,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   if (nGoodVtx==0)
     //   Info("execute()", "  %s", "No one prim.vertex found"); // just to print out something
     return EL::StatusCode::SUCCESS;
+  if (primVertex->nTrackParticles() < 2) return EL::StatusCode::SUCCESS;
+
   if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Primary vertex");
   m_eventCutflow[3]+=1;
 
@@ -687,6 +690,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return StatusCode::FAILURE;
   }
 
+  /*
   ///////////////////
   // For MET study //
   ///////////////////
@@ -696,6 +700,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //Info("execute()", "  corrected photon pt = %.2f GeV", ((*photSC_itr)->pt() * 0.001));
     passPhotonSelection(*photon, eventInfo);
   } // end for loop over shallow copied photons
+  */
 
   ///////////////////
   // For VBF study //
@@ -1300,6 +1305,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   delete m_VBFmuon;
   delete m_VBFelectron;
   delete m_VBFtau;
+  delete m_VBFphoton;
 
 
   //////////////////////////////////
@@ -2123,7 +2129,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   bool ZinvxAODAnalysis :: IsBadJet(xAOD::Jet& jet) {
 
-    if (overlapAcc(jet)) return false;
+    //if (overlapAcc(jet)) return false;
 
     double jetPt = (jet.pt()) * 0.001; /// GeV
 
@@ -2145,8 +2151,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   bool ZinvxAODAnalysis :: IsSignalJet(xAOD::Jet& jet) {
 
-    if ( !dec_baseline(jet)  || overlapAcc(jet) ) return false;
-    //if ( !dec_baseline(jet) ) return false;
+    //if ( !dec_baseline(jet)  || overlapAcc(jet) ) return false;
+    if ( !dec_baseline(jet) ) return false;
 
     double jetPt = (jet.pt()) * 0.001; /// GeV
     double jetPtCut = 20.0; /// GeV
