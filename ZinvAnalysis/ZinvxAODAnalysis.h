@@ -227,7 +227,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
         const xAOD::EventInfo* eventInfo,
         xAOD::Vertex* primVertex);
 
-    bool passMuonVBF(xAOD::Muon& mu,
+    virtual EL::StatusCode passMuonVBF(xAOD::Muon& mu,
         const xAOD::EventInfo* eventInfo,
         xAOD::Vertex* primVertex);
 
@@ -238,7 +238,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
         const xAOD::EventInfo* eventInfo,
         xAOD::Vertex* primVertex);
 
-    bool passElectronVBF(xAOD::Electron& elec,
+    virtual EL::StatusCode passElectronVBF(xAOD::Electron& elec,
         const xAOD::EventInfo* eventInfo,
         xAOD::Vertex* primVertex);
 
@@ -248,10 +248,10 @@ class ZinvxAODAnalysis : public EL::Algorithm
     virtual EL::StatusCode passTauSelection(xAOD::TauJet& tau,
         const xAOD::EventInfo* eventInfo);
 
-    bool passPhotonVBF(xAOD::Photon& phot,
+    virtual EL::StatusCode passPhotonVBF(xAOD::Photon& phot,
         const xAOD::EventInfo* eventInfo);
 
-    bool passTauVBF(xAOD::TauJet& tau,
+    virtual EL::StatusCode passTauVBF(xAOD::TauJet& tau,
         const xAOD::EventInfo* eventInfo);
 
     bool IsBadJet(xAOD::Jet& jet);

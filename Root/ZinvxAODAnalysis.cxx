@@ -242,7 +242,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   //m_loosemuonSelection->msg().setLevel( MSG::VERBOSE );
   m_loosemuonSelection->msg().setLevel( MSG::INFO );
   //m_loosemuonSelection->msg().setLevel( MSG::ERROR );
-  EL_RETURN_CHECK("initialize()",m_loosemuonSelection->setProperty( "MaxEta", 2.47 ));
+  EL_RETURN_CHECK("initialize()",m_loosemuonSelection->setProperty( "MaxEta", 2.5 ));
   EL_RETURN_CHECK("initialize()",m_loosemuonSelection->setProperty( "MuQuality", 2));
   EL_RETURN_CHECK("initialize()",m_loosemuonSelection->initialize());
 
@@ -304,8 +304,10 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_IsolationSelectionTool->initialize());
   // IsolationSelectionTool for VBF signal
   m_IsoToolVBF = new CP::IsolationSelectionTool("IsoToolVBF");
-  EL_RETURN_CHECK("initialize()",m_IsoToolVBF->setProperty("MuonWP","FixedCutLoose"));
-  EL_RETURN_CHECK("initialize()",m_IsoToolVBF->setProperty("ElectronWP","FixedCutLoose"));
+  //EL_RETURN_CHECK("initialize()",m_IsoToolVBF->setProperty("MuonWP","FixedCutLoose"));
+  //EL_RETURN_CHECK("initialize()",m_IsoToolVBF->setProperty("ElectronWP","FixedCutLoose"));
+  EL_RETURN_CHECK("initialize()",m_IsoToolVBF->setProperty("MuonWP","LooseTrackOnly"));
+  EL_RETURN_CHECK("initialize()",m_IsoToolVBF->setProperty("ElectronWP","LooseTrackOnly"));
   EL_RETURN_CHECK("initialize()",m_IsoToolVBF->setProperty("PhotonWP","Cone40"));
   EL_RETURN_CHECK("initialize()",m_IsoToolVBF->initialize());
 
@@ -582,17 +584,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   ///////////////////
   // For VBF study //
   ///////////////////
-  xAOD::MuonContainer* m_VBFmuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
 
   // iterate over our shallow copy
   for (const auto& muon : *muonSC) { // C++11 shortcut
-
     // VBF Muon Selection
-    if (passMuonVBF(*muon, eventInfo, primVertex)) {
-      m_VBFmuon->push_back( muon );
-      //Info("execute()", "  VBF muon pt = %.2f GeV", (muon->pt() * 0.001));
-    }
-
+    passMuonVBF(*muon, eventInfo, primVertex);
+    //Info("execute()", "  VBF muon pt = %.2f GeV", (muon->pt() * 0.001));
   } // end for loop over shallow copied muons
 
 
@@ -649,18 +646,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   ///////////////////
   // For VBF study //
   ///////////////////
-  xAOD::ElectronContainer* m_VBFelectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
 
   // iterate over our shallow copy
   for (const auto& electron : *elecSC) { // C++11 shortcut
-
     // VBF Electron Selection
-    if (passElectronVBF(*electron, eventInfo, primVertex)) {
-      m_VBFelectron->push_back( electron );
-      //Info("execute()", "  VBF electron pt = %.2f GeV", (electron->pt() * 0.001));
-    }
-
+    passElectronVBF(*electron, eventInfo, primVertex);
+    //Info("execute()", "  VBF electron pt = %.2f GeV", (electron->pt() * 0.001));
   } // end for loop over shallow copied electrons
+
+
 
 
 
@@ -705,13 +699,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   ///////////////////
   // For VBF study //
   ///////////////////
-  xAOD::PhotonContainer* m_VBFphoton = new xAOD::PhotonContainer(SG::VIEW_ELEMENTS);
+
   // iterate over our shallow copy
   for (const auto& photon : *photSC) { // C++11 shortcut
     // VBF Tau Selection
-    if (passPhotonVBF(*photon, eventInfo)) {
-      m_VBFphoton->push_back( photon );
-    }
+    passPhotonVBF(*photon, eventInfo); 
   } // end for loop over shallow copied photons
 
 
@@ -757,15 +749,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   ///////////////////
   // For VBF study //
   ///////////////////
-  xAOD::TauJetContainer* m_VBFtau = new xAOD::TauJetContainer(SG::VIEW_ELEMENTS);
 
   // iterate over our shallow copy
   for (const auto& taujet : *tauSC) { // C++11 shortcut
     // VBF Tau Selection
-    if (passTauVBF(*taujet, eventInfo)) {
-      m_VBFtau->push_back( taujet );
-    }
-
+    passTauVBF(*taujet, eventInfo);
   } // end for loop over shallow copied taus
 
 
@@ -798,7 +786,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   // iterate over our shallow copy
   for (const auto& jets : *jetSC) { // C++11 shortcut
-    //Info("execute()", "  original jet pt = %.2f GeV", ((*jetSC_itr)->pt() * 0.001));
+    //Info("execute()", "  original jet pt = %.2f GeV", jets->pt() * 0.001);
 
     // According to https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/JetEtmissRecommendationsMC15
 
@@ -808,12 +796,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       return EL::StatusCode::FAILURE;
     }
 
-    // JVT Tool
-    float newjvt = m_jvtagup->updateJvt(*jets);
-    acc_jvt(*jets) = newjvt;
-    //Info("execute()", "  corrected jet pt = %.2f GeV", ((*jetSC_itr)->pt() * 0.001));
-
-    double jetPt = (jets->pt()) * 0.001; /// GeV
+    double jetPt = jets->pt() * 0.001; /// GeV
     double jetEta = jets->eta();
 
     // JES correction
@@ -834,14 +817,21 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       }
     }
 
+    // JVT Tool
+    float newjvt = m_jvtagup->updateJvt(*jets);
+    acc_jvt(*jets) = newjvt;
+
+    //Info("execute()", "  corrected jet pt = %.2f GeV", jets->pt() * 0.001);
+    //Info("execute()", "  updated jet jvt = %.2f ", newjvt);
+
     dec_baseline(*jets) = false;
-    selectDec(*jets) = false;
+    selectDec(*jets) = false; // To select objects for Overlap removal
 
     // pT cut
     double jetPtCut = 20.0; /// GeV
     if (jetPt > jetPtCut) {
       dec_baseline(*jets) = true;
-      selectDec(*jets) = true;
+      selectDec(*jets) = true; // To select objects for Overlap removal
     }
 
   } // end for loop over shallow copied jets
@@ -1124,6 +1114,56 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   h_refFinal_phi->Fill( refFinal_phi ); // GeV
 
 
+  //-----------------------
+  // Define Good Leptons
+  //-----------------------
+
+  ///////////////
+  // Good Muon //
+  ///////////////
+  xAOD::MuonContainer* m_VBFmuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
+  // iterate over our shallow copy
+  for (const auto& muon : *muonSC) { // C++11 shortcut
+    // VBF Muon Selection
+    if (dec_baseline(*muon)) {
+      //if(!overlapAcc(*muon)){
+      m_VBFmuon->push_back( muon );
+      //Info("execute()", "  VBF muon pt = %.2f GeV", (muon->pt() * 0.001));
+      //}
+    }
+  } // end for loop over shallow copied muons
+
+  ///////////////////
+  // Good Electron //
+  ///////////////////
+  xAOD::ElectronContainer* m_VBFelectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
+  // iterate over our shallow copy
+  for (const auto& electron : *elecSC) { // C++11 shortcut
+    // VBF Electron Selection
+    if (dec_baseline(*electron)) {
+      //if(!overlapAcc(*electron)){
+      m_VBFelectron->push_back( electron );
+      //Info("execute()", "  VBF electron pt = %.2f GeV", (electron->pt() * 0.001));
+      //}
+    }
+  } // end for loop over shallow copied electrons
+
+  //////////////
+  // Good Tau //
+  //////////////
+  xAOD::TauJetContainer* m_VBFtau = new xAOD::TauJetContainer(SG::VIEW_ELEMENTS);
+  // iterate over our shallow copy
+  for (const auto& taujet : *tauSC) { // C++11 shortcut
+    // VBF Tau Selection
+    if (dec_baseline(*taujet)) {
+      //if(!overlapAcc(*taujet)){
+      m_VBFtau->push_back( taujet );
+      //Info("execute()", "  VBF tau pt = %.2f GeV", (taujet->pt() * 0.001));
+      //}
+    }
+  } // end for loop over shallow copied electrons
+
+
 
   //------------------------
   // Define Jet Properties
@@ -1171,7 +1211,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       if ( dPhijetmet < 0.5 ) pass_dPhijetmet = false;
 
       // Central Jet Veto
-      if ( m_goodJet->size() > 2 && jet1.Pt() > 55e3 && jet2.Pt() > 45e3 ){
+      if ( m_goodJet->size() > 2 && jet1.Pt() > 80e3 && jet2.Pt() > 50e3 ){
         if (m_goodJet->at(0) != signalJets && m_goodJet->at(1) != signalJets){
           //cout << "m_goodJet->at(0) = " << m_goodJet->at(0) << " signalJets = " << signalJets << endl;
           if (signal_jet_pt > 25. && fabs(signal_jet_eta) < 4.4 ) {
@@ -1247,8 +1287,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
     if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET Trigger");
     m_eventCutflow[5]+=1;
-    if ( refFinal_met > 150. ) {
-      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET > 150GeV");
+    if ( refFinal_met > 200. ) {
+      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET > 200GeV");
       m_eventCutflow[6]+=1;
       if (m_VBFelectron->size() == 0) {
         if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Electron Veto");
@@ -1263,11 +1303,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
               m_eventCutflow[10]+=1;
               //if ( lead_jet_pt > 55. && secondlead_jet_pt > 45. ) {
-              if ( jet1.Pt() > 55e3 && jet2.Pt() > 45e3 ) {
-                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets[55,45]");
+              if ( jet1.Pt() > 80e3 && jet2.Pt() > 50e3 ) {
+                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets[80,50]");
                 m_eventCutflow[11]+=1;
-                if ( mjj > 250e3 ) {
-                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("mjj > 250GeV");
+                if ( mjj > 200e3 ) {
+                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("mjj > 200GeV");
                   m_eventCutflow[12]+=1;
                   if ( pass_CJV ) {
                   //if ( dPhimetjet1 > 0.5 && dPhimetjet2 > 0.5 ) {
@@ -1305,7 +1345,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   delete m_VBFmuon;
   delete m_VBFelectron;
   delete m_VBFtau;
-  delete m_VBFphoton;
 
 
   //////////////////////////////////
@@ -1560,7 +1599,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       const xAOD::EventInfo* eventInfo){
 
     dec_baseline(mu) = false;
-    selectDec(mu) = false;
+    selectDec(mu) = false; // To select objects for Overlap removal
 
     // Event information
     if( ! m_event->retrieve( eventInfo, "EventInfo").isSuccess() ){
@@ -1613,7 +1652,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //Info("execute()", "  selected muon eta = %.2f ", (mu.eta())); // just to print out something
 
     dec_baseline(mu) = true;
-    selectDec(mu) = true;
+    selectDec(mu) = true; // To select objects for Overlap removal
 
     return EL::StatusCode::SUCCESS;
 
@@ -1665,12 +1704,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   }
 
 
-  bool ZinvxAODAnalysis :: passMuonVBF(xAOD::Muon& mu,
-      const xAOD::EventInfo* eventInfo,
-      xAOD::Vertex* primVertex){
+  EL::StatusCode ZinvxAODAnalysis :: passMuonVBF(xAOD::Muon& mu,
+      const xAOD::EventInfo* eventInfo, xAOD::Vertex* primVertex){
 
     dec_baseline(mu) = false;
-    selectDec(mu) = false;
+    selectDec(mu) = false; // To select objects for Overlap removal
 
     // Event information
     if( ! m_event->retrieve( eventInfo, "EventInfo").isSuccess() ){
@@ -1680,7 +1718,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     // don't bother calibrating or computing WP
     double muPt = (mu.pt()) * 0.001; /// GeV
-    if ( muPt < 4. ) return false;
+    //if ( muPt < 4. ) return EL::StatusCode::SUCCESS;
 
     // Muon Calibration
     if (!isData){
@@ -1692,19 +1730,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     // MuonSelectionTool (Loose)
-    if(!m_loosemuonSelection->accept(mu)) return false;
+    if(!m_loosemuonSelection->accept(mu)) return EL::StatusCode::SUCCESS;
 
     // Muon tranverse momentum
     double ptCut = 7.;
-    if (muPt <= ptCut ) return false;
+    if (muPt <= ptCut ) return EL::StatusCode::SUCCESS;
 
     // Muon eta cut
     //double muEta = mu.eta();
-    //if (fabs(muEta) >= 2.47) return false;
+    //if (fabs(muEta) >= 2.47) return EL::StatusCode::SUCCESS;
 
     // Combined (CB) or Segment-tagged (ST) muons (excluding Stand-alone (SA), Calorimeter-tagged (CaloTag) muons etc..)
-    //if (!(mu.muonType() == xAOD::Muon::Combined || mu.muonType() == xAOD::Muon::SegmentTagged)) return false;
-    if (mu.muonType() != xAOD::Muon_v1::Combined && mu.muonType() != xAOD::Muon_v1::SegmentTagged) return false;
+    //if (!(mu.muonType() == xAOD::Muon::Combined || mu.muonType() == xAOD::Muon::SegmentTagged)) return EL::StatusCode::SUCCESS;
+    if (mu.muonType() != xAOD::Muon_v1::Combined && mu.muonType() != xAOD::Muon_v1::SegmentTagged) return EL::StatusCode::SUCCESS;
 
     // d0 / z0 cuts applied
     // d0 significance (Transverse impact parameter)
@@ -1714,20 +1752,20 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     else
       tp = mu.primaryTrackParticle();
     double d0sig = xAOD::TrackingHelpers::d0significance( tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
-    if (fabs(d0sig) > 3.0) return false;
+    if (fabs(d0sig) > 3.0) return EL::StatusCode::SUCCESS;
     // zo cut
     float z0sintheta = 1e8;
     //if (primVertex) z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( mu.p4().Theta() );
     z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
-    if (fabs(z0sintheta) > 0.5) return false;
+    if (fabs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
 
     // Isolation requirement
-    if ((muPt > 10. && muPt < 500.) && !m_IsoToolVBF->accept(mu)) return false;
+    if ((muPt > 10. && muPt < 500.) && !m_IsoToolVBF->accept(mu)) return EL::StatusCode::SUCCESS;
 
     dec_baseline(mu) = true;
-    selectDec(mu) = true;
+    selectDec(mu) = true; // To select objects for Overlap removal
 
-    return true;
+    return EL::StatusCode::SUCCESS;
 
   }
 
@@ -1739,7 +1777,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       const xAOD::EventInfo* eventInfo){
 
     dec_baseline(elec) = false;
-    selectDec(elec) = false;
+    selectDec(elec) = false; // To select objects for Overlap removal
 
     // According to https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2#Electron_identification
 
@@ -1770,12 +1808,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //Info("execute()", "  Selected electron pt from new Electron Container = %.2f GeV", (elec.pt() * 0.001));
 
     // Calibration
-    if (!isData){
-      if(m_egammaCalibrationAndSmearingTool->applyCorrection(elec) == CP::CorrectionCode::Error){ // apply correction and check return code
-        // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
-        // If OutOfValidityRange is returned no modification is made and the original electron values are taken.
-        Error("execute()", "EgammaCalibrationAndSmearingTool returns Error CorrectionCode");
-      }
+    if(m_egammaCalibrationAndSmearingTool->applyCorrection(elec) == CP::CorrectionCode::Error){ // apply correction and check return code
+      // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
+      // If OutOfValidityRange is returned no modification is made and the original electron values are taken.
+      Error("execute()", "EgammaCalibrationAndSmearingTool returns Error CorrectionCode");
     }
 
     // Eta cut
@@ -1788,7 +1824,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if (elecPt <= elecPtCut) return EL::StatusCode::SUCCESS; /// veto electron
 
     dec_baseline(elec) = true;
-    selectDec(elec) = true;
+    selectDec(elec) = true; // To select objects for Overlap removal
 
     return EL::StatusCode::SUCCESS;
 
@@ -1835,12 +1871,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-  bool ZinvxAODAnalysis :: passElectronVBF(xAOD::Electron& elec,
+  EL::StatusCode ZinvxAODAnalysis :: passElectronVBF(xAOD::Electron& elec,
       const xAOD::EventInfo* eventInfo,
       xAOD::Vertex* primVertex){
 
     dec_baseline(elec) = false;
-    selectDec(elec) = false;
+    selectDec(elec) = false; // To select objects for Overlap removal
 
     // Event information
     if( ! m_event->retrieve( eventInfo, "EventInfo").isSuccess() ){
@@ -1850,11 +1886,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     // don't bother calibrating or computing WP
     double elecPt = (elec.pt()) * 0.001; /// GeV
-    if ( elecPt < 4. ) return false;
+    //if ( elecPt < 4. ) return EL::StatusCode::SUCCESS;
 
     // goodOQ(object quality cut) : Bad Electron Cluster
     // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/EGammaIdentificationRun2#Object_quality_cut
-    if( !elec.isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) return false;
+    if( !elec.isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) return EL::StatusCode::SUCCESS;
 
     // "Please apply the identification to uncalibrated electron object. ID scale factors are to be applied to calibrated objects."
     // LH Electron identification
@@ -1862,54 +1898,52 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // LH Electron (Loose)
     bool LHlooseSel = false;
     LHlooseSel = m_LHToolLoose2015->accept(elec);
-    if (!LHlooseSel) return false;
+    if (!LHlooseSel) return EL::StatusCode::SUCCESS;
     /*
     // LH Electron (Medium)
     bool LHmediumSel = false;
     LHmediumSel = m_LHToolMedium2015->accept(elec);
-    if (!LHmediumSel) return false;
+    if (!LHmediumSel) return EL::StatusCode::SUCCESS;
     */
 
     //Info("execute()", "  Selected electron pt from new Electron Container = %.2f GeV", (elec.pt() * 0.001));
 
     // Calibration
-    if (!isData){
-      if(m_egammaCalibrationAndSmearingTool->applyCorrection(elec) == CP::CorrectionCode::Error){ // apply correction and check return code
-        // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
-        // If OutOfValidityRange is returned no modification is made and the original electron values are taken.
-        Error("execute()", "EgammaCalibrationAndSmearingTool returns Error CorrectionCode");
-      }
+    if(m_egammaCalibrationAndSmearingTool->applyCorrection(elec) == CP::CorrectionCode::Error){ // apply correction and check return code
+      // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
+      // If OutOfValidityRange is returned no modification is made and the original electron values are taken.
+      Error("execute()", "EgammaCalibrationAndSmearingTool returns Error CorrectionCode");
     }
 
     // Eta cut
     //double Eta = elec.caloCluster()->eta();
     double Eta = elec.caloCluster()->etaBE(2);
-    //if ( fabs(Eta) >= 2.47 || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return false;
-    if ( fabs(Eta) > 2.47 ) return false;
+    //if ( fabs(Eta) >= 2.47 || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
+    if ( fabs(Eta) > 2.47 ) return EL::StatusCode::SUCCESS;
 
     /// pT cut
     double ptCut = 7.0; /// GeV
-    if (elecPt <= ptCut) return false; /// veto electron
+    if (elecPt <= ptCut) return EL::StatusCode::SUCCESS; /// veto electron
 
     // d0 / z0 cuts applied
     // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2#Electron_d0_and_z0_cut_definitio
     // d0 significance (Transverse impact parameter)
     const xAOD::TrackParticle *tp = elec.trackParticle() ; //your input track particle from the electron
     double d0sig = xAOD::TrackingHelpers::d0significance( tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
-    if (fabs(d0sig) > 5.0) return false;
+    if (fabs(d0sig) > 5.0) return EL::StatusCode::SUCCESS;
     // zo cut
     float z0sintheta = 1e8;
     //if (primVertex) z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( elec.p4().Theta() );
     z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
-    if (fabs(z0sintheta) > 0.5) return false;
+    if (fabs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
 
     // Isolation requirement
-    if (!m_IsoToolVBF->accept(elec)) return false;
+    if (!m_IsoToolVBF->accept(elec)) return EL::StatusCode::SUCCESS;
 
     dec_baseline(elec) = true;
-    selectDec(elec) = true;
+    selectDec(elec) = true; // To select objects for Overlap removal
 
-    return true;
+    return EL::StatusCode::SUCCESS;
 
   }
 
@@ -1919,7 +1953,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       const xAOD::EventInfo* eventInfo){
 
     dec_baseline(phot) = false;
-    selectDec(phot) = false;
+    selectDec(phot) = false; // To select objects for Overlap removal
 
     // According to https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2
 
@@ -1937,16 +1971,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //Info("execute()", "  Selected photon pt from new Photon Container = %.2f GeV", (phot.pt() * 0.001));
 
     // Calibration
-    if (!isData){
-      if(m_egammaCalibrationAndSmearingTool->applyCorrection(phot) == CP::CorrectionCode::Error){ // apply correction and check return code
-        // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
-        // If OutOfValidityRange is returned no modification is made and the original photon values are taken.
-        Error("execute()", "EgammaCalibrationAndSmearingTool returns Error CorrectionCode");
-      }
+    if(m_egammaCalibrationAndSmearingTool->applyCorrection(phot) == CP::CorrectionCode::Error){ // apply correction and check return code
+      // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
+      // If OutOfValidityRange is returned no modification is made and the original photon values are taken.
+      Error("execute()", "EgammaCalibrationAndSmearingTool returns Error CorrectionCode");
     }
 
     // Eta cut
-    double Eta = phot.caloCluster()->eta();
+    //double Eta = phot.caloCluster()->eta();
+    double Eta = phot.caloCluster()->etaBE(2);
     if ( fabs(Eta) >= 2.37 || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
 
     // pT cut
@@ -1973,18 +2006,18 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
     dec_baseline(phot) = true;
-    selectDec(phot) = true;
+    selectDec(phot) = true; // To select objects for Overlap removal
 
     return EL::StatusCode::SUCCESS;
 
   }
 
 
-  bool ZinvxAODAnalysis :: passPhotonVBF(xAOD::Photon& phot,
+  EL::StatusCode ZinvxAODAnalysis :: passPhotonVBF(xAOD::Photon& phot,
       const xAOD::EventInfo* eventInfo){
 
     dec_baseline(phot) = false;
-    selectDec(phot) = false;
+    selectDec(phot) = false; // To select objects for Overlap removal
 
     // According to https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2
 
@@ -1996,32 +2029,32 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     // Photon author cuts
     if ( !(phot.author() & (xAOD::EgammaParameters::AuthorPhoton + xAOD::EgammaParameters::AuthorAmbiguous)) )
-      return false;
+      return EL::StatusCode::SUCCESS;
 
 
     //Info("execute()", "  Selected photon pt from new Photon Container = %.2f GeV", (phot.pt() * 0.001));
 
     // Calibration
-    if (!isData){
-      if(m_egammaCalibrationAndSmearingTool->applyCorrection(phot) == CP::CorrectionCode::Error){ // apply correction and check return code
-        // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
-        // If OutOfValidityRange is returned no modification is made and the original photon values are taken.
-        Error("execute()", "EgammaCalibrationAndSmearingTool returns Error CorrectionCode");
-      }
+    if(m_egammaCalibrationAndSmearingTool->applyCorrection(phot) == CP::CorrectionCode::Error){ // apply correction and check return code
+      // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
+      // If OutOfValidityRange is returned no modification is made and the original photon values are taken.
+      Error("execute()", "EgammaCalibrationAndSmearingTool returns Error CorrectionCode");
     }
 
     // Eta cut
-    double Eta = phot.caloCluster()->eta();
-    if ( fabs(Eta) >= 2.47 || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return false;
+    //double Eta = phot.caloCluster()->eta();
+    double Eta = phot.caloCluster()->etaBE(2);
+    //if ( fabs(Eta) >= 2.47 || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
+    if ( fabs(Eta) >= 2.47 ) return EL::StatusCode::SUCCESS;
 
     // pT cut
     double photPt = (phot.pt()) * 0.001; /// GeV
     double photPtCut = 20.0; /// GeV
-    if (photPt <= photPtCut) return false; /// veto photon
+    if (photPt <= photPtCut) return EL::StatusCode::SUCCESS; /// veto photon
 
     // goodOQ(object quality cut) : Bad photon Cluster
     // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/EGammaIdentificationRun2#Object_quality_cut
-    if( !phot.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON) ) return false;
+    if( !phot.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON) ) return EL::StatusCode::SUCCESS;
 
     // MC fudge tool
     if (!isData){
@@ -2031,17 +2064,17 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     // Recomputing the photon ID flags
-    if (!m_photonTightIsEMSelector->accept(phot)) return false;
-    //if (!m_photonLooseIsEMSelector->accept(phot)) return false;
+    if (!m_photonTightIsEMSelector->accept(phot)) return EL::StatusCode::SUCCESS;
+    //if (!m_photonLooseIsEMSelector->accept(phot)) return EL::StatusCode::SUCCESS;
 
     // Isolation requirement
-    //if (!m_IsoToolVBF->accept(phot)) return false;
+    //if (!m_IsoToolVBF->accept(phot)) return EL::StatusCode::SUCCESS;
 
 
     dec_baseline(phot) = true;
-    selectDec(phot) = true;
+    selectDec(phot) = true; // To select objects for Overlap removal
 
-    return true;
+    return EL::StatusCode::SUCCESS;
 
   }
 
@@ -2051,7 +2084,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       const xAOD::EventInfo* eventInfo){
 
     dec_baseline(tau) = false;
-    selectDec(tau) = false;
+    selectDec(tau) = false; // To select objects for Overlap removal
 
     // According to https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/TauID/TauAnalysisTools/trunk/README.rst
 
@@ -2080,18 +2113,18 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //Info("execute()", "  Selected tau pt from new Tau Container = %.2f GeV", (tau.pt() * 0.001));
 
     dec_baseline(tau) = true;
-    selectDec(tau) = true;
+    selectDec(tau) = true; // To select objects for Overlap removal
 
     return EL::StatusCode::SUCCESS;
 
   }
 
 
-  bool ZinvxAODAnalysis :: passTauVBF(xAOD::TauJet& tau,
+  EL::StatusCode ZinvxAODAnalysis :: passTauVBF(xAOD::TauJet& tau,
       const xAOD::EventInfo* eventInfo){
 
     dec_baseline(tau) = false;
-    selectDec(tau) = false;
+    selectDec(tau) = false; // To select objects for Overlap removal
 
     // According to https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/TauID/TauAnalysisTools/trunk/README.rst
 
@@ -2113,14 +2146,14 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //Info("execute()", "  original tau pt from new Tau Container = %.2f GeV", (tau.pt() * 0.001));
 
     // TauSelectionTool (Loose for VBF)
-    if(!m_tauSelToolVBF->accept(tau)) return false;
+    if(!m_tauSelToolVBF->accept(tau)) return EL::StatusCode::SUCCESS;
 
     //Info("execute()", "  Selected tau pt from new Tau Container = %.2f GeV", (tau.pt() * 0.001));
 
     dec_baseline(tau) = true;
-    selectDec(tau) = true;
+    selectDec(tau) = true; // To select objects for Overlap removal
 
-    return true;
+    return EL::StatusCode::SUCCESS;
 
   }
 
@@ -2129,16 +2162,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   bool ZinvxAODAnalysis :: IsBadJet(xAOD::Jet& jet) {
 
-    //if (overlapAcc(jet)) return false;
+    if (overlapAcc(jet)) return false;
 
     double jetPt = (jet.pt()) * 0.001; /// GeV
+
+    //Info("execute()", "  corrected jet pt in IsBadJet function = %.2f GeV", jetPt );
+    //Info("execute()", "  updated jet jvt in IsBadJet function = %.2f ", cacc_jvt(jet) );
 
     // Pile-up
     if ( cacc_jvt(jet) < 0.59 && fabs(jet.eta()) < 2.4 && jetPt < 50.0 ) return false;
 
     // pT cut
     double jetPtCut = 20.0; /// GeV
-    double jetEtaCut = 4.4;
+    double jetEtaCut = 4.5;
     if ( jetPt <= jetPtCut || fabs(jet.eta()) >= jetEtaCut) return false; 
 
     // Jet Cleaning Tool
@@ -2151,12 +2187,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   bool ZinvxAODAnalysis :: IsSignalJet(xAOD::Jet& jet) {
 
-    //if ( !dec_baseline(jet)  || overlapAcc(jet) ) return false;
-    if ( !dec_baseline(jet) ) return false;
+    if ( !dec_baseline(jet)  || overlapAcc(jet) ) return false;
+    //if ( !dec_baseline(jet) ) return false;
 
     double jetPt = (jet.pt()) * 0.001; /// GeV
     double jetPtCut = 20.0; /// GeV
-    double jetEtaCut = 4.4;
+    double jetEtaCut = 4.5;
 
     // pT, eta cut
     if ( jetPt <= jetPtCut || fabs(jet.eta()) >= jetEtaCut) return false;
