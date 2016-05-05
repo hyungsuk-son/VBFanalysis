@@ -1203,6 +1203,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     for (const auto& signalJets : *m_goodJet) {
       double signal_jet_pt = (signalJets->pt()) * 0.001;
       double signal_jet_eta = signalJets->eta();
+      double signal_jet_rapidity = signalJets->rapidity();
       double signal_jet_phi = signalJets->phi();
 
       // dphijetmet
@@ -1214,12 +1215,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       if ( m_goodJet->size() > 2 && jet1.Pt() > 80e3 && jet2.Pt() > 50e3 ){
         if (m_goodJet->at(0) != signalJets && m_goodJet->at(1) != signalJets){
           //cout << "m_goodJet->at(0) = " << m_goodJet->at(0) << " signalJets = " << signalJets << endl;
-          if (signal_jet_pt > 25. && fabs(signal_jet_eta) < 4.4 ) {
-            if ( (jet1.Eta() > jet2.Eta()) && (signal_jet_eta < jet1.Eta() && signal_jet_eta > jet2.Eta())){
+          if (signal_jet_pt > 25. && fabs(signal_jet_rapidity) < 4.5 ) {
+            if ( (jet1.Eta() > jet2.Eta()) && (signal_jet_rapidity < jet1.Eta() && signal_jet_rapidity > jet2.Eta())){
               //Info("execute()", " Jet rapidity  = %.2f, Jet eta = %.2f", signalJets->rapidity() , signal_jet_eta);
               pass_CJV = false;
             }
-            if ( (jet1.Eta() < jet2.Eta()) && (signal_jet_eta > jet1.Eta() && signal_jet_eta < jet2.Eta())){
+            if ( (jet1.Eta() < jet2.Eta()) && (signal_jet_rapidity > jet1.Eta() && signal_jet_rapidity < jet2.Eta())){
               pass_CJV = false;
             }
           }
@@ -1303,7 +1304,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
               m_eventCutflow[10]+=1;
               //if ( lead_jet_pt > 55. && secondlead_jet_pt > 45. ) {
-              if ( jet1.Pt() > 80e3 && jet2.Pt() > 50e3 ) {
+              if ( (jet1.Pt() > 80e3 && jet1.Rapidity() < 4.5) && (jet2.Pt() > 50e3 && jet2.Rapidity() < 4.5 ) ) {
                 if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets[80,50]");
                 m_eventCutflow[11]+=1;
                 if ( mjj > 200e3 ) {
