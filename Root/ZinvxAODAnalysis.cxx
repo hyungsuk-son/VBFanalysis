@@ -219,7 +219,8 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // initialize the electron and photon calibration and smearing tool
   m_egammaCalibrationAndSmearingTool = new CP::EgammaCalibrationAndSmearingTool( "EgammaCorrectionTool" );
   EL_RETURN_CHECK("initialize()",m_egammaCalibrationAndSmearingTool->setProperty( "ESModel", "es2015PRE" ));  // see below for options
-  EL_RETURN_CHECK("initialize()",m_egammaCalibrationAndSmearingTool->setProperty( "decorrelationModel", "FULL_v1" ));  // see below for options
+  EL_RETURN_CHECK("initialize()",m_egammaCalibrationAndSmearingTool->setProperty( "decorrelationModel", "FULL_ETACORRELATED_v1" ));  // see below for options
+  //EL_RETURN_CHECK("initialize()",m_egammaCalibrationAndSmearingTool->setProperty( "decorrelationModel", "FULL_v1" ));  // see below for options
   EL_RETURN_CHECK("initialize()",m_egammaCalibrationAndSmearingTool->initialize());
 
   // Initialize the MC fudge tool
@@ -341,7 +342,8 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // JES Calibration (https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/JetEtmissRecommendationsMC15#JES_calibration_AN1)
   const std::string name = "ZinvxAODAnalysis"; //string describing the current thread, for logging
   TString jetAlgo = "AntiKt4EMTopo"; //String describing your jet collection, for example AntiKt4EMTopo or AntiKt4LCTopo
-  TString config = "JES_MC15Prerecommendation_April2015.config"; //Path to global config used to initialize the tool
+  //TString config = "JES_MC15Prerecommendation_April2015.config"; //Path to global config used to initialize the tool
+  TString config = "JES_2015dataset_recommendation_Feb2016.config"; //Path to global config used to initialize the tool
   TString calibSeq = "JetArea_Residual_Origin_EtaJES_GSC"; //String describing the calibration sequence to apply
   if (isData) calibSeq += "_Insitu";
   //Call the constructor. The default constructor can also be used if the arguments are set with python configuration instead
@@ -383,8 +385,9 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // Initialize and configure the jet cleaning tool
   m_jetCleaning = new JetCleaningTool("JetCleaning");
   m_jetCleaning->msg().setLevel( MSG::DEBUG ); 
+  //EL_RETURN_CHECK("initialize()",m_jetCleaning->setProperty( "CutLevel", "TightBad")); // also "TightBad"
   EL_RETURN_CHECK("initialize()",m_jetCleaning->setProperty( "CutLevel", "LooseBad")); // also "TightBad"
-  EL_RETURN_CHECK("initialize()",m_jetCleaning->setProperty("DoUgly", false));
+  //EL_RETURN_CHECK("initialize()",m_jetCleaning->setProperty("DoUgly", false));
   EL_RETURN_CHECK("initialize()",m_jetCleaning->initialize());
 
   // Initialise MET tools
@@ -829,7 +832,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     // pT cut
     double jetPtCut = 20.0; /// GeV
-    if (jetPt > jetPtCut) {
+    double jetEtaCut = 4.5;
+    if (jetPt > jetPtCut && jetEta < jetEtaCut) {
       dec_baseline(*jets) = true;
       selectDec(*jets) = true; // To select objects for Overlap removal
     }
@@ -1064,7 +1068,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
       m_metMap);                              //and this association map
 
-  met::addGhostMuonsToJets(*m_muons, *jetSC);
+  //met::addGhostMuonsToJets(*m_muons, *jetSC);
 
   // JET
   //-----------------
@@ -1215,7 +1219,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       if ( m_goodJet->size() > 2 && jet1.Pt() > 80e3 && jet2.Pt() > 50e3 ){
         if (m_goodJet->at(0) != signalJets && m_goodJet->at(1) != signalJets){
           //cout << "m_goodJet->at(0) = " << m_goodJet->at(0) << " signalJets = " << signalJets << endl;
-          if (signal_jet_pt > 25. && fabs(signal_jet_rapidity) < 4.5 ) {
+          if (signal_jet_pt > 25. && fabs(signal_jet_rapidity) < 4.4 ) {
             if ( (jet1.Eta() > jet2.Eta()) && (signal_jet_rapidity < jet1.Eta() && signal_jet_rapidity > jet2.Eta())){
               //Info("execute()", " Jet rapidity  = %.2f, Jet eta = %.2f", signalJets->rapidity() , signal_jet_eta);
               pass_CJV = false;
@@ -1289,6 +1293,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET Trigger");
     m_eventCutflow[5]+=1;
     if ( refFinal_met > 200. ) {
+      Info("execute()", "  Event number = %i : MET = %.2f GeV", m_eventCounter, refFinal_met);
       if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET > 200GeV");
       m_eventCutflow[6]+=1;
       if (m_VBFelectron->size() == 0) {
@@ -1304,7 +1309,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
               m_eventCutflow[10]+=1;
               //if ( lead_jet_pt > 55. && secondlead_jet_pt > 45. ) {
-              if ( (jet1.Pt() > 80e3 && jet1.Rapidity() < 4.5) && (jet2.Pt() > 50e3 && jet2.Rapidity() < 4.5 ) ) {
+              if ( (jet1.Pt() > 80e3 && jet1.Rapidity() < 4.4) && (jet2.Pt() > 50e3 && jet2.Rapidity() < 4.4) ) {
                 if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets[80,50]");
                 m_eventCutflow[11]+=1;
                 if ( mjj > 200e3 ) {
@@ -1735,7 +1740,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     // Muon tranverse momentum
     double ptCut = 7.;
-    if (muPt <= ptCut ) return EL::StatusCode::SUCCESS;
+    if (muPt < ptCut ) return EL::StatusCode::SUCCESS;
 
     // Muon eta cut
     //double muEta = mu.eta();
@@ -1761,7 +1766,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if (fabs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
 
     // Isolation requirement
-    if ((muPt > 10. && muPt < 500.) && !m_IsoToolVBF->accept(mu)) return EL::StatusCode::SUCCESS;
+    if (muPt > 10. && muPt < 500. && !m_IsoToolVBF->accept(mu)) return EL::StatusCode::SUCCESS;
 
     dec_baseline(mu) = true;
     selectDec(mu) = true; // To select objects for Overlap removal
@@ -1905,6 +1910,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     bool LHmediumSel = false;
     LHmediumSel = m_LHToolMedium2015->accept(elec);
     if (!LHmediumSel) return EL::StatusCode::SUCCESS;
+    // LH Electron (Tight)
+    bool LHtightSel = false;
+    LHtightSel = m_LHToolTight2015->accept(elec);
+    if (!LHtightSel) return EL::StatusCode::SUCCESS;
     */
 
     //Info("execute()", "  Selected electron pt from new Electron Container = %.2f GeV", (elec.pt() * 0.001));
@@ -1924,7 +1933,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     /// pT cut
     double ptCut = 7.0; /// GeV
-    if (elecPt <= ptCut) return EL::StatusCode::SUCCESS; /// veto electron
+    if (elecPt < ptCut) return EL::StatusCode::SUCCESS; /// veto electron
 
     // d0 / z0 cuts applied
     // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2#Electron_d0_and_z0_cut_definitio
@@ -2046,12 +2055,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //double Eta = phot.caloCluster()->eta();
     double Eta = phot.caloCluster()->etaBE(2);
     //if ( fabs(Eta) >= 2.47 || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
-    if ( fabs(Eta) >= 2.47 ) return EL::StatusCode::SUCCESS;
+    if ( fabs(Eta) > 2.47 ) return EL::StatusCode::SUCCESS;
 
     // pT cut
     double photPt = (phot.pt()) * 0.001; /// GeV
     double photPtCut = 20.0; /// GeV
-    if (photPt <= photPtCut) return EL::StatusCode::SUCCESS; /// veto photon
+    if (photPt < photPtCut) return EL::StatusCode::SUCCESS; /// veto photon
 
     // goodOQ(object quality cut) : Bad photon Cluster
     // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/EGammaIdentificationRun2#Object_quality_cut
@@ -2163,7 +2172,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   bool ZinvxAODAnalysis :: IsBadJet(xAOD::Jet& jet) {
 
-    if (overlapAcc(jet)) return false;
+    //if (overlapAcc(jet)) return false;
 
     double jetPt = (jet.pt()) * 0.001; /// GeV
 
@@ -2176,10 +2185,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // pT cut
     double jetPtCut = 20.0; /// GeV
     double jetEtaCut = 4.5;
-    if ( jetPt <= jetPtCut || fabs(jet.eta()) >= jetEtaCut) return false; 
+    if ( jetPt < jetPtCut || fabs(jet.eta()) > jetEtaCut) return false; 
 
     // Jet Cleaning Tool
-    dec_bad(jet) = !m_jetCleaning->keep( jet );
+    dec_bad(jet) = !m_jetCleaning->accept( jet );
 
     return dec_bad(jet);
 
