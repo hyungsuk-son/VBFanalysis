@@ -190,7 +190,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_eventCounter = 0;
   m_numCleanEvents = 0;
 
-
   // Enable Cutflow plot
   m_useBitsetCutflow = false;
 
@@ -199,6 +198,20 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_doORmanual = true;
 
   // Cut values
+  m_muonPtCut = 7.; /// GeV
+  m_muonEtaCut = 2.5;
+  m_elecPtCut = 7.; /// GeV
+  m_elecEtaCut = 2.47;
+  m_photPtCut = 20.; /// GeV
+  m_photEtaCut = 2.47;
+  m_jetPtCut = 20.; /// GeV
+  m_jetEtaCut = 4.5;
+  m_diJet1PtCut = 80.; /// GeV
+  m_diJet2PtCut = 50.; /// GeV
+  m_diJetEtaCut = 4.4;
+  m_centralJetVetoCut = 25.; ///GeV
+  m_metCut = 200.; ///GeV
+  m_mjjCut = 200.; ///GeV
 
   // GRL
   m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
@@ -807,8 +820,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       return EL::StatusCode::FAILURE;
     }
 
-    double jetPt = jets->pt() * 0.001; /// GeV
-    double jetEta = jets->eta();
+    float jetPt = jets->pt() * 0.001; /// GeV
+    float jetEta = jets->eta();
 
     // JES correction
     if (!isData){
@@ -839,9 +852,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     selectDec(*jets) = false; // To select objects for Overlap removal
 
     // pT cut
-    double jetPtCut = 20.0; /// GeV
-    double jetEtaCut = 4.5;
-    if (jetPt > jetPtCut && jetEta < jetEtaCut) {
+    if (jetPt > m_jetPtCut && jetEta < m_jetEtaCut) {
       dec_baseline(*jets) = true;
       selectDec(*jets) = true; // To select objects for Overlap removal
     }
@@ -1230,17 +1241,21 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   TLorentzVector jet1;
   TLorentzVector jet2;
+  float jet1_pt = 0;
+  float jet2_pt = 0;
 
   if (m_VBFjet->size() > 1) std::partial_sort(m_VBFjet->begin(), m_VBFjet->begin()+2, m_VBFjet->end(), DescendingPt());
   float mjj = 0;
   if (m_VBFjet->size() > 1) {
     jet1 = m_VBFjet->at(0)->p4();
     jet2 = m_VBFjet->at(1)->p4();
+    jet1_pt = jet1.Pt() * 0.001;
+    jet2_pt = jet2.Pt() * 0.001;
     auto dijet = jet1 + jet2;
-    mjj = dijet.M();
+    mjj = dijet.M() * 0.001;
 
-    //Info("execute()", "  jet1 = %.2f GeV, jet2 = %.2f GeV", jet1.Pt()*0.001, jet2.Pt()*0.001);
-    //Info("execute()", "  mjj_test = %.2f GeV", mjjtest*0.001);
+    //Info("execute()", "  jet1 = %.2f GeV, jet2 = %.2f GeV", jet1_pt, jet2_pt);
+    //Info("execute()", "  mjj = %.2f GeV", mjj);
   }
 
   // Define HT and leading jet pT
@@ -1271,10 +1286,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       if ( dPhijetmet < 0.5 ) pass_dPhijetmet = false;
 
       // Central Jet Veto
-      if ( m_VBFjet->size() > 2 && jet1.Pt() > 80e3 && jet2.Pt() > 50e3 ){
+      if ( m_VBFjet->size() > 2 && jet1_pt >  m_diJet1PtCut && jet2_pt > m_diJet2PtCut ){
         if (m_VBFjet->at(0) != signalJets && m_VBFjet->at(1) != signalJets){
           //cout << "m_VBFjet->at(0) = " << m_VBFjet->at(0) << " signalJets = " << signalJets << endl;
-          if (signal_jet_pt > 25. && fabs(signal_jet_rapidity) < 4.4 ) {
+          if (signal_jet_pt > m_centralJetVetoCut && fabs(signal_jet_rapidity) < m_jetEtaCut  ) {
             if ( (jet1.Eta() > jet2.Eta()) && (signal_jet_rapidity < jet1.Eta() && signal_jet_rapidity > jet2.Eta())){
               //Info("execute()", " Jet rapidity  = %.2f, Jet eta = %.2f", signalJets->rapidity() , signal_jet_eta);
               pass_CJV = false;
@@ -1348,9 +1363,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
     if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET Trigger");
     m_eventCutflow[5]+=1;
-    if ( refFinal_met > 200. ) {
+    if ( refFinal_met > m_metCut ) {
       Info("execute()", "  Event number = %i : MET = %.2f GeV", m_eventCounter, refFinal_met);
-      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET > 200GeV");
+      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET cut");
       m_eventCutflow[6]+=1;
       if (m_VBFelectron->size() == 0) {
         if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Electron Veto");
@@ -1364,12 +1379,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
             if ( m_VBFjet->size() > 1 ) {
               if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
               m_eventCutflow[10]+=1;
-              //if ( lead_jet_pt > 55. && secondlead_jet_pt > 45. ) {
-              if ( (jet1.Pt() > 80e3 && jet1.Rapidity() < 4.4) && (jet2.Pt() > 50e3 && jet2.Rapidity() < 4.4) ) {
-                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets[80,50]");
+              if ( (jet1_pt > m_diJet1PtCut && jet1.Rapidity() < m_diJetEtaCut) && (jet2_pt > m_diJet2PtCut && jet2.Rapidity() < m_diJetEtaCut) ) {
+                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
                 m_eventCutflow[11]+=1;
-                if ( mjj > 200e3 ) {
-                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("mjj > 200GeV");
+                if ( mjj > m_mjjCut ) {
+                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("mjj cut");
                   m_eventCutflow[12]+=1;
                   if ( pass_CJV ) {
                   //if ( dPhimetjet1 > 0.5 && dPhimetjet2 > 0.5 ) {
@@ -1796,12 +1810,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if(!m_loosemuonSelection->accept(mu)) return EL::StatusCode::SUCCESS;
 
     // Muon tranverse momentum
-    double ptCut = 7.;
-    if (muPt < ptCut ) return EL::StatusCode::SUCCESS;
+    if (muPt < m_muonPtCut ) return EL::StatusCode::SUCCESS;
 
     // Muon eta cut
-    //double muEta = mu.eta();
-    //if (fabs(muEta) >= 2.47) return EL::StatusCode::SUCCESS;
+    double muEta = mu.eta();
+    if (fabs(muEta) > m_muonEtaCut) return EL::StatusCode::SUCCESS;
 
     // Combined (CB) or Segment-tagged (ST) muons (excluding Stand-alone (SA), Calorimeter-tagged (CaloTag) muons etc..)
     //if (!(mu.muonType() == xAOD::Muon::Combined || mu.muonType() == xAOD::Muon::SegmentTagged)) return EL::StatusCode::SUCCESS;
@@ -1985,12 +1998,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Eta cut
     //double Eta = elec.caloCluster()->eta();
     double Eta = elec.caloCluster()->etaBE(2);
-    //if ( fabs(Eta) >= 2.47 || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
-    if ( fabs(Eta) > 2.47 ) return EL::StatusCode::SUCCESS;
+    //if ( fabs(Eta) >= m_elecEtaCut || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
+    if ( fabs(Eta) > m_elecEtaCut ) return EL::StatusCode::SUCCESS;
 
     /// pT cut
-    double ptCut = 7.0; /// GeV
-    if (elecPt < ptCut) return EL::StatusCode::SUCCESS; /// veto electron
+    if (elecPt < m_elecPtCut ) return EL::StatusCode::SUCCESS; /// veto electron
 
     // d0 / z0 cuts applied
     // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2#Electron_d0_and_z0_cut_definitio
@@ -2111,13 +2123,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Eta cut
     //double Eta = phot.caloCluster()->eta();
     double Eta = phot.caloCluster()->etaBE(2);
-    //if ( fabs(Eta) >= 2.47 || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
-    if ( fabs(Eta) > 2.47 ) return EL::StatusCode::SUCCESS;
+    //if ( fabs(Eta) >= m_photEtaCut || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
+    if ( fabs(Eta) > m_photEtaCut ) return EL::StatusCode::SUCCESS;
 
     // pT cut
     double photPt = (phot.pt()) * 0.001; /// GeV
-    double photPtCut = 20.0; /// GeV
-    if (photPt < photPtCut) return EL::StatusCode::SUCCESS; /// veto photon
+    if (photPt < m_photPtCut) return EL::StatusCode::SUCCESS; /// veto photon
 
     // goodOQ(object quality cut) : Bad photon Cluster
     // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/EGammaIdentificationRun2#Object_quality_cut
@@ -2240,9 +2251,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if ( cacc_jvt(jet) < 0.59 && fabs(jet.eta()) < 2.4 && jetPt < 50.0 ) return false;
 
     // pT cut
-    double jetPtCut = 20.0; /// GeV
-    double jetEtaCut = 4.5;
-    if ( jetPt < jetPtCut || fabs(jet.eta()) > jetEtaCut) return false; 
+    if ( jetPt < m_jetPtCut || fabs(jet.eta()) > m_jetEtaCut) return false; 
 
     // Jet Cleaning Tool
     dec_bad(jet) = !m_jetCleaning->accept( jet );
@@ -2258,11 +2267,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if (!dec_baseline(jet)) return false;
 
     double jetPt = (jet.pt()) * 0.001; /// GeV
-    double jetPtCut = 20.0; /// GeV
-    double jetEtaCut = 4.5;
 
     // pT, eta cut
-    if ( jetPt < jetPtCut || fabs(jet.eta()) > jetEtaCut) return false;
+    if ( jetPt < m_jetPtCut || fabs(jet.eta()) > m_jetEtaCut) return false;
 
     bool isgoodjet = !dec_bad(jet) && (cacc_jvt(jet) > 0.59 || fabs(jet.eta()) > 2.4 || jetPt > 50.0);
 

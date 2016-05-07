@@ -120,6 +120,25 @@ class ZinvxAODAnalysis : public EL::Algorithm
     bool m_useBitsetCutflow; //!
     int m_eventCutflow[20]; //!
 
+    // Enable Overlap Removal tool
+    bool m_doORtool; //!
+    bool m_doORmanual; //!
+
+    // Cut values
+    float m_muonPtCut; //!
+    float m_muonEtaCut; //!
+    float m_elecPtCut; //!
+    float m_elecEtaCut; //!
+    float m_photPtCut; //!
+    float m_photEtaCut; //!
+    float m_jetPtCut; //!
+    float m_jetEtaCut; //!
+    float m_diJet1PtCut; //!
+    float m_diJet2PtCut; //!
+    float m_diJetEtaCut; //!
+    float m_centralJetVetoCut; //!
+    float m_metCut; //!
+    float m_mjjCut; //!
 
     // Some object and event counters to help roughly
     // evaluate the effects of changes in the OR tool.
@@ -267,6 +286,9 @@ class ZinvxAODAnalysis : public EL::Algorithm
     int NumElecIsoTrack(xAOD::ElectronContainer* electrons, const xAOD::TrackParticleContainer* inTracks,
         xAOD::Vertex* primVertex, float Pt_Low, float Pt_High);
 
+    float DeltaPhi(float phi1, float phi2);
+
+    float DeltaR(float eta1, float eta2, float phi1, float phi2);
 
 
     // this is needed to distribute the algorithm to the workers
