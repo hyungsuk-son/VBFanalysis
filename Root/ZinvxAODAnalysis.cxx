@@ -34,7 +34,7 @@ static SG::AuxElement::ConstAccessor<float> cacc_jvt("Jvt");
 static const std::string inputLabel = "selected";
 static const std::string outputLabel = "overlaps";
 const bool outputPassValue = false;
-static const std::string bJetLabel = "isBJet";
+static const std::string bJetLabel = "";
 //static SG::AuxElement::Accessor<char> overlapAcc("overlaps");
 ort::inputAccessor_t selectAcc(inputLabel);
 ort::inputDecorator_t selectDec(inputLabel);
@@ -95,8 +95,6 @@ EL::StatusCode ZinvxAODAnalysis :: setupJob (EL::Job& job)
   xAOD::Init().ignore(); // call before opening first file
   //  CP::CorrectionCode::enableFailure();
   EL_RETURN_CHECK( "setupJob()", xAOD::Init() ); // call before opening first file
-
-  m_useBitsetCutflow = true;
 
   return EL::StatusCode::SUCCESS;
 }
@@ -191,6 +189,16 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // count number of events
   m_eventCounter = 0;
   m_numCleanEvents = 0;
+
+
+  // Enable Cutflow plot
+  m_useBitsetCutflow = false;
+
+  // Enable Overlap Removal tool
+  m_doORtool = false;
+  m_doORmanual = true;
+
+  // Cut values
 
   // GRL
   m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
@@ -402,13 +410,13 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // Initialize the harmonization reccommendation tools
   const bool doTaus = false, doPhotons = false;
   const bool boostedLeptons = false;
-  //EL_RETURN_CHECK("initialize()",ORUtils::recommendedTools(m_toolBox, "OverlapRemovalTool", 
-  //                                                        inputLabel, outputLabel, bJetLabel, 
-  //                                                        boostedLeptons, outputPassValue, 
-  //                                                        doTaus, doPhotons));
-  EL_RETURN_CHECK("initialize()",ORUtils::harmonizedTools(m_toolBox, "OverlapRemovalTool", 
-        inputLabel, outputLabel,
-        outputPassValue, doTaus, doPhotons));
+  EL_RETURN_CHECK("initialize()",ORUtils::recommendedTools(m_toolBox, "OverlapRemovalTool", 
+                                                          inputLabel, outputLabel, bJetLabel, 
+                                                          boostedLeptons, outputPassValue, 
+                                                          doTaus, doPhotons));
+  //EL_RETURN_CHECK("initialize()",ORUtils::harmonizedTools(m_toolBox, "OverlapRemovalTool", 
+  //      inputLabel, outputLabel,
+  //      outputPassValue, doTaus, doPhotons));
   // Set message level for all tools
   //m_toolBox->setMsgLevel(MSG::DEBUG);
   // Initialize all tools
@@ -845,45 +853,47 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   // Overlap Removal
   //----------------
 
-  //auto m_orTool = m_toolBox->getMasterHandle();
-  if ( !m_orTool->removeOverlaps(elecSC, muonSC, jetSC, tauSC, photSC).isSuccess() ){
-    Error("execute()", "Failed to apply the overlap removal to all objects. Exiting." );
-    return EL::StatusCode::FAILURE;
-  }
-
-
-  // Now, dump all of the results
-
-  // electrons
-  for(auto electron : *elecSC){
-    if(overlapAcc(*electron)) {
-      nOverlapElectrons++;
-      //Info("execute()", "  EventNumber : %i |  Overlap electron pt = %.2f GeV", EventNumber, (electron->pt() * 0.001));
+  if (m_doORtool){
+    //auto m_orTool = m_toolBox->getMasterHandle();
+    if ( !m_orTool->removeOverlaps(elecSC, muonSC, jetSC, tauSC, photSC).isSuccess() ){
+      Error("execute()", "Failed to apply the overlap removal to all objects. Exiting." );
+      return EL::StatusCode::FAILURE;
     }
-    nInputElectrons++;
-  }
-  // muons
-  for(auto muon : *muonSC){
-    if(overlapAcc(*muon)) nOverlapMuons++;
-    nInputMuons++;
-  }
-  // jets
-  for (auto jet : *jetSC) {
-    if(overlapAcc(*jet)){
-      nOverlapJets++;
-      //Info("execute()", "  EventNumber : %i |  Overlap jet pt = %.2f GeV", EventNumber, (jet->pt() * 0.001));
+
+
+    // Now, dump all of the results
+
+    // electrons
+    for(auto electron : *elecSC){
+      if(overlapAcc(*electron)) {
+        nOverlapElectrons++;
+        //Info("execute()", "  EventNumber : %i |  Overlap electron pt = %.2f GeV", EventNumber, (electron->pt() * 0.001));
+      }
+      nInputElectrons++;
     }
-    nInputJets++;
-  }
-  // taus
-  for(auto tau : *tauSC){
-    if(overlapAcc(*tau)) nOverlapTaus++;
-    nInputTaus++;
-  }
-  // photons
-  for(auto photon : *photSC){
-    if(overlapAcc(*photon)) nOverlapPhotons++;
-    nInputPhotons++;
+    // muons
+    for(auto muon : *muonSC){
+      if(overlapAcc(*muon)) nOverlapMuons++;
+      nInputMuons++;
+    }
+    // jets
+    for (auto jet : *jetSC) {
+      if(overlapAcc(*jet)){
+        nOverlapJets++;
+        //Info("execute()", "  EventNumber : %i |  Overlap jet pt = %.2f GeV", EventNumber, (jet->pt() * 0.001));
+      }
+      nInputJets++;
+    }
+    // taus
+    for(auto tau : *tauSC){
+      if(overlapAcc(*tau)) nOverlapTaus++;
+      nInputTaus++;
+    }
+    // photons
+    for(auto photon : *photSC){
+      if(overlapAcc(*photon)) nOverlapPhotons++;
+      nInputPhotons++;
+    }
   }
 
 
@@ -971,13 +981,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& electron : *elecSC) { // C++11 shortcut
     // For MET rebuilding
     if (dec_baseline(*electron)) {
-    //if (selectAcc(*electron)) {
-      //if(!overlapAcc(*electron)){
-      //double elecPt = (electron->pt()) * 0.001; /// GeV
-      //Info("execute()", "  Selected MET electron pt from shallow copy = %.2f GeV", ((*elecSC_itr)->pt() * 0.001));
-      //Info("execute()", "  Selected MET electron pt from new Electron Container = %.2f GeV", (electron->pt() * 0.001));  
-      m_MetElectrons.push_back( electron );
-      //}
+      if(m_doORtool){
+        if(!overlapAcc(*electron)) {
+          //double elecPt = (electron->pt()) * 0.001; /// GeV
+          //Info("execute()", "  Selected MET electron pt from shallow copy = %.2f GeV", ((*elecSC_itr)->pt() * 0.001));
+          //Info("execute()", "  Selected MET electron pt from new Electron Container = %.2f GeV", (electron->pt() * 0.001));  
+          m_MetElectrons.push_back( electron );
+        }
+      }
+      else m_MetElectrons.push_back( electron );
     }
   } // end for loop over shallow copied electrons
   //const xAOD::ElectronContainer* p_MetElectrons = m_MetElectrons.asDataVector();
@@ -999,13 +1011,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& photon : *photSC) { // C++11 shortcut
     // For MET rebuilding
     if (dec_baseline(*photon)) {
-    //if (selectAcc(*photon)) {
-      //if(!overlapAcc(*photon)){
-      //double photPt = (photon->pt()) * 0.001; /// GeV
-      //Info("execute()", "  Selected MET photon pt from shallow copy = %.2f GeV", ((*photSC_itr)->pt() * 0.001));
-      //Info("execute()", "  Selected MET photon pt from new Photon Container = %.2f GeV", (phot->pt() * 0.001));  
-      m_MetPhotons.push_back( photon );
-      //}
+      if(m_doORtool){
+        if(!overlapAcc(*photon)){
+          //double photPt = (photon->pt()) * 0.001; /// GeV
+          //Info("execute()", "  Selected MET photon pt from shallow copy = %.2f GeV", ((*photSC_itr)->pt() * 0.001));
+          //Info("execute()", "  Selected MET photon pt from new Photon Container = %.2f GeV", (phot->pt() * 0.001));  
+          m_MetPhotons.push_back( photon );
+        }
+      }
+      else m_MetPhotons.push_back( photon );
     }
   } // end for loop over shallow copied photons
   m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
@@ -1026,13 +1040,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& taujet : *tauSC) { // C++11 shortcut
     // For MET rebuilding
     if (dec_baseline(*taujet)) {
-    //if (selectAcc(*taujet)) {
-      //if(!overlapAcc(*taujet)){
-      //double tauPt = (taujet->pt()) * 0.001; /// GeV
-      //Info("execute()", "  Selected MET tau pt from shallow copy = %.2f GeV", ((*tauSC_itr)->pt() * 0.001));
-      //Info("execute()", "  Selected MET tau pt from new Tau Container = %.2f GeV", (tau->pt() * 0.001));  
-      m_MetTaus.push_back( taujet );
-      //}
+      if(m_doORtool){
+        if(!overlapAcc(*taujet)){
+          //double tauPt = (taujet->pt()) * 0.001; /// GeV
+          //Info("execute()", "  Selected MET tau pt from shallow copy = %.2f GeV", ((*tauSC_itr)->pt() * 0.001));
+          //Info("execute()", "  Selected MET tau pt from new Tau Container = %.2f GeV", (tau->pt() * 0.001));  
+          m_MetTaus.push_back( taujet );
+        }
+      }
+      else m_MetTaus.push_back( taujet );
     }
   } // end for loop over shallow copied taus
   m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
@@ -1053,13 +1069,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& muon : *muonSC) { // C++11 shortcut
     // For MET rebuilding
     if (dec_baseline(*muon)) {
-    //if (selectAcc(*muon)) {
-      //if(!overlapAcc(*muon)){
-      //double muPt = (muon->pt()) * 0.001; /// GeV
-      //Info("execute()", "  Selected Muon pt from shallow copy = %.2f GeV", ((*muonSC_itr)->pt() * 0.001));
-      //Info("execute()", "  Selected muon pt from new Muon Container = %.2f GeV", (muon->pt() * 0.001));  
-      m_MetMuons.push_back( muon );
-      //}
+      if(m_doORtool){
+        if(!overlapAcc(*muon)){
+          //double muPt = (muon->pt()) * 0.001; /// GeV
+          //Info("execute()", "  Selected Muon pt from shallow copy = %.2f GeV", ((*muonSC_itr)->pt() * 0.001));
+          //Info("execute()", "  Selected muon pt from new Muon Container = %.2f GeV", (muon->pt() * 0.001));  
+          m_MetMuons.push_back( muon );
+        }
+      }
+      else m_MetMuons.push_back( muon );
     }
   } // end for loop over shallow copied muons
   m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
@@ -1130,10 +1148,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& muon : *muonSC) { // C++11 shortcut
     // VBF Muon Selection
     if (dec_baseline(*muon)) {
-      //if(!overlapAcc(*muon)){
-      m_VBFmuon->push_back( muon );
+      if(m_doORtool){
+        if (!overlapAcc(*muon)){
+          m_VBFmuon->push_back( muon );
+        }
+      }
+      else m_VBFmuon->push_back( muon );
       //Info("execute()", "  VBF muon pt = %.2f GeV", (muon->pt() * 0.001));
-      //}
     }
   } // end for loop over shallow copied muons
 
@@ -1145,10 +1166,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& electron : *elecSC) { // C++11 shortcut
     // VBF Electron Selection
     if (dec_baseline(*electron)) {
-      //if(!overlapAcc(*electron)){
-      m_VBFelectron->push_back( electron );
+      if(m_doORtool){
+        if(!overlapAcc(*electron)){
+          m_VBFelectron->push_back( electron );
+        }
+      }
+      else m_VBFelectron->push_back( electron );
       //Info("execute()", "  VBF electron pt = %.2f GeV", (electron->pt() * 0.001));
-      //}
     }
   } // end for loop over shallow copied electrons
 
@@ -1160,27 +1184,58 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& taujet : *tauSC) { // C++11 shortcut
     // VBF Tau Selection
     if (dec_baseline(*taujet)) {
-      //if(!overlapAcc(*taujet)){
-      m_VBFtau->push_back( taujet );
+      if(m_doORtool){
+        if(!overlapAcc(*taujet)){
+          m_VBFtau->push_back( taujet );
+        }
+      }
+      else m_VBFtau->push_back( taujet );
       //Info("execute()", "  VBF tau pt = %.2f GeV", (taujet->pt() * 0.001));
-      //}
     }
   } // end for loop over shallow copied electrons
 
 
+  /////////////////////////
+  // Overlap removed Jet //
+  /////////////////////////
+  xAOD::JetContainer* m_VBFjet = new xAOD::JetContainer(SG::VIEW_ELEMENTS);
+  // iterate over our shallow copy
+  for (const auto& jet : *m_goodJet) { // C++11 shortcut
+
+    if (m_doORmanual) {
+      bool isORjet = false;
+
+      for (const auto& muon : *m_VBFmuon) {
+        if (DeltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi()) < 0.4) isORjet = true;
+      }
+
+      for (const auto& electron : *m_VBFelectron) {
+        if (DeltaR(jet->eta(), electron->eta(), jet->phi(), electron->phi()) < 0.4) isORjet = true;
+      }
+
+      for (const auto& tau : *m_VBFtau) {
+        if (DeltaR(jet->eta(), tau->eta(), jet->phi(), tau->phi()) < 0.4) isORjet = true;
+      }
+
+      if (!isORjet) m_VBFjet->push_back( jet );
+    }
+    else m_VBFjet->push_back( jet );
+
+  } // end for loop over shallow copied jets
+
 
   //------------------------
-  // Define Jet Properties
+  // Define DiJet Properties
   // -----------------------
 
   TLorentzVector jet1;
   TLorentzVector jet2;
 
-  if (m_goodJet->size() > 1) std::partial_sort(m_goodJet->begin(), m_goodJet->begin()+2, m_goodJet->end(), DescendingPt());
+  if (m_VBFjet->size() > 1) std::partial_sort(m_VBFjet->begin(), m_VBFjet->begin()+2, m_VBFjet->end(), DescendingPt());
   float mjj = 0;
-  if (m_goodJet->size() > 1) {
-    jet1 = m_goodJet->at(0)->p4();
-    jet2 = m_goodJet->at(1)->p4();
+  if (m_VBFjet->size() > 1) {
+    jet1 = m_VBFjet->at(0)->p4();
+    jet2 = m_VBFjet->at(1)->p4();
     auto dijet = jet1 + jet2;
     mjj = dijet.M();
 
@@ -1201,10 +1256,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
   // N_jet >= 1
-  if (m_goodJet->size() > 0) {
+  if (m_VBFjet->size() > 0) {
 
     // loop over the jets in the Good Jets Container
-    for (const auto& signalJets : *m_goodJet) {
+    for (const auto& signalJets : *m_VBFjet) {
       double signal_jet_pt = (signalJets->pt()) * 0.001;
       double signal_jet_eta = signalJets->eta();
       double signal_jet_rapidity = signalJets->rapidity();
@@ -1216,9 +1271,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       if ( dPhijetmet < 0.5 ) pass_dPhijetmet = false;
 
       // Central Jet Veto
-      if ( m_goodJet->size() > 2 && jet1.Pt() > 80e3 && jet2.Pt() > 50e3 ){
-        if (m_goodJet->at(0) != signalJets && m_goodJet->at(1) != signalJets){
-          //cout << "m_goodJet->at(0) = " << m_goodJet->at(0) << " signalJets = " << signalJets << endl;
+      if ( m_VBFjet->size() > 2 && jet1.Pt() > 80e3 && jet2.Pt() > 50e3 ){
+        if (m_VBFjet->at(0) != signalJets && m_VBFjet->at(1) != signalJets){
+          //cout << "m_VBFjet->at(0) = " << m_VBFjet->at(0) << " signalJets = " << signalJets << endl;
           if (signal_jet_pt > 25. && fabs(signal_jet_rapidity) < 4.4 ) {
             if ( (jet1.Eta() > jet2.Eta()) && (signal_jet_rapidity < jet1.Eta() && signal_jet_rapidity > jet2.Eta())){
               //Info("execute()", " Jet rapidity  = %.2f, Jet eta = %.2f", signalJets->rapidity() , signal_jet_eta);
@@ -1243,7 +1298,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     } // Jet loop
 
     // Determine second leading jet
-    for (const auto& signalJets : *m_goodJet) {
+    for (const auto& signalJets : *m_VBFjet) {
       double signal_jet_pt = (signalJets->pt()) * 0.001;
       double signal_jet_eta = signalJets->eta();
       double signal_jet_phi = signalJets->phi();
@@ -1259,10 +1314,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   double dPhimetjet1;
   double dPhimetjet2;
 
+  
   // ------------------
   // Get isolated track
   // ------------------
-
+/*
   // Retrieve main TrackParticle collection
   const xAOD::TrackParticleContainer* inTracks(0);
   if ( !m_event->retrieve( inTracks, "InDetTrackParticles" ).isSuccess() ){ // retrieve arguments: container type, container key
@@ -1277,7 +1333,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     passIsoTrk = false;
     //Info("execute()", "  The number of Isolated track counted = %i (N_SignalMuon = %lu, N_SignalElec = %lu)", Nisotrk, m_signalMuon->size(), m_signalElectron->size() );
   }
-
+*/
 
 
 
@@ -1305,7 +1361,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
           if (m_VBFtau->size() == 0) {
             if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Tau Veto");
             m_eventCutflow[9]+=1;
-            if ( m_goodJet->size() > 1 ) {
+            if ( m_VBFjet->size() > 1 ) {
               if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
               m_eventCutflow[10]+=1;
               //if ( lead_jet_pt > 55. && secondlead_jet_pt > 45. ) {
@@ -1320,11 +1376,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                   //if ( fabs(jet1.Eta() - jet2.Eta() > 3.6) ) {
                     if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Central Jet Veto");
                     m_eventCutflow[13]+=1;
-                    if ( passIsoTrk ) {
-                      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Iso Track Veto");
-                      m_eventCutflow[14]+=1;
-                      h_zvv_offline_met->Fill( refFinal_met ); // GeV
-                    }
+                    //if ( passIsoTrk ) {
+                      //if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Iso Track Veto");
+                      //m_eventCutflow[14]+=1;
+                      //h_zvv_offline_met->Fill( refFinal_met ); // GeV
+                    //}
                   }
                 }
               }
@@ -1351,6 +1407,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   delete m_VBFmuon;
   delete m_VBFelectron;
   delete m_VBFtau;
+  delete m_VBFjet;
 
 
   //////////////////////////////////
@@ -2172,7 +2229,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   bool ZinvxAODAnalysis :: IsBadJet(xAOD::Jet& jet) {
 
-    //if (overlapAcc(jet)) return false;
+    if (m_doORtool && overlapAcc(jet)) return false;
 
     double jetPt = (jet.pt()) * 0.001; /// GeV
 
@@ -2197,15 +2254,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   bool ZinvxAODAnalysis :: IsSignalJet(xAOD::Jet& jet) {
 
-    if ( !dec_baseline(jet)  || overlapAcc(jet) ) return false;
-    //if ( !dec_baseline(jet) ) return false;
+    if (m_doORtool && overlapAcc(jet)) return false;
+    if (!dec_baseline(jet)) return false;
 
     double jetPt = (jet.pt()) * 0.001; /// GeV
     double jetPtCut = 20.0; /// GeV
     double jetEtaCut = 4.5;
 
     // pT, eta cut
-    if ( jetPt <= jetPtCut || fabs(jet.eta()) >= jetEtaCut) return false;
+    if ( jetPt < jetPtCut || fabs(jet.eta()) > jetEtaCut) return false;
 
     bool isgoodjet = !dec_bad(jet) && (cacc_jvt(jet) > 0.59 || fabs(jet.eta()) > 2.4 || jetPt > 50.0);
 
@@ -2451,5 +2508,29 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     } // end 1st loop
 
     return NisoElec;
+  }
+
+
+
+  float ZinvxAODAnalysis :: DeltaPhi(float phi1, float phi2) {
+
+    float dPhi = TMath::Abs(phi1 - phi2);
+
+    if(dPhi > TMath::Pi())
+      dPhi = TMath::TwoPi() - dPhi;
+
+    return dPhi;
+
+  }
+
+
+
+  float ZinvxAODAnalysis :: DeltaR(float eta1, float eta2, float phi1, float phi2) {
+
+    float dEta = eta1 - eta2;
+    float dPhi = DeltaPhi(phi1,phi2);
+
+    return TMath::Sqrt(dEta*dEta + dPhi*dPhi);
+
   }
 
