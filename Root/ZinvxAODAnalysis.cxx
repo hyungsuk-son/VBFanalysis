@@ -209,7 +209,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_diJet1PtCut = 80.; /// GeV
   m_diJet2PtCut = 50.; /// GeV
   m_diJetEtaCut = 4.4;
-  m_centralJetVetoCut = 25.; ///GeV
+  m_CJVptCut = 25.; ///GeV
   m_metCut = 200.; ///GeV
   m_mjjCut = 200.; ///GeV
 
@@ -404,12 +404,16 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_jvtag->initialize());
 
   // Initialize and configure the jet cleaning tool
-  m_jetCleaning = new JetCleaningTool("JetCleaning");
-  m_jetCleaning->msg().setLevel( MSG::DEBUG ); 
-  //EL_RETURN_CHECK("initialize()",m_jetCleaning->setProperty( "CutLevel", "TightBad")); // also "TightBad"
-  EL_RETURN_CHECK("initialize()",m_jetCleaning->setProperty( "CutLevel", "LooseBad")); // also "TightBad"
-  //EL_RETURN_CHECK("initialize()",m_jetCleaning->setProperty("DoUgly", false));
-  EL_RETURN_CHECK("initialize()",m_jetCleaning->initialize());
+  m_jetCleaningTight = new JetCleaningTool("JetCleaningTight");
+  m_jetCleaningLoose = new JetCleaningTool("JetCleaningLoose");
+  m_jetCleaningTight->msg().setLevel( MSG::DEBUG ); 
+  m_jetCleaningLoose->msg().setLevel( MSG::DEBUG ); 
+  EL_RETURN_CHECK("initialize()",m_jetCleaningTight->setProperty( "CutLevel", "TightBad"));
+  EL_RETURN_CHECK("initialize()",m_jetCleaningLoose->setProperty( "CutLevel", "LooseBad"));
+  //EL_RETURN_CHECK("initialize()",m_jetCleaningTight->setProperty("DoUgly", false));
+  //EL_RETURN_CHECK("initialize()",m_jetCleaningLoose->setProperty("DoUgly", false));
+  EL_RETURN_CHECK("initialize()",m_jetCleaningTight->initialize());
+  EL_RETURN_CHECK("initialize()",m_jetCleaningLoose->initialize());
 
   // Initialise MET tools
   m_metMaker = new met::METMaker("METMakerTool");
@@ -1154,54 +1158,54 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   ///////////////
   // Good Muon //
   ///////////////
-  xAOD::MuonContainer* m_VBFmuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
+  xAOD::MuonContainer* m_goodMuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
   // iterate over our shallow copy
   for (const auto& muon : *muonSC) { // C++11 shortcut
-    // VBF Muon Selection
+    // Muon Selection for VBF study
     if (dec_baseline(*muon)) {
       if(m_doORtool){
         if (!overlapAcc(*muon)){
-          m_VBFmuon->push_back( muon );
+          m_goodMuon->push_back( muon );
         }
       }
-      else m_VBFmuon->push_back( muon );
-      //Info("execute()", "  VBF muon pt = %.2f GeV", (muon->pt() * 0.001));
+      else m_goodMuon->push_back( muon );
+      //Info("execute()", "  Good muon pt = %.2f GeV", (muon->pt() * 0.001));
     }
   } // end for loop over shallow copied muons
 
   ///////////////////
   // Good Electron //
   ///////////////////
-  xAOD::ElectronContainer* m_VBFelectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
+  xAOD::ElectronContainer* m_goodElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
   // iterate over our shallow copy
   for (const auto& electron : *elecSC) { // C++11 shortcut
-    // VBF Electron Selection
+    // Electron Selection for VBF study
     if (dec_baseline(*electron)) {
       if(m_doORtool){
         if(!overlapAcc(*electron)){
-          m_VBFelectron->push_back( electron );
+          m_goodElectron->push_back( electron );
         }
       }
-      else m_VBFelectron->push_back( electron );
-      //Info("execute()", "  VBF electron pt = %.2f GeV", (electron->pt() * 0.001));
+      else m_goodElectron->push_back( electron );
+      //Info("execute()", "  Good electron pt = %.2f GeV", (electron->pt() * 0.001));
     }
   } // end for loop over shallow copied electrons
 
   //////////////
   // Good Tau //
   //////////////
-  xAOD::TauJetContainer* m_VBFtau = new xAOD::TauJetContainer(SG::VIEW_ELEMENTS);
+  xAOD::TauJetContainer* m_goodTau = new xAOD::TauJetContainer(SG::VIEW_ELEMENTS);
   // iterate over our shallow copy
   for (const auto& taujet : *tauSC) { // C++11 shortcut
-    // VBF Tau Selection
+    // Tau Selection for VBF study
     if (dec_baseline(*taujet)) {
       if(m_doORtool){
         if(!overlapAcc(*taujet)){
-          m_VBFtau->push_back( taujet );
+          m_goodTau->push_back( taujet );
         }
       }
-      else m_VBFtau->push_back( taujet );
-      //Info("execute()", "  VBF tau pt = %.2f GeV", (taujet->pt() * 0.001));
+      else m_goodTau->push_back( taujet );
+      //Info("execute()", "  Good tau pt = %.2f GeV", (taujet->pt() * 0.001));
     }
   } // end for loop over shallow copied electrons
 
@@ -1209,28 +1213,28 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   /////////////////////////
   // Overlap removed Jet //
   /////////////////////////
-  xAOD::JetContainer* m_VBFjet = new xAOD::JetContainer(SG::VIEW_ELEMENTS);
+  xAOD::JetContainer* m_signalJet = new xAOD::JetContainer(SG::VIEW_ELEMENTS);
   // iterate over our shallow copy
   for (const auto& jet : *m_goodJet) { // C++11 shortcut
 
     if (m_doORmanual) {
       bool isORjet = false;
 
-      for (const auto& muon : *m_VBFmuon) {
+      for (const auto& muon : *m_goodMuon) {
         if (DeltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi()) < 0.4) isORjet = true;
       }
 
-      for (const auto& electron : *m_VBFelectron) {
+      for (const auto& electron : *m_goodElectron) {
         if (DeltaR(jet->eta(), electron->eta(), jet->phi(), electron->phi()) < 0.4) isORjet = true;
       }
 
-      for (const auto& tau : *m_VBFtau) {
+      for (const auto& tau : *m_goodTau) {
         if (DeltaR(jet->eta(), tau->eta(), jet->phi(), tau->phi()) < 0.4) isORjet = true;
       }
 
-      if (!isORjet) m_VBFjet->push_back( jet );
+      if (!isORjet) m_signalJet->push_back( jet );
     }
-    else m_VBFjet->push_back( jet );
+    else m_signalJet->push_back( jet );
 
   } // end for loop over shallow copied jets
 
@@ -1243,58 +1247,81 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   TLorentzVector jet2;
   float jet1_pt = 0;
   float jet2_pt = 0;
+  float jet1_phi = 0;
+  float jet2_phi = 0;
+  float jet1_rapidity = 0;
+  float jet2_rapidity = 0;
 
-  if (m_VBFjet->size() > 1) std::partial_sort(m_VBFjet->begin(), m_VBFjet->begin()+2, m_VBFjet->end(), DescendingPt());
+  float signalJet_ht = 0;
+  float dPhiJet1Met = 0;
+  float dPhiJet2Met = 0;
+
   float mjj = 0;
-  if (m_VBFjet->size() > 1) {
-    jet1 = m_VBFjet->at(0)->p4();
-    jet2 = m_VBFjet->at(1)->p4();
-    jet1_pt = jet1.Pt() * 0.001;
-    jet2_pt = jet2.Pt() * 0.001;
+  bool pass_diJet = false; // Select DiJet
+  bool pass_CJV = true; // Central Jet Veto (CJV)
+  bool pass_dPhijetmet = true; // deltaPhi(Jet,MET)
+  bool pass_dPhiDijetMet = true; // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET)
+
+
+  // DiJet Selection
+  if (m_signalJet->size() > 1) {
+    std::partial_sort(m_signalJet->begin(), m_signalJet->begin()+2, m_signalJet->end(), DescendingPt());
+
+    jet1 = m_signalJet->at(0)->p4();
+    jet2 = m_signalJet->at(1)->p4();
+    jet1_pt = m_signalJet->at(0)->pt() * 0.001;
+    jet2_pt = m_signalJet->at(1)->pt() * 0.001;
+    jet1_phi = m_signalJet->at(0)->phi();
+    jet2_phi = m_signalJet->at(1)->phi();
+    jet1_rapidity = m_signalJet->at(0)->rapidity();
+    jet2_rapidity = m_signalJet->at(1)->rapidity();
     auto dijet = jet1 + jet2;
     mjj = dijet.M() * 0.001;
 
     //Info("execute()", "  jet1 = %.2f GeV, jet2 = %.2f GeV", jet1_pt, jet2_pt);
     //Info("execute()", "  mjj = %.2f GeV", mjj);
-  }
 
-  // Define HT and leading jet pT
-  float lead_jet_pt = 0;
-  float lead_jet_eta = 0;
-  float lead_jet_phi = 0;
-  float secondlead_jet_pt = 0;
-  float secondlead_jet_eta = 0;
-  float secondlead_jet_phi = 0;
-  float signalJet_ht = 0;
-  bool pass_dPhijetmet = true;
-  bool pass_CJV = true; // Central Jet Veto
+    if ( jet1_pt >  m_diJet1PtCut && jet2_pt > m_diJet2PtCut ){
+      if ( jet1_rapidity < m_diJetEtaCut && jet2_rapidity < m_diJetEtaCut ){
+        if ( m_jetCleaningTight->accept( *m_signalJet->at(0) ) ){ //Tight Leading Jet 
+          pass_diJet = true;
+        }
+      }
+    }
+
+    // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET) decision
+    dPhiJet1Met = DeltaPhi(jet1_phi, refFinal_phi);
+    dPhiJet2Met = DeltaPhi(jet2_phi, refFinal_phi);
+    if ( dPhiJet1Met < 0.4 ) pass_dPhiDijetMet = false ;
+    if ( dPhiJet2Met < 0.4 ) pass_dPhiDijetMet = false ;
+
+  } // DiJet selection loop
 
 
   // N_jet >= 1
-  if (m_VBFjet->size() > 0) {
+  if (m_signalJet->size() > 0) {
 
     // loop over the jets in the Good Jets Container
-    for (const auto& signalJets : *m_VBFjet) {
-      double signal_jet_pt = (signalJets->pt()) * 0.001;
-      double signal_jet_eta = signalJets->eta();
-      double signal_jet_rapidity = signalJets->rapidity();
-      double signal_jet_phi = signalJets->phi();
+    for (const auto& jet : *m_signalJet) {
+      float signal_jet_pt = jet->pt() * 0.001;
+      float signal_jet_rapidity = jet->rapidity();
+      float signal_jet_phi = jet->phi();
 
       // dphijetmet
-      double dPhijetmet = fabs( fabs( fabs(signal_jet_phi - refFinal_phi) - TMath::Pi() ) - TMath::Pi() );
+      float dPhijetmet = DeltaPhi(signal_jet_phi,refFinal_phi);
+      //float dPhijetmet = fabs( fabs( fabs(signal_jet_phi - refFinal_phi) - TMath::Pi() ) - TMath::Pi() );
       //Info("execute()", "  delta phi = %.2f", dPhijetmet);
       if ( dPhijetmet < 0.5 ) pass_dPhijetmet = false;
 
-      // Central Jet Veto
-      if ( m_VBFjet->size() > 2 && jet1_pt >  m_diJet1PtCut && jet2_pt > m_diJet2PtCut ){
-        if (m_VBFjet->at(0) != signalJets && m_VBFjet->at(1) != signalJets){
-          //cout << "m_VBFjet->at(0) = " << m_VBFjet->at(0) << " signalJets = " << signalJets << endl;
-          if (signal_jet_pt > m_centralJetVetoCut && fabs(signal_jet_rapidity) < m_jetEtaCut  ) {
-            if ( (jet1.Eta() > jet2.Eta()) && (signal_jet_rapidity < jet1.Eta() && signal_jet_rapidity > jet2.Eta())){
-              //Info("execute()", " Jet rapidity  = %.2f, Jet eta = %.2f", signalJets->rapidity() , signal_jet_eta);
+      // Central Jet Veto (CJV)
+      if ( m_signalJet->size() > 2 && pass_diJet ){
+        if (m_signalJet->at(0) != jet && m_signalJet->at(1) != jet){
+          //cout << "m_signalJet->at(0) = " << m_signalJet->at(0) << " jet = " << jet << endl;
+          if (signal_jet_pt > m_CJVptCut) {
+            if ( (jet1_rapidity > jet2_rapidity) && (signal_jet_rapidity < jet1_rapidity && signal_jet_rapidity > jet2_rapidity)){
               pass_CJV = false;
             }
-            if ( (jet1.Eta() < jet2.Eta()) && (signal_jet_rapidity > jet1.Eta() && signal_jet_rapidity < jet2.Eta())){
+            if ( (jet1_rapidity < jet2_rapidity) && (signal_jet_rapidity > jet1_rapidity && signal_jet_rapidity < jet2_rapidity)){
               pass_CJV = false;
             }
           }
@@ -1303,31 +1330,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
       //Info("execute()", "  Zvv Signal Jet pt = %.2f GeV, eta = %.2f", signal_pt_jet, signal_eta_jet);
       signalJet_ht += signal_jet_pt;
-
-      // Determine leading jet
-      if ( signal_jet_pt > lead_jet_pt ) {
-        lead_jet_pt = signal_jet_pt;
-        lead_jet_eta = signal_jet_eta;
-        lead_jet_phi = signal_jet_phi;
-      }
-    } // Jet loop
-
-    // Determine second leading jet
-    for (const auto& signalJets : *m_VBFjet) {
-      double signal_jet_pt = (signalJets->pt()) * 0.001;
-      double signal_jet_eta = signalJets->eta();
-      double signal_jet_phi = signalJets->phi();
-      if ( (signal_jet_pt < lead_jet_pt) && (signal_jet_pt > secondlead_jet_pt) ) {
-        secondlead_jet_pt = signal_jet_pt;
-        secondlead_jet_eta = signal_jet_eta;
-        secondlead_jet_phi = signal_jet_phi;
-      }
     } // Jet loop
 
   } //N_jet >= 1
-
-  double dPhimetjet1;
-  double dPhimetjet2;
 
   
   // ------------------
@@ -1367,34 +1372,32 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       Info("execute()", "  Event number = %i : MET = %.2f GeV", m_eventCounter, refFinal_met);
       if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET cut");
       m_eventCutflow[6]+=1;
-      if (m_VBFelectron->size() == 0) {
+      if (m_goodElectron->size() == 0) {
         if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Electron Veto");
         m_eventCutflow[7]+=1;
-        if ( m_VBFmuon->size() == 0) {
+        if ( m_goodMuon->size() == 0) {
           if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Muon Veto");
           m_eventCutflow[8]+=1;
-          if (m_VBFtau->size() == 0) {
+          if (m_goodTau->size() == 0) {
             if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Tau Veto");
             m_eventCutflow[9]+=1;
-            if ( m_VBFjet->size() > 1 ) {
+            if ( m_signalJet->size() > 1 ) {
               if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
               m_eventCutflow[10]+=1;
-              if ( (jet1_pt > m_diJet1PtCut && jet1.Rapidity() < m_diJetEtaCut) && (jet2_pt > m_diJet2PtCut && jet2.Rapidity() < m_diJetEtaCut) ) {
-                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
+              if ( pass_diJet ) {
+                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("DiJet");
                 m_eventCutflow[11]+=1;
                 if ( mjj > m_mjjCut ) {
                   if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("mjj cut");
                   m_eventCutflow[12]+=1;
                   if ( pass_CJV ) {
-                  //if ( dPhimetjet1 > 0.5 && dPhimetjet2 > 0.5 ) {
-                  //if ( fabs(jet1.Eta() - jet2.Eta() > 3.6) ) {
                     if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Central Jet Veto");
                     m_eventCutflow[13]+=1;
-                    //if ( passIsoTrk ) {
-                      //if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Iso Track Veto");
-                      //m_eventCutflow[14]+=1;
+                    if ( pass_dPhiDijetMet ) {
+                      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("deltaPhi(Dijet,MET)");
+                      m_eventCutflow[14]+=1;
                       //h_zvv_offline_met->Fill( refFinal_met ); // GeV
-                    //}
+                    }
                   }
                 }
               }
@@ -1418,10 +1421,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   //delete m_signalElectron;
 
   // VBF study
-  delete m_VBFmuon;
-  delete m_VBFelectron;
-  delete m_VBFtau;
-  delete m_VBFjet;
+  delete m_goodMuon;
+  delete m_goodElectron;
+  delete m_goodTau;
+  delete m_signalJet;
 
 
   //////////////////////////////////
@@ -1614,9 +1617,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     /// Jet Cleaning Tool
-    if(m_jetCleaning) {
-      delete m_jetCleaning;
-      m_jetCleaning = 0;
+    if(m_jetCleaningTight) {
+      delete m_jetCleaningTight;
+      m_jetCleaningTight = 0;
+    }
+    if(m_jetCleaningLoose) {
+      delete m_jetCleaningLoose;
+      m_jetCleaningLoose = 0;
     }
 
     /// MET Tool
@@ -2254,7 +2261,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if ( jetPt < m_jetPtCut || fabs(jet.eta()) > m_jetEtaCut) return false; 
 
     // Jet Cleaning Tool
-    dec_bad(jet) = !m_jetCleaning->accept( jet );
+    dec_bad(jet) = !m_jetCleaningLoose->accept( jet );
 
     return dec_bad(jet);
 

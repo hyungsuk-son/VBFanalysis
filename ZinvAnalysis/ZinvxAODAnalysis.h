@@ -136,7 +136,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
     float m_diJet1PtCut; //!
     float m_diJet2PtCut; //!
     float m_diJetEtaCut; //!
-    float m_centralJetVetoCut; //!
+    float m_CJVptCut; //!
     float m_metCut; //!
     float m_mjjCut; //!
 
@@ -210,7 +210,8 @@ class ZinvxAODAnalysis : public EL::Algorithm
     JERSmearingTool* m_jerSmearingTool; //!
     JetVertexTaggerTool* m_jvtag; //!
     ToolHandle<IJetUpdateJvt> m_jvtagup; //!
-    JetCleaningTool *m_jetCleaning; //!
+    JetCleaningTool *m_jetCleaningTight; //!
+    JetCleaningTool *m_jetCleaningLoose; //!
 
     // MET builder
     met::METMaker* m_metMaker; //!
