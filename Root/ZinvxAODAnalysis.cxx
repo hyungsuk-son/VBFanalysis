@@ -111,16 +111,16 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
   h_jet_selection_pt = new TH1F("h_jet_selection_pt", "Jet Signal p_{T};p_{T} (GeV)", 250, 0, 500); // Jet pt [GeV]
   wk()->addOutput (h_jet_selection_pt);
 
-  h_refFinal_ex = new TH1F("h_refFinal_ex", "RefFinal  Missing E_{x};E_{x} (GeV)", 150, -150,  150); // RefFinal MEx [GeV]
-  h_refFinal_ey = new TH1F("h_refFinal_ey", "RefFinal Missing E_{y};E_{y} (GeV)", 150, -150,  150); // RefFinal MEy [GeV]
-  h_refFinal_met = new TH1F("h_refFinal_met", "RefFinal |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500); // RefFinal MET [GeV]
-  h_refFinal_sumet = new TH1F("h_refFinal_sumet", "RefFinal Sum |E_{T}|;SumE_{T} (GeV)", 200, 0, 2000); // RefFinal SumET [GeV]
-  h_refFinal_phi = new TH1F("h_refFinal_phi", "RefFinal MET #phi (rad);#phi (rad)", 32, -3.1416, 3.1416); // RefFinal phi [GeV]
-  wk()->addOutput (h_refFinal_ex);
-  wk()->addOutput (h_refFinal_ey);
-  wk()->addOutput (h_refFinal_met);
-  wk()->addOutput (h_refFinal_sumet);
-  wk()->addOutput (h_refFinal_phi);
+  h_met_ex = new TH1F("h_met_ex", "Missing E_{x};E_{x} (GeV)", 150, -150,  150); // MEx [GeV]
+  h_met_ey = new TH1F("h_met_ey", "Missing E_{y};E_{y} (GeV)", 150, -150,  150); // MEy [GeV]
+  h_met = new TH1F("h_met", "|Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500); // MET [GeV]
+  h_sumet = new TH1F("h_sumet", "Sum |E_{T}|;SumE_{T} (GeV)", 200, 0, 2000); // SumET [GeV]
+  h_met_phi = new TH1F("h_met_phi", "MET #phi (rad);#phi (rad)", 32, -3.1416, 3.1416); // MET phi [GeV]
+  wk()->addOutput (h_met_ex);
+  wk()->addOutput (h_met_ey);
+  wk()->addOutput (h_met);
+  wk()->addOutput (h_sumet);
+  wk()->addOutput (h_met_phi);
 
   // Zinv study
   // Zvv
@@ -180,10 +180,10 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
   // check if the event is data or MC
   // (many tools are applied either to data or MC)
-  isData = true;
+  m_isData = true;
   // check if the event is MC
   if(eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) ){
-    isData = false; // can do something with this later
+    m_isData = false; // can do something with this later
   }
 
   // count number of events
@@ -192,6 +192,11 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
   // Enable Cutflow plot
   m_useBitsetCutflow = false;
+
+  // Event Channel
+  m_isZvv = false;
+  m_isZmumu = false;
+  m_isZee = true;
 
   // Enable Overlap Removal tool
   m_doORtool = false;
@@ -212,6 +217,8 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_CJVptCut = 25.; ///GeV
   m_metCut = 200.; ///GeV
   m_mjjCut = 200.; ///GeV
+  m_LeadLepPtCut = 25.; ///GeV
+  m_SubLeadLepPtCut = 7.; ///GeV
 
   // GRL
   m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
@@ -366,9 +373,9 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   //TString config = "JES_MC15Prerecommendation_April2015.config"; //Path to global config used to initialize the tool
   TString config = "JES_2015dataset_recommendation_Feb2016.config"; //Path to global config used to initialize the tool
   TString calibSeq = "JetArea_Residual_Origin_EtaJES_GSC"; //String describing the calibration sequence to apply
-  if (isData) calibSeq += "_Insitu";
+  if (m_isData) calibSeq += "_Insitu";
   //Call the constructor. The default constructor can also be used if the arguments are set with python configuration instead
-  m_jetCalibration = new JetCalibrationTool(name, jetAlgo, config, calibSeq, isData);
+  m_jetCalibration = new JetCalibrationTool(name, jetAlgo, config, calibSeq, m_isData);
   //Initialize the tool
   EL_RETURN_CHECK("initialize()",m_jetCalibration->initializeTool(name));
 
@@ -392,7 +399,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_jerSmearingTool = new JERSmearingTool("JERSmearingTool");
   EL_RETURN_CHECK("initialize()",m_jerSmearingTool->setProperty("ApplyNominalSmearing", false));
   EL_RETURN_CHECK("initialize()",m_jerSmearingTool->setProperty("JERTool", m_jerHandle));
-  EL_RETURN_CHECK("initialize()",m_jerSmearingTool->setProperty("isMC", !isData));
+  EL_RETURN_CHECK("initialize()",m_jerSmearingTool->setProperty("isMC", !m_isData));
   EL_RETURN_CHECK("initialize()",m_jerSmearingTool->setProperty("SystematicMode", "Simple")); //"Simple" provides one NP (smearing only in MC), "Full" provides 10NPs (smearing both on data and MC)
   EL_RETURN_CHECK("initialize()",m_jerSmearingTool->initialize());
 
@@ -452,7 +459,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
     m_eventCutflow[i]=0;
   }  
 
-
   return EL::StatusCode::SUCCESS;
 }
 
@@ -487,7 +493,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
   // if data check if event passes GRL
-  if(isData){ // it's data!
+  if(m_isData){ // it's data!
     if(!m_grl->passRunLB(*eventInfo)){
       return EL::StatusCode::SUCCESS; // go to next event
     }
@@ -502,7 +508,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   // Apply to data.
   //------------------------------------------------------------
   // reject event if:
-  if(isData){
+  if(m_isData){
     if(   (eventInfo->errorState(xAOD::EventInfo::LAr)==xAOD::EventInfo::Error ) 
         || (eventInfo->errorState(xAOD::EventInfo::Tile)==xAOD::EventInfo::Error ) 
         || (eventInfo->errorState(xAOD::EventInfo::SCT) == xAOD::EventInfo::Error) 
@@ -828,7 +834,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     float jetEta = jets->eta();
 
     // JES correction
-    if (!isData){
+    if (!m_isData){
       if (jetPt > 15. ){
         if ( m_jetUncertaintiesTool->applyCorrection(*jets) != CP::CorrectionCode::Ok){ // apply correction and check return code
           Error("execute()", "Failed to apply JES correction to Jet objects. Exiting." );
@@ -838,7 +844,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     // JER smearing
-    if (!isData){
+    if (!m_isData){
       if ( m_jerSmearingTool->applyCorrection(*jets) != CP::CorrectionCode::Ok){ // apply correction and check return code
         Error("execute()", "Failed to apply JER smearing. Exiting. ");
         return EL::StatusCode::FAILURE;
@@ -1008,6 +1014,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
   } // end for loop over shallow copied electrons
   //const xAOD::ElectronContainer* p_MetElectrons = m_MetElectrons.asDataVector();
+  if (m_isZee){
+    m_metMaker->markInvisible(m_MetElectrons.asDataVector(), m_metMap);
+  }
   m_metMaker->rebuildMET("RefElectron",           //name of metElectrons in metContainer
       xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
       m_met,                                      //filling this met container
@@ -1095,13 +1104,17 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       else m_MetMuons.push_back( muon );
     }
   } // end for loop over shallow copied muons
-  m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
-      xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
-      m_met,                                  //filling this met container
-      m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
-      m_metMap);                              //and this association map
-
-  //met::addGhostMuonsToJets(*m_muons, *jetSC);
+  if (m_isZmumu){
+    m_metMaker->markInvisible(m_MetMuons.asDataVector(), m_metMap);
+  }
+  else {
+    m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
+        xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
+        m_met,                                  //filling this met container
+        m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
+        m_metMap);                              //and this association map
+  }
+ // met::addGhostMuonsToJets(*m_muons, *jetSC);
 
   // JET
   //-----------------
@@ -1130,25 +1143,25 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
   // Fill MET RefFinal
-  float refFinal_ex = -9e9;
-  float refFinal_ey = -9e9;
-  float refFinal_met = -9e9;
-  float refFinal_sumet = -9e9;
-  float refFinal_phi = -9e9;
+  float MET_ex = -9e9;
+  float MET_ey = -9e9;
+  float MET = -9e9;
+  float SumET = -9e9;
+  float MET_phi = -9e9;
 
-  refFinal_ex = ((*m_met)["Final"]->mpx()) * 0.001;
-  refFinal_ey = ((*m_met)["Final"]->mpy()) * 0.001;
-  //refFinal_met = sqrt(refFinal_ex*refFinal_ex+refFinal_ey*refFinal_ey);
-  refFinal_met = ((*m_met)["Final"]->met()) * 0.001;
-  refFinal_sumet = ((*m_met)["Final"]->sumet()) * 0.001;
-  //refFinal_phi = atan2(refFinal_ey, refFinal_ex);
-  refFinal_phi = ((*m_met)["Final"]->phi());
+  MET_ex = ((*m_met)["Final"]->mpx()) * 0.001;
+  MET_ey = ((*m_met)["Final"]->mpy()) * 0.001;
+  //MET = sqrt(MET_ex*MET_ex+MET_ey*MET_ey);
+  MET = ((*m_met)["Final"]->met()) * 0.001;
+  SumET = ((*m_met)["Final"]->sumet()) * 0.001;
+  //MET_phi = atan2(MET_ey, MET_ex);
+  MET_phi = ((*m_met)["Final"]->phi());
 
-  h_refFinal_ex->Fill( refFinal_ex ); // GeV
-  h_refFinal_ey->Fill( refFinal_ey ); // GeV
-  h_refFinal_met->Fill( refFinal_met ); // GeV
-  h_refFinal_sumet->Fill( refFinal_sumet ); // GeV
-  h_refFinal_phi->Fill( refFinal_phi ); // GeV
+  h_met_ex->Fill( MET_ex ); // GeV
+  h_met_ey->Fill( MET_ey ); // GeV
+  h_met->Fill( MET ); // GeV
+  h_sumet->Fill( SumET ); // GeV
+  h_met_phi->Fill( MET_phi ); // GeV
 
 
   //-----------------------
@@ -1290,8 +1303,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET) decision
-    dPhiJet1Met = DeltaPhi(jet1_phi, refFinal_phi);
-    dPhiJet2Met = DeltaPhi(jet2_phi, refFinal_phi);
+    dPhiJet1Met = DeltaPhi(jet1_phi, MET_phi);
+    dPhiJet2Met = DeltaPhi(jet2_phi, MET_phi);
     if ( dPhiJet1Met < 0.4 ) pass_dPhiDijetMet = false ;
     if ( dPhiJet2Met < 0.4 ) pass_dPhiDijetMet = false ;
 
@@ -1308,8 +1321,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       float signal_jet_phi = jet->phi();
 
       // dphijetmet
-      float dPhijetmet = DeltaPhi(signal_jet_phi,refFinal_phi);
-      //float dPhijetmet = fabs( fabs( fabs(signal_jet_phi - refFinal_phi) - TMath::Pi() ) - TMath::Pi() );
+      float dPhijetmet = DeltaPhi(signal_jet_phi,MET_phi);
+      //float dPhijetmet = fabs( fabs( fabs(signal_jet_phi - MET_phi) - TMath::Pi() ) - TMath::Pi() );
       //Info("execute()", "  delta phi = %.2f", dPhijetmet);
       if ( dPhijetmet < 0.5 ) pass_dPhijetmet = false;
 
@@ -1334,7 +1347,96 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   } //N_jet >= 1
 
-  
+ 
+
+  //------------------------
+  // Define Zmumu Selection
+  // -----------------------
+
+  bool pass_Zmumu = false; // Select Zmumu channel
+  float mll_muon = 0;
+  if (m_isZmumu){
+    TLorentzVector muon1;
+    TLorentzVector muon2;
+    float muon1_pt = 0;
+    float muon2_pt = 0;
+    float muon1_charge = 0;
+    float muon2_charge = 0;
+
+
+
+    // Zmumu Selection
+    if (m_goodMuon->size() > 1) {
+      std::partial_sort(m_goodMuon->begin(), m_goodMuon->begin()+2, m_goodMuon->end(), DescendingPt());
+
+      muon1 = m_goodMuon->at(0)->p4();
+      muon2 = m_goodMuon->at(1)->p4();
+      muon1_pt = m_goodMuon->at(0)->pt() * 0.001;
+      muon2_pt = m_goodMuon->at(1)->pt() * 0.001;
+      muon1_charge = m_goodMuon->at(0)->charge();
+      muon2_charge = m_goodMuon->at(1)->charge();
+      auto Zmass_muon = muon1 + muon2;
+      mll_muon = Zmass_muon.M() * 0.001;
+
+      //Info("execute()", "  muon1 = %.2f GeV, muon2 = %.2f GeV", muon1_pt, muon2_pt);
+      //Info("execute()", "  mll (Zmumu) = %.2f GeV", mll_muon);
+
+      if ( muon1_pt >  m_LeadLepPtCut && muon2_pt > m_SubLeadLepPtCut ){
+        if ( muon1_charge * muon2_charge > 0 ){
+          pass_Zmumu = true;
+          //Info("execute()", "  Leading muon = %.2f GeV, Subleading muon = %.2f GeV", muon1_pt, muon2_pt);
+        }
+      }
+
+    } // Zmumu selection loop
+  }
+
+
+  //----------------------
+  // Define Zee Selection
+  // ---------------------
+
+  bool pass_Zee = false; // Select Zee channel
+  float mll_electron = 0;
+  if (m_isZee){
+    TLorentzVector electron1;
+    TLorentzVector electron2;
+    float electron1_pt = 0;
+    float electron2_pt = 0;
+    float electron1_charge = 0;
+    float electron2_charge = 0;
+
+
+
+    // Zee Selection
+    if (m_goodElectron->size() > 1) {
+      std::partial_sort(m_goodElectron->begin(), m_goodElectron->begin()+2, m_goodElectron->end(), DescendingPt());
+
+      electron1 = m_goodElectron->at(0)->p4();
+      electron2 = m_goodElectron->at(1)->p4();
+      electron1_pt = m_goodElectron->at(0)->pt() * 0.001;
+      electron2_pt = m_goodElectron->at(1)->pt() * 0.001;
+      electron1_charge = m_goodElectron->at(0)->charge();
+      electron2_charge = m_goodElectron->at(1)->charge();
+      auto Zmass_electron = electron1 + electron2;
+      mll_electron = Zmass_electron.M() * 0.001;
+
+      //Info("execute()", "  electron1 = %.2f GeV, electron2 = %.2f GeV", electron1_pt, electron2_pt);
+      //Info("execute()", "  mll (Zee) = %.2f GeV", mll_electron);
+
+      if ( electron1_pt >  m_LeadLepPtCut && electron2_pt > m_SubLeadLepPtCut ){
+        if ( electron1_charge * electron2_charge > 0 ){
+          pass_Zee = true;
+          //Info("execute()", "  Leading electron = %.2f GeV, Subleading electron = %.2f GeV", electron1_pt, electron2_pt);
+        }
+      }
+
+    } // Zee selection loop
+  }
+
+
+
+
   // ------------------
   // Get isolated track
   // ------------------
@@ -1361,42 +1463,44 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   // VBF study 
   //-----------
 
-  //------------------------------------------------
-  // Z -> vv + JET EVENT SELECTION for Zinv study
-  //------------------------------------------------
+  //-------------------------------
+  // Z -> vv + JET EVENT SELECTION
+  //-------------------------------
 
-  if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
-    if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET Trigger");
-    m_eventCutflow[5]+=1;
-    if ( refFinal_met > m_metCut ) {
-      Info("execute()", "  Event number = %i : MET = %.2f GeV", m_eventCounter, refFinal_met);
-      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET cut");
-      m_eventCutflow[6]+=1;
-      if (m_goodElectron->size() == 0) {
-        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Electron Veto");
-        m_eventCutflow[7]+=1;
-        if ( m_goodMuon->size() == 0) {
-          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Muon Veto");
-          m_eventCutflow[8]+=1;
-          if (m_goodTau->size() == 0) {
-            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Tau Veto");
-            m_eventCutflow[9]+=1;
-            if ( m_signalJet->size() > 1 ) {
-              if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
-              m_eventCutflow[10]+=1;
-              if ( pass_diJet ) {
-                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("DiJet");
-                m_eventCutflow[11]+=1;
-                if ( mjj > m_mjjCut ) {
-                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("mjj cut");
-                  m_eventCutflow[12]+=1;
-                  if ( pass_CJV ) {
-                    if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Central Jet Veto");
-                    m_eventCutflow[13]+=1;
-                    if ( pass_dPhiDijetMet ) {
-                      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("deltaPhi(Dijet,MET)");
-                      m_eventCutflow[14]+=1;
-                      //h_zvv_offline_met->Fill( refFinal_met ); // GeV
+  if (m_isZvv){
+    if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET Trigger");
+      m_eventCutflow[5]+=1;
+      if ( MET > m_metCut ) {
+        //Info("execute()", "  Event number = %i : MET = %.2f GeV", m_eventCounter, MET);
+        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("MET cut");
+        m_eventCutflow[6]+=1;
+        if (m_goodElectron->size() == 0) {
+          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Electron Veto");
+          m_eventCutflow[7]+=1;
+          if ( m_goodMuon->size() == 0) {
+            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Muon Veto");
+            m_eventCutflow[8]+=1;
+            if (m_goodTau->size() == 0) {
+              if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Tau Veto");
+              m_eventCutflow[9]+=1;
+              if ( m_signalJet->size() > 1 ) {
+                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("At least two Jets");
+                m_eventCutflow[10]+=1;
+                if ( pass_diJet ) {
+                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("DiJet");
+                  m_eventCutflow[11]+=1;
+                  if ( mjj > m_mjjCut ) {
+                    if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("mjj cut");
+                    m_eventCutflow[12]+=1;
+                    if ( pass_CJV ) {
+                      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Central Jet Veto");
+                      m_eventCutflow[13]+=1;
+                      if ( pass_dPhiDijetMet ) {
+                        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("deltaPhi(Dijet,MET)");
+                        m_eventCutflow[14]+=1;
+                        //h_zvv_offline_met->Fill( MET ); // GeV
+                      }
                     }
                   }
                 }
@@ -1407,6 +1511,92 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       }
     }
   }
+
+
+  //---------------------------------
+  // Z -> mumu + JET EVENT SELECTION
+  //---------------------------------
+
+  if (m_isZmumu){
+    if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+      m_eventCutflow[5]+=1;
+      if ( MET > m_metCut ) {
+        m_eventCutflow[6]+=1;
+        if (m_goodElectron->size() == 0) {
+          m_eventCutflow[7]+=1;
+          if ( m_goodMuon->size() > 1) {
+            m_eventCutflow[8]+=1;
+            if (m_goodTau->size() == 0) {
+              m_eventCutflow[9]+=1;
+              if ( pass_Zmumu && m_goodMuon->size() == 2 && mll_muon > 66. && mll_muon < 116. ){
+                m_eventCutflow[10]+=1;
+                if ( m_signalJet->size() > 1 ) {
+                  m_eventCutflow[11]+=1;
+                  if ( pass_diJet ) {
+                    m_eventCutflow[12]+=1;
+                    if ( mjj > m_mjjCut ) {
+                      m_eventCutflow[13]+=1;
+                      if ( pass_CJV ) {
+                        m_eventCutflow[14]+=1;
+                        if ( pass_dPhiDijetMet ) {
+                          m_eventCutflow[15]+=1;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  //-------------------------------
+  // Z -> ee + JET EVENT SELECTION
+  //-------------------------------
+
+  if (m_isZee){
+    if ( m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH") || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose") ) {
+    //if (m_trigDecisionTool->isPassed("HLT_e24_lhmedium_iloose_L1EM20VH") || m_trigDecisionTool->isPassed("HLT_e60_lhmedium*")) {
+      m_eventCutflow[5]+=1;
+      if ( MET > m_metCut ) {
+        m_eventCutflow[6]+=1;
+        if (m_goodElectron->size() > 1) {
+          m_eventCutflow[7]+=1;
+          if ( m_goodMuon->size() == 0) {
+            m_eventCutflow[8]+=1;
+            if (m_goodTau->size() == 0) {
+              m_eventCutflow[9]+=1;
+              if ( pass_Zee && m_goodElectron->size() == 2 && mll_electron > 66. && mll_electron < 116. ) {
+                m_eventCutflow[10]+=1;
+                if ( m_signalJet->size() > 1 ) {
+                  m_eventCutflow[11]+=1;
+                  if ( pass_diJet ) {
+                    m_eventCutflow[12]+=1;
+                    if ( mjj > m_mjjCut ) {
+                      m_eventCutflow[13]+=1;
+                      if ( pass_CJV ) {
+                        m_eventCutflow[14]+=1;
+                        if ( pass_dPhiDijetMet ) {
+                          m_eventCutflow[15]+=1;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+
 
 
   //////////////////////////
@@ -1651,11 +1841,14 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     // print out the final number of clean events
     Info("finalize()", "Number of clean events = %i", m_numCleanEvents);
+
+    // print out Cutflow
+    Info("finalize()", "================================================");
+    Info("finalize()", "================  VBF Cutflow  =================");
     for(int i=0; i<16 ; ++i) {
       int j = i+1;
       Info("finalize()", "Event cutflow (%i) = %i", j, m_eventCutflow[i]);
     }
-
 
 
     return EL::StatusCode::SUCCESS;
@@ -1698,7 +1891,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if ( muPt < 4. ) return EL::StatusCode::SUCCESS;
 
     // Muon Calibration
-    if (!isData){
+    if (!m_isData){
       if(m_muonCalibrationAndSmearingTool->applyCorrection(mu) == CP::CorrectionCode::Error){ // apply correction and check return code
         // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
         // If OutOfValidityRange is returned no modification is made and the original muon values are taken.
@@ -1805,7 +1998,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //if ( muPt < 4. ) return EL::StatusCode::SUCCESS;
 
     // Muon Calibration
-    if (!isData){
+    if (!m_isData){
       if(m_muonCalibrationAndSmearingTool->applyCorrection(mu) == CP::CorrectionCode::OutOfValidityRange){ // apply correction and check return code
         // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
         // If OutOfValidityRange is returned no modification is made and the original muon values are taken.
@@ -2078,7 +2271,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if( !phot.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON) ) return EL::StatusCode::SUCCESS;
 
     // MC fudge tool
-    if (!isData){
+    if (!m_isData){
       if(m_electronPhotonShowerShapeFudgeTool->applyCorrection(phot) == CP::CorrectionCode::Error){ // apply correction and check return code
         Error("execute()", "ElectronPhotonShowerShapeFudgeTool returns Error CorrectionCode");
       }
@@ -2142,7 +2335,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if( !phot.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON) ) return EL::StatusCode::SUCCESS;
 
     // MC fudge tool
-    if (!isData){
+    if (!m_isData){
       if(m_electronPhotonShowerShapeFudgeTool->applyCorrection(phot) == CP::CorrectionCode::Error){ // apply correction and check return code
         Error("execute()", "ElectronPhotonShowerShapeFudgeTool returns Error CorrectionCode");
       }
@@ -2180,7 +2373,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     // Tau Smearing (for MC)
-    if( fabs(tau.eta()) <= 2.5 && tau.nTracks() > 0 && !isData){ // it's MC!
+    if( fabs(tau.eta()) <= 2.5 && tau.nTracks() > 0 && !m_isData){ // it's MC!
       if(m_tauSmearingTool->applyCorrection(tau) == CP::CorrectionCode::Error){ // apply correction and check return code
         // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
         // If OutOfValidityRange is returned no modification is made and the original tau values are taken.
@@ -2220,7 +2413,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     // Tau Smearing (for MC)
-    if( fabs(tau.eta()) <= 2.5 && tau.nTracks() > 0 && !isData){ // it's MC!
+    if( fabs(tau.eta()) <= 2.5 && tau.nTracks() > 0 && !m_isData){ // it's MC!
       if(m_tauSmearingTool->applyCorrection(tau) == CP::CorrectionCode::Error){ // apply correction and check return code
         // Can have CorrectionCode values of Ok, OutOfValidityRange, or Error. Here only checking for Error.
         // If OutOfValidityRange is returned no modification is made and the original tau values are taken.

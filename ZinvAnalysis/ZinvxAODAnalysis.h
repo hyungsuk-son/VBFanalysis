@@ -114,7 +114,12 @@ class ZinvxAODAnalysis : public EL::Algorithm
     int m_eventCounter; //!
     int m_numCleanEvents; //!
 
-    bool isData; //!
+    bool m_isData; //!
+
+    // Event Channel
+    bool m_isZvv; //!
+    bool m_isZmumu; //!
+    bool m_isZee; //!
 
     // Cutflow
     bool m_useBitsetCutflow; //!
@@ -139,6 +144,8 @@ class ZinvxAODAnalysis : public EL::Algorithm
     float m_CJVptCut; //!
     float m_metCut; //!
     float m_mjjCut; //!
+    float m_LeadLepPtCut; //!
+    float m_SubLeadLepPtCut; //!
 
     // Some object and event counters to help roughly
     // evaluate the effects of changes in the OR tool.
@@ -158,11 +165,11 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
     TH1 *h_jet_selection_pt; //!
 
-    TH1 *h_refFinal_ex; //!
-    TH1 *h_refFinal_ey; //!
-    TH1 *h_refFinal_met; //!
-    TH1 *h_refFinal_sumet; //!
-    TH1 *h_refFinal_phi; //!
+    TH1 *h_met_ex; //!
+    TH1 *h_met_ey; //!
+    TH1 *h_met; //!
+    TH1 *h_sumet; //!
+    TH1 *h_met_phi; //!
 
     // Zinv study
     TH1 *h_zvv_offline_met; //!
