@@ -366,6 +366,11 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // initialize
   EL_RETURN_CHECK("initialize()",m_tauSmearingTool->initialize());
 
+  // Initialise TauOverlappingElectronLLHDecorator
+  m_tauOverlappingElectronLLHDecorator = new TauAnalysisTools::TauOverlappingElectronLLHDecorator("TauOverlappingElectronLLHDecorator"); 
+  EL_RETURN_CHECK("initialize()",m_tauOverlappingElectronLLHDecorator->initialize());
+
+
   // Jet
   // JES Calibration (https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/JetEtmissRecommendationsMC15#JES_calibration_AN1)
   const std::string name = "ZinvxAODAnalysis"; //string describing the current thread, for logging
@@ -449,6 +454,126 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_toolBox.initialize());
 
 
+  // Initialise Muon Efficiency Tool
+  m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors( "MuonEfficiencySFTool" );
+  EL_RETURN_CHECK("initialize()",m_muonEfficiencySFTool->setProperty("WorkingPoint", "Loose") );
+  EL_RETURN_CHECK("initialize()",m_muonEfficiencySFTool->setProperty("CalibrationRelease", "Data15_allPeriods_260116"));
+  EL_RETURN_CHECK("initialize()",m_muonEfficiencySFTool->initialize() );
+  // Initialise Muon Isolation Tool
+  m_muonIsolationSFTool = new CP::MuonEfficiencyScaleFactors( "MuonIsolationSFTool" );
+  EL_RETURN_CHECK("initialize()",m_muonIsolationSFTool->setProperty("WorkingPoint", "LooseTrackOnlyIso") );
+  EL_RETURN_CHECK("initialize()",m_muonIsolationSFTool->setProperty("CalibrationRelease", "Data15_allPeriods_260116"));
+  EL_RETURN_CHECK("initialize()",m_muonIsolationSFTool->initialize() );
+  // Initialise Muon TTVA Efficiency Tool
+  m_muonTTVAEfficiencySFTool = new CP::MuonEfficiencyScaleFactors( "MuonTTVAEfficiencySFTool" );
+  EL_RETURN_CHECK("initialize()",m_muonTTVAEfficiencySFTool->setProperty("WorkingPoint", "TTVA") );
+  EL_RETURN_CHECK("initialize()",m_muonTTVAEfficiencySFTool->setProperty("CalibrationRelease", "Data15_allPeriods_260116"));
+  EL_RETURN_CHECK("initialize()",m_muonTTVAEfficiencySFTool->initialize() );
+
+  // Initialise Muon Trigger Scale Factor Tool
+  m_muonTriggerSFTool = new CP::MuonTriggerScaleFactors( "MuonTriggerSFTool" );
+  EL_RETURN_CHECK("initialize()",m_muonTriggerSFTool->setProperty("MuonQuality", "Loose"));
+  EL_RETURN_CHECK("initialize()",m_muonTriggerSFTool->setProperty("Isolation", "LooseTrackOnly"));
+  EL_RETURN_CHECK("initialize()",m_muonTriggerSFTool->initialize() );
+
+  // Initialise Electron Efficiency Tool
+  m_elecEfficiencySFTool_reco = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_reco");
+  std::vector< std::string > corrFileNameList_reco;
+  corrFileNameList_reco.push_back("ElectronEfficiencyCorrection/efficiencySF.offline.RecoTrk.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_reco->setProperty("CorrectionFileNameList", corrFileNameList_reco) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_reco->setProperty("ForceDataType", 1) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_reco->initialize() );
+
+  m_elecEfficiencySFTool_id_Loose = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_id_Loose");
+  std::vector< std::string > corrFileNameList_id_Loose;
+  corrFileNameList_id_Loose.push_back("ElectronEfficiencyCorrection/efficiencySF.offline.LooseAndBLayerLLH_d0z0.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_id_Loose->setProperty("CorrectionFileNameList", corrFileNameList_id_Loose) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_id_Loose->setProperty("ForceDataType", 1) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_id_Loose->initialize() );
+
+  m_elecEfficiencySFTool_id_Medium = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_id_Medium");
+  std::vector< std::string > corrFileNameList_id_Medium;
+  corrFileNameList_id_Medium.push_back("ElectronEfficiencyCorrection/efficiencySF.offline.MediumLLH_d0z0.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_id_Medium->setProperty("CorrectionFileNameList", corrFileNameList_id_Medium) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_id_Medium->setProperty("ForceDataType", 1) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_id_Medium->initialize() );
+
+  m_elecEfficiencySFTool_id_Tight = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_id_Tight");
+  std::vector< std::string > corrFileNameList_id_Tight;
+  corrFileNameList_id_Tight.push_back("ElectronEfficiencyCorrection/efficiencySF.offline.TightLLH_d0z0.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_id_Tight->setProperty("CorrectionFileNameList", corrFileNameList_id_Tight) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_id_Tight->initialize() );
+
+  m_elecEfficiencySFTool_iso_Loose = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_iso_Loose");
+  std::vector< std::string > corrFileNameList_iso_Loose;
+  corrFileNameList_iso_Loose.push_back("ElectronEfficiencyCorrection/efficiencySF.Isolation.LooseAndBLayerLLH_d0z0_v8_isolLooseTrackOnly.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_iso_Loose->setProperty("CorrectionFileNameList", corrFileNameList_iso_Loose) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_iso_Loose->setProperty("ForceDataType", 1) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_iso_Loose->initialize() );
+
+  m_elecEfficiencySFTool_iso_Medium = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_iso_Medium");
+  std::vector< std::string > corrFileNameList_iso_Medium;
+  corrFileNameList_iso_Medium.push_back("ElectronEfficiencyCorrection/efficiencySF.Isolation.MediumLLH_d0z0_v8_isolLooseTrackOnly.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_iso_Medium->setProperty("CorrectionFileNameList", corrFileNameList_iso_Medium) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_iso_Medium->setProperty("ForceDataType", 1) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_iso_Medium->initialize() );
+
+  m_elecEfficiencySFTool_iso_Tight = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_iso_Tight");
+  std::vector< std::string > corrFileNameList_iso_Tight;
+  corrFileNameList_iso_Tight.push_back("ElectronEfficiencyCorrection/efficiencySF.Isolation.TightLLH_d0z0_v8_isolLooseTrackOnly.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_iso_Tight->setProperty("CorrectionFileNameList", corrFileNameList_iso_Tight) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_iso_Tight->initialize() );
+
+  m_elecEfficiencySFTool_trigEff = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_trigEff");
+  std::vector< std::string > corrFileNameList_trigEff;
+  corrFileNameList_trigEff.push_back("ElectronEfficiencyCorrection/efficiency.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.LooseAndBLayerLLH_d0z0_v8_isolLooseTrackOnly.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigEff->setProperty("CorrectionFileNameList", corrFileNameList_trigEff) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigEff->initialize() );
+
+  m_elecEfficiencySFTool_trigSF = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_trigSF");
+  std::vector< std::string > corrFileNameList_trigSF;
+  corrFileNameList_trigSF.push_back("ElectronEfficiencyCorrection/efficiencySF.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.LooseAndBLayerLLH_d0z0_v8_isolLooseTrackOnly.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigSF->setProperty("CorrectionFileNameList", corrFileNameList_trigSF) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigSF->initialize() );
+
+  // Initialise Jet JVT Efficiency Tool
+  m_jvtefficiencyTool = new CP::JetJvtEfficiency(JvtEfficiencyTool);
+  //EL_RETURN_CHECK("initialize()",m_jvtefficiencyTool->setProperty("WorkingPoint",) );
+  EL_RETURN_CHECK("initialize()",m_jvtefficiencyTool->initialize() );
+
+  // Initialise Tau Efficiency Tool
+  m_tauEffTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEffTool");
+  EL_RETURN_CHECK("initialize()",m_tauEffTool->initialize() );
+
+  // Initialise MET Tools
+  m_metSystTool = new met::METSystematicsTool("METSystTool");
+  EL_RETURN_CHECK("initialize()",m_metSystTool->setProperty("JetColl", "AntiKt4EMTopoJets") );
+  EL_RETURN_CHECK("initialize()",m_metSystTool->setProperty("ConfigSoftTrkFile", "TrackSoftTerms.config") );
+  EL_RETURN_CHECK("initialize()",m_metSystTool->initialize() );
+
+  // Initialise Isolation Correction Tool
+  m_isoCorrTool = new CP::IsolationCorrectionTool( "IsoCorrTool" );
+  EL_RETURN_CHECK("initialize()",m_isoCorrTool->setProperty( "IsMC", !isData()) );
+  //EL_RETURN_CHECK("initialize()",m_isoCorrTool->setProperty( "AFII_corr", isAtlfast()) );
+  EL_RETURN_CHECK("initialize()",m_isoCorrTool->initialize() );
+
+  // Initialise PileupReweighting Tool
+  m_prwTool = new CP::PileupReweightingTool("PrwTool");
+  std::vector<std::string> file_conf;
+  // xml file should be put in ZinvAnalysis/share directory
+  file_conf.push_back(gSystem->ExpandPathName("$ROOTCOREBIN/data/ZinvAnalysis/PRW.root"));
+  std::vector<std::string> file_ilumi;
+  file_ilumi.push_back(gSystem->ExpandPathName("$ROOTCOREBIN/data/ZinvAnalysis/ilumicalc_histograms_None_276262-284484.root"));
+  EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("ConfigFiles", file_conf) );
+  EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("LumiCalcFiles", file_ilumi) );
+  EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("DataScaleFactor",     1. / 1.16) );
+  EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("DataScaleFactorUP",   1.) );
+  EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("DataScaleFactorDOWN", 1. / 1.23) );
+  EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("UnrepresentedDataAction", 2));
+  EL_RETURN_CHECK("initialize()",m_prwTool->initialize() );
+
+
+  
   // Initialize Cutflow
   if (m_useBitsetCutflow)
     m_BitsetCutflow = new BitsetCutflow(wk());
@@ -753,6 +878,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     Error("execute()", "Failed to retrieve Tau container. Exiting." );
     return EL::StatusCode::FAILURE;
   }
+
+  m_tauOverlappingElectronLLHDecorator->initializeEvent();
 
   /// shallow copy for tau calibration tool
   // create a shallow copy of the taus container for MET building
@@ -2411,6 +2538,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       Error("execute()", "Failed to retrieve event info collection in passTauSelection. Exiting." );
       return EL::StatusCode::FAILURE;
     }
+
+    // TauOverlappingElectronLLHDecorator
+    m_tauOverlappingElectronLLHDecorator->decorate(tau);
 
     // Tau Smearing (for MC)
     if( fabs(tau.eta()) <= 2.5 && tau.nTracks() > 0 && !m_isData){ // it's MC!

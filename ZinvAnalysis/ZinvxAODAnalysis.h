@@ -53,6 +53,7 @@
 #include "xAODTau/TauDefs.h"
 #include "TauAnalysisTools/TauSelectionTool.h"
 #include "TauAnalysisTools/TauSmearingTool.h"
+#include "TauAnalysisTools/TauOverlappingElectronLLHDecorator.h"
 
 // Jet
 #include "JetCalibTools/JetCalibrationTool.h"
@@ -79,6 +80,16 @@
 #include "AssociationUtils/TauLooseEleOverlapTool.h"
 #include "AssociationUtils/TauLooseMuOverlapTool.h"
 #include "AssociationUtils/OverlapRemovalTool.h"
+
+// Efficiency and Scale Factor
+#include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
+#include "MuonEfficiencyCorrections/MuonTriggerScaleFactors.h"
+#include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
+#include "JetJvtEfficiency/JetJvtEfficiency.h"
+#include "TauAnalysisTools/TauEfficiencyCorrectionsTool.h"
+#include "METUtilities/METSystematicsTool.h"
+#include "PileupReweighting/PileupReweightingTool.h"
+#include "IsolationCorrections/IsolationCorrectionTool.h"
 
 // Cut Flow
 #include <ZinvAnalysis/BitsetCutflow.h>
@@ -226,6 +237,30 @@ class ZinvxAODAnalysis : public EL::Algorithm
     // Overlap Removal Tool
     ORUtils::ORToolBox m_toolBox; //!
     ORUtils::OverlapRemovalTool* m_orTool; //!
+
+    // Initialise Muon Efficiency Tool
+    CP::MuonEfficiencyScaleFactors* m_muonEfficiencySFTool; //!
+    // Initialise Muon Isolation Tool
+    CP::MuonEfficiencyScaleFactors* m_muonIsolationSFTool; //!
+    // Initialise Muon TTVA Efficiency Tool
+    CP::MuonEfficiencyScaleFactors* m_muonTTVAEfficiencySFTool; //!
+    // Initialise Muon Trigger Scale Factor Tool
+    CP::MuonTriggerScaleFactors* m_muonTriggerSFTool; //!
+    // Initialise Electron Efficiency Tool
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_reco; //!
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_id_Loose; //!
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_id_Medium; //!
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_id_Tight; //!
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_iso_Loose; //!
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_iso_Medium; //!
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_iso_Tight; //!
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_trigEff; //!
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_trigSF; //!
+    CP::JetJvtEfficiency* m_jvtefficiencyTool; //!
+    TauAnalysisTools::TauEfficiencyCorrectionsTool* m_tauEffTool; //!
+    met::METSystematicsTool* m_metSystTool; //!
+    CP::PileupReweightingTool* m_prwTool; //!
+
 
     // Cutflow
     BitsetCutflow* m_BitsetCutflow; //!
