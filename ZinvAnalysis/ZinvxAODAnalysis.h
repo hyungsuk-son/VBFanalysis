@@ -124,6 +124,8 @@ class ZinvxAODAnalysis : public EL::Algorithm
     xAOD::TEvent *m_event; //!
     int m_eventCounter; //!
     int m_numCleanEvents; //!
+    float mcEventWeight; //!
+    int mcChannelNumber; //!
 
     bool m_isData; //!
 
@@ -157,6 +159,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
     float m_mjjCut; //!
     float m_LeadLepPtCut; //!
     float m_SubLeadLepPtCut; //!
+    float m_ORJETdeltaR; //!
 
     // Some object and event counters to help roughly
     // evaluate the effects of changes in the OR tool.
@@ -213,12 +216,16 @@ class ZinvxAODAnalysis : public EL::Algorithm
     CP::IsolationSelectionTool *m_IsolationSelectionTool; //!
     // IsolationSelectionTool for VBF signal
     CP::IsolationSelectionTool *m_IsoToolVBF; //!
+    // Initialise Isolation Correction Tool
+    CP::IsolationCorrectionTool *m_isoCorrTool; //!
 
     // Tau
     TauAnalysisTools::TauSelectionTool* m_tauSelTool; //!
     TauAnalysisTools::TauSmearingTool* m_tauSmearingTool; //!
     // Tau for VBF signal
     TauAnalysisTools::TauSelectionTool* m_tauSelToolVBF; //!
+    // Tau
+    TauAnalysisTools::TauOverlappingElectronLLHDecorator* m_tauOverlappingElectronLLHDecorator; //!
 
     // Jet
     JetCalibrationTool* m_jetCalibration; //!

@@ -191,12 +191,12 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_numCleanEvents = 0;
 
   // Enable Cutflow plot
-  m_useBitsetCutflow = false;
+  m_useBitsetCutflow = true;
 
   // Event Channel
-  m_isZvv = false;
+  m_isZvv = true;
   m_isZmumu = false;
-  m_isZee = true;
+  m_isZee = false;
 
   // Enable Overlap Removal tool
   m_doORtool = false;
@@ -217,8 +217,9 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_CJVptCut = 25.; ///GeV
   m_metCut = 200.; ///GeV
   m_mjjCut = 200.; ///GeV
-  m_LeadLepPtCut = 25.; ///GeV
+  m_LeadLepPtCut = 80.; ///GeV
   m_SubLeadLepPtCut = 7.; ///GeV
+  m_ORJETdeltaR = 0.2;
 
   // GRL
   m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
@@ -437,7 +438,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_metMaker->initialize());
 
   // Initialize the harmonization reccommendation tools
-  const bool doTaus = false, doPhotons = false;
+  const bool doTaus = true, doPhotons = true;
   const bool boostedLeptons = false;
   EL_RETURN_CHECK("initialize()",ORUtils::recommendedTools(m_toolBox, "OverlapRemovalTool", 
                                                           inputLabel, outputLabel, bJetLabel, 
@@ -537,7 +538,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigSF->initialize() );
 
   // Initialise Jet JVT Efficiency Tool
-  m_jvtefficiencyTool = new CP::JetJvtEfficiency(JvtEfficiencyTool);
+  m_jvtefficiencyTool = new CP::JetJvtEfficiency("JvtEfficiencyTool");
   //EL_RETURN_CHECK("initialize()",m_jvtefficiencyTool->setProperty("WorkingPoint",) );
   EL_RETURN_CHECK("initialize()",m_jvtefficiencyTool->initialize() );
 
@@ -553,8 +554,8 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
   // Initialise Isolation Correction Tool
   m_isoCorrTool = new CP::IsolationCorrectionTool( "IsoCorrTool" );
-  EL_RETURN_CHECK("initialize()",m_isoCorrTool->setProperty( "IsMC", !isData()) );
-  //EL_RETURN_CHECK("initialize()",m_isoCorrTool->setProperty( "AFII_corr", isAtlfast()) );
+  EL_RETURN_CHECK("initialize()",m_isoCorrTool->setProperty( "IsMC", !m_isData) );
+  //EL_RETURN_CHECK("initialize()",m_isoCorrTool->setProperty( "AFII_corr", m_isAtlfast) );
   EL_RETURN_CHECK("initialize()",m_isoCorrTool->initialize() );
 
   // Initialise PileupReweighting Tool
@@ -615,6 +616,17 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return EL::StatusCode::FAILURE;
   }
 
+  // Calculate EventWeight
+  if (m_isData) // it's data!
+    mcEventWeight = 1.0;
+  else {
+    float pu_weight = m_prwTool->getCombinedWeight(*eventInfo); // Get Pile-up weight
+    mcEventWeight = eventInfo->mcEventWeight() * pu_weight;
+  }
+
+  if (m_isData)
+    mcChannelNumber = 1;
+  else mcChannelNumber = eventInfo->mcChannelNumber();
 
 
   // if data check if event passes GRL
@@ -1361,15 +1373,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       bool isORjet = false;
 
       for (const auto& muon : *m_goodMuon) {
-        if (DeltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi()) < 0.4) isORjet = true;
+        if (DeltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi()) < m_ORJETdeltaR) isORjet = true;
       }
 
       for (const auto& electron : *m_goodElectron) {
-        if (DeltaR(jet->eta(), electron->eta(), jet->phi(), electron->phi()) < 0.4) isORjet = true;
+        if (DeltaR(jet->eta(), electron->eta(), jet->phi(), electron->phi()) < m_ORJETdeltaR) isORjet = true;
       }
 
       for (const auto& tau : *m_goodTau) {
-        if (DeltaR(jet->eta(), tau->eta(), jet->phi(), tau->phi()) < 0.4) isORjet = true;
+        if (DeltaR(jet->eta(), tau->eta(), jet->phi(), tau->phi()) < m_ORJETdeltaR) isORjet = true;
       }
 
       if (!isORjet) m_signalJet->push_back( jet );
@@ -1679,7 +1691,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       }
     }
   }
-
+/*
+  if (m_isZmumu){
+    if 
+  }
+*/
 
   //-------------------------------
   // Z -> ee + JET EVENT SELECTION
@@ -1947,6 +1963,106 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if(m_metMaker){
       delete m_metMaker;
       m_metMaker = 0;
+    }
+
+    /// Muon Efficiency Tool
+    if(m_muonEfficiencySFTool){
+      delete m_muonEfficiencySFTool;
+      m_muonEfficiencySFTool = 0;
+    }
+
+    /// Muon Isolation Tool
+    if(m_muonIsolationSFTool){
+      delete m_muonIsolationSFTool;
+      m_muonIsolationSFTool = 0;
+    }
+
+    /// Muon TTVA Efficiency Tool
+    if(m_muonTTVAEfficiencySFTool){
+      delete m_muonTTVAEfficiencySFTool;
+      m_muonTTVAEfficiencySFTool = 0;
+    }
+
+    /// Muon Trigger Scale Factor Tool
+    if(m_muonTriggerSFTool){
+      delete m_muonTriggerSFTool;
+      m_muonTriggerSFTool = 0;
+    }
+
+    /// Electron Efficiency Tool
+    if(m_elecEfficiencySFTool_reco){
+      delete m_elecEfficiencySFTool_reco;
+      m_elecEfficiencySFTool_reco = 0;
+    }
+
+    if(m_elecEfficiencySFTool_id_Loose){
+      delete m_elecEfficiencySFTool_id_Loose;
+      m_elecEfficiencySFTool_id_Loose = 0;
+    }
+
+    if(m_elecEfficiencySFTool_id_Medium){
+      delete m_elecEfficiencySFTool_id_Medium;
+      m_elecEfficiencySFTool_id_Medium = 0;
+    }
+
+    if(m_elecEfficiencySFTool_id_Tight){
+      delete m_elecEfficiencySFTool_id_Tight;
+      m_elecEfficiencySFTool_id_Tight = 0;
+    }
+
+    if(m_elecEfficiencySFTool_iso_Loose){
+      delete m_elecEfficiencySFTool_iso_Loose;
+      m_elecEfficiencySFTool_iso_Loose = 0;
+    }
+
+    if(m_elecEfficiencySFTool_iso_Medium){
+      delete m_elecEfficiencySFTool_iso_Medium;
+      m_elecEfficiencySFTool_iso_Medium = 0;
+    }
+
+    if(m_elecEfficiencySFTool_iso_Tight){
+      delete m_elecEfficiencySFTool_iso_Tight;
+      m_elecEfficiencySFTool_iso_Tight = 0;
+    }
+
+    if(m_elecEfficiencySFTool_trigEff){
+      delete m_elecEfficiencySFTool_trigEff;
+      m_elecEfficiencySFTool_trigEff = 0;
+    }
+
+    if(m_elecEfficiencySFTool_trigSF){
+      delete m_elecEfficiencySFTool_trigSF;
+      m_elecEfficiencySFTool_trigSF = 0;
+    }
+
+    /// Jet JVT Efficiency Tool
+    if(m_jvtefficiencyTool){
+      delete m_jvtefficiencyTool;
+      m_jvtefficiencyTool = 0;
+    }
+
+    /// Tau Efficiency Tool
+    if(m_tauEffTool){
+      delete m_tauEffTool;
+      m_tauEffTool = 0;
+    }
+
+    /// MET Tools
+    if(m_metSystTool){
+      delete m_metSystTool;
+      m_metSystTool = 0;
+    }
+
+    /// Isolation Correction Tool
+    if(m_isoCorrTool){
+      delete m_isoCorrTool;
+      m_isoCorrTool = 0;
+    }
+
+    /// PileupReweighting Tool
+    if(m_prwTool){
+      delete m_prwTool;
+      m_prwTool = 0;
     }
 
     /// Cutflow
