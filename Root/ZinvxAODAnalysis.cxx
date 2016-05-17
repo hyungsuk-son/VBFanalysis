@@ -1557,8 +1557,14 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET) decision
-    dPhiJet1Met = DeltaPhi(jet1_phi, MET_phi);
-    dPhiJet2Met = DeltaPhi(jet2_phi, MET_phi);
+    if (m_isZmumu || m_isZee || m_isWmunu || m_isWenu){
+      dPhiJet1Met = DeltaPhi(jet1_phi, emulMET_phi);
+      dPhiJet2Met = DeltaPhi(jet2_phi, emulMET_phi);
+    }
+    else {
+      dPhiJet1Met = DeltaPhi(jet1_phi, MET_phi);
+      dPhiJet2Met = DeltaPhi(jet2_phi, MET_phi);
+    }
     if ( dPhiJet1Met < 0.4 ) pass_dPhiDijetMet = false ;
     if ( dPhiJet2Met < 0.4 ) pass_dPhiDijetMet = false ;
 
