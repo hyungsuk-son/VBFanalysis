@@ -208,11 +208,11 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_useBitsetCutflow = true;
 
   // Event Channel
-  m_isZvv = false;
+  m_isZvv = true;
   m_isZmumu = false;
   m_isWmunu = false;
-  m_isZee = true;
-  m_isWenu = true;
+  m_isZee = false;
+  m_isWenu = false;
 
   // Enable Overlap Removal tool
   m_doORtool = false;
@@ -1340,8 +1340,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   //This adds the necessary soft term for both CST and TST
   //these functions create an xAODMissingET object with the given names inside the container
   m_metMaker->rebuildJetMET("RefJet",          //name of jet met
-      //"SoftClus",      //name of soft cluster term met
-      softTerm,          //name of soft track term met
+      "SoftClus",        //name of soft cluster term met
+      "PVSoftTrk",       //name of soft track term met
       m_met,             //adding to this new met container
       jetSC,             //using this jet collection to calculate jet met
       m_metCore,         //core met container
@@ -1350,8 +1350,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   if (m_isZmumu || m_isZee || m_isWmunu || m_isWenu){
     m_metMaker->rebuildJetMET("RefJet",          //name of jet met
-        //"SoftClus",      //name of soft cluster term met
-        softTerm,          //name of soft track term met
+        "SoftClus",        //name of soft cluster term met
+        "PVSoftTrk",       //name of soft track term met
         m_emulmet,         //adding to this new met container
         jetSC,             //using this jet collection to calculate jet met
         m_emulmetCore,     //core met container
@@ -1725,9 +1725,62 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]MET Trigger");
       m_eventCutflow[5]+=1;
       if ( MET > m_metCut ) {
-        //Info("execute()", "  Event number = %i : MET = %.2f GeV", m_eventCounter, MET);
         if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]MET cut");
         m_eventCutflow[6]+=1;
+
+        Info("execute()", "=====================================");
+        Info("execute()", " Event # = %llu", eventInfo->eventNumber());
+        Info("execute()", " Good Event number = %i", m_eventCutflow[6]);
+        Info("execute()", " MET = %.3f GeV", MET);
+        Info("execute()", " RefElectron = %.3f GeV", ((*m_met)["RefElectron"]->met()) * 0.001);
+        Info("execute()", " RefPhoton = %.3f GeV", ((*m_met)["RefPhoton"]->met()) * 0.001);
+        Info("execute()", " RefTau = %.3f GeV", ((*m_met)["RefTau"]->met()) * 0.001);
+        Info("execute()", " RefMuon = %.3f GeV", ((*m_met)["RefMuon"]->met()) * 0.001);
+        Info("execute()", " RefJet = %.3f GeV", ((*m_met)["RefJet"]->met()) * 0.001);
+        Info("execute()", " SoftClus = %.3f GeV", ((*m_met)["SoftClus"]->met()) * 0.001);
+        Info("execute()", " PVSoftTrk = %.3f GeV", ((*m_met)["PVSoftTrk"]->met()) * 0.001);
+        Info("execute()", " # of good jets = %lu", m_signalJet->size());
+        if (m_signalJet->size() > 0){
+          int jetCount = 0;
+          for (const auto& jet : *m_signalJet) {
+            jetCount++;
+            Info("execute()", " jet # : %i", jetCount);
+            Info("execute()", " jet pt = %.3f GeV", jet->pt() * 0.001);
+            Info("execute()", " jet eta = %.3f GeV", jet->eta());
+            Info("execute()", " jet phi = %.3f GeV", jet->phi());
+          }
+        }
+        if (m_goodElectron->size() > 0){
+          int eleCount = 0;
+          for (const auto& electron : *m_goodElectron) {
+            eleCount++;
+            Info("execute()", " electron # : %i", eleCount);
+            Info("execute()", " electron pt = %.3f GeV", electron->pt() * 0.001);
+            Info("execute()", " electron eta = %.3f GeV", electron->eta());
+            Info("execute()", " electron phi = %.3f GeV", electron->phi());
+          }
+        }
+        if (m_goodMuon->size() > 0){
+          int muCount = 0;
+          for (const auto& muon : *m_goodMuon) {
+            muCount++;
+            Info("execute()", " muon # : %i", muCount);
+            Info("execute()", " muon pt = %.3f GeV", muon->pt() * 0.001);
+            Info("execute()", " muon eta = %.3f GeV", muon->eta());
+            Info("execute()", " muon phi = %.3f GeV", muon->phi());
+          }
+        }
+        if (m_goodTau->size() > 0){
+          int tauCount = 0;
+          for (const auto& tau : *m_goodTau) {
+            tauCount++;
+            Info("execute()", " tau # : %i", tauCount);
+            Info("execute()", " tau pt = %.3f GeV", tau->pt() * 0.001);
+            Info("execute()", " tau eta = %.3f GeV", tau->eta());
+            Info("execute()", " tau phi = %.3f GeV", tau->phi());
+          }
+        }
+
         if (m_goodElectron->size() == 0) {
           if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]Electron Veto");
           m_eventCutflow[7]+=1;
