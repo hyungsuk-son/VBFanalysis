@@ -29,7 +29,8 @@ int main( int argc, char* argv[] ) {
   //SH::ScanDir().sampleDepth(1).samplePattern("AOD.05352803._000031.pool.root.1").scan(sh, inputFilePath);
   const char* inputFilePath = gSystem->ExpandPathName ("/afs/cern.ch/user/h/hson/public/dataset");
   SH::ScanDir().filePattern("DAOD_EXOT5.07502101._000026.pool.root.1").scan(sh,inputFilePath); // Data
-  //SH::ScanDir().filePattern("DAOD_EXOT5.07992543._000007.pool.root.1").scan(sh,inputFilePath); // MC
+  //SH::ScanDir().filePattern("DAOD_EXOT5.07992543._000007.pool.root.1").scan(sh,inputFilePath); // MC Zvv
+  //SH::ScanDir().filePattern("DAOD_EXOT5.07992459._000012.pool.root.1").scan(sh,inputFilePath); // MC Zmumu
 
 
   // Set the name of the input TTree. It's always "CollectionTree"

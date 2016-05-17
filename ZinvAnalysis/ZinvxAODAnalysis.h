@@ -132,7 +132,9 @@ class ZinvxAODAnalysis : public EL::Algorithm
     // Event Channel
     bool m_isZvv; //!
     bool m_isZmumu; //!
+    bool m_isWmunu; //!
     bool m_isZee; //!
+    bool m_isWenu; //!
 
     // Cutflow
     bool m_useBitsetCutflow; //!
@@ -184,6 +186,13 @@ class ZinvxAODAnalysis : public EL::Algorithm
     TH1 *h_met; //!
     TH1 *h_sumet; //!
     TH1 *h_met_phi; //!
+
+    TH1 *h_emulmet_ex; //!
+    TH1 *h_emulmet_ey; //!
+    TH1 *h_emulmet; //!
+    TH1 *h_emulsumet; //!
+    TH1 *h_emulmet_phi; //!
+
 
     // Zinv study
     TH1 *h_zvv_offline_met; //!
