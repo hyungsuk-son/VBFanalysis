@@ -45,6 +45,9 @@ ort::objLinkAccessor_t objLinkAcc("overlapObject");
 //static const std::string outputLabel = outputPassValue? "passOR" : "overlaps";
 //static SG::AuxElement::Decorator<char> dec_overlap(outputLabel);
 
+// Scale Factor decorators
+static SG::AuxElement::Decorator<double> dec_scalefactor("scalefactor");
+
 struct DescendingPt:std::function<bool(const xAOD::IParticle*, const xAOD::IParticle*)> {
   bool operator()(const xAOD::IParticle* l, const xAOD::IParticle* r)  const {
     return l->pt() > r->pt();
@@ -208,9 +211,9 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_useBitsetCutflow = true;
 
   // Event Channel
-  m_isZvv = true;
-  m_isZmumu = false;
-  m_isWmunu = false;
+  m_isZvv = false;
+  m_isZmumu = true;
+  m_isWmunu = true;
   m_isZee = false;
   m_isWenu = false;
 
@@ -236,6 +239,11 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_LeadLepPtCut = 80.; ///GeV
   m_SubLeadLepPtCut = 7.; ///GeV
   m_ORJETdeltaR = 0.2;
+  m_isoMuonPtMin = 10.; ///GeV
+  m_isoMuonPtMax = 500.; ///GeV
+  m_recoSF = true;
+  m_isoSF = true;
+  m_ttvaSF = true;
 
   // GRL
   m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
@@ -447,11 +455,11 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // Initialise MET tools
   m_metMaker = new met::METMaker("METMakerTool");
   EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoRemoveMuonJets", true));
-  //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoSetMuonJetEMScale", true));
+  EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoSetMuonJetEMScale", true));
   //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoMuonEloss", true));
   //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoIsolMuonEloss", true));
-  EL_RETURN_CHECK("initialize()",m_metMaker->setProperty("JetMinWeightedPt", 20000.));
-  EL_RETURN_CHECK("initialize()",m_metMaker->setProperty("JetMinEFrac", 0.0));
+  //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty("JetMinWeightedPt", 20000.));
+  //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty("JetMinEFrac", 0.0));
   //m_metMaker->msg().setLevel( MSG::VERBOSE ); // or DEBUG or VERBOSE
   EL_RETURN_CHECK("initialize()",m_metMaker->initialize());
 
@@ -646,6 +654,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     mcChannelNumber = 1;
   else mcChannelNumber = eventInfo->mcChannelNumber();
 
+  /*
+  // BCID Information
+  if (m_isData){
+    int Bcid = eventInfo->bcid();
+    if (Bcid > 324 && Bcid < 417){
+      Info("execute()", "  BCID = %d", Bcid);
+    }
+  }
+  */
 
   // if data check if event passes GRL
   if(m_isData){ // it's data!
@@ -1323,6 +1340,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   if (m_isZmumu || m_isWmunu){
     m_metMaker->markInvisible(m_MetMuons.asDataVector(), m_emulmetMap);
+    met::addGhostMuonsToJets(*m_muons, *jetSC);
   }
   else if (m_isZee || m_isWenu){
     m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
@@ -1331,7 +1349,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
         m_emulmetMap);                          //and this association map
   }
-  met::addGhostMuonsToJets(*m_muons, *jetSC);
 
   // JET
   //-----------------
@@ -1418,9 +1435,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-  //-----------------------
-  // Define Good Leptons
-  //-----------------------
+  //-----------------------------------------------
+  // Define Good Leptons and Calculate Scale Factor
+  //-----------------------------------------------
 
   ///////////////
   // Good Muon //
@@ -1733,7 +1750,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       if ( MET > m_metCut ) {
         if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]MET cut");
         m_eventCutflow[6]+=1;
-
+/*
         Info("execute()", "=====================================");
         Info("execute()", " Event # = %llu", eventInfo->eventNumber());
         Info("execute()", " Good Event number = %i", m_eventCutflow[6]);
@@ -1786,7 +1803,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
             Info("execute()", " tau phi = %.3f GeV", tau->phi());
           }
         }
-
+*/
         if (m_goodElectron->size() == 0) {
           if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]Electron Veto");
           m_eventCutflow[7]+=1;
@@ -1848,6 +1865,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if ( pass_Zmumu && m_goodMuon->size() == 2 && mll_muon > 66. && mll_muon < 116. ){
                 if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]mll cut");
                 m_eventCutflow[10]+=1;
+                // Calculate muon SF
+                if (!m_isData) {
+                  double totalMuonSF = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
+                  Info("execute()", " totalMuonSF = %.3f ", totalMuonSF);
+                }
                 if ( m_signalJet->size() > 1 ) {
                   if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]At least Two Jets");
                   m_eventCutflow[11]+=1;
@@ -2912,6 +2934,63 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   }
 
+
+  float ZinvxAODAnalysis :: GetGoodMuonSF(xAOD::Muon& mu,
+      const bool recoSF, const bool isoSF, const bool ttvaSF) {
+
+    float sf(1.);
+
+    if (recoSF) {
+      float sf_reco(1.);
+      if (m_muonEfficiencySFTool->getEfficiencyScaleFactor( mu, sf_reco ) == CP::CorrectionCode::Error) {
+        Error("execute()", " GetGoodMuonSF: Reco getEfficiencyScaleFactor returns Error CorrectionCode");
+      }
+      //Info("execute()", "  GetGoodMuonSF: sf_reco = %.5f ", sf_reco );
+      sf *= sf_reco;
+    }
+
+    if (isoSF) {
+      float sf_iso(1.);
+      if (m_muonIsolationSFTool->getEfficiencyScaleFactor( mu, sf_iso ) == CP::CorrectionCode::Error) {
+        Error("execute()", " GetGoodMuonSF: Iso getEfficiencyScaleFactor returns Error CorrectionCode");
+      }
+      //Info("execute()", "  GetGoodMuonSF: sf_iso = %.5f ", sf_iso );
+      sf *= sf_iso;
+    }
+
+    if (ttvaSF) {
+      float sf_TTVA(1.);
+      if (m_muonTTVAEfficiencySFTool->getEfficiencyScaleFactor( mu, sf_TTVA ) == CP::CorrectionCode::Error) {
+        Error("execute()", " GetGoodMuonSF: TTVA getEfficiencyScaleFactor returns Error CorrectionCode");
+      }
+      //Info("execute()", "  GetGoodMuonSF: sf_TTVA = %.5f ", sf_TTVA );
+      sf *= sf_TTVA;
+    }
+
+    //Info("execute()", "  GetGoodMuonSF: Good Muon SF = %.5f ", sf );
+    dec_scalefactor(mu) = sf;
+    return sf;
+
+  }
+
+  double ZinvxAODAnalysis :: GetTotalMuonSF(xAOD::MuonContainer& muons,
+      bool recoSF, bool isoSF, bool ttvaSF) {
+
+    double sf(1.);
+
+    for (const auto& muon : muons) {
+      double muPt = muon->pt() * 0.001; /// GeV
+      if (muPt < m_isoMuonPtMin || muPt > m_isoMuonPtMax) {
+        isoSF = false;
+      }
+      //Info("execute()", "  GetTotalMuonSF: Muon pT = %.2f GeV ", muPt );
+      sf *= GetGoodMuonSF(*muon, recoSF, isoSF, ttvaSF);
+    }
+
+    //Info("execute()", "  GetTotalMuonSF: Total Muon SF = %.5f ", sf );
+    return sf;
+
+  }
 
   int ZinvxAODAnalysis :: NumIsoTracks(const xAOD::TrackParticleContainer* inTracks,
       xAOD::Vertex* primVertex, float Pt_Low, float Pt_High) {

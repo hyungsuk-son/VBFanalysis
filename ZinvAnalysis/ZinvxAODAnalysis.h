@@ -162,6 +162,11 @@ class ZinvxAODAnalysis : public EL::Algorithm
     float m_LeadLepPtCut; //!
     float m_SubLeadLepPtCut; //!
     float m_ORJETdeltaR; //!
+    float m_isoMuonPtMin; //!
+    float m_isoMuonPtMax; //!
+    bool m_recoSF; //!
+    bool m_isoSF; //!
+    bool m_ttvaSF; //!
 
     // Some object and event counters to help roughly
     // evaluate the effects of changes in the OR tool.
@@ -335,6 +340,12 @@ class ZinvxAODAnalysis : public EL::Algorithm
     bool IsBadJet(xAOD::Jet& jet);
 
     bool IsSignalJet(xAOD::Jet& jet);
+
+    float GetGoodMuonSF(xAOD::Muon& mu,
+        const bool recoSF, const bool isoSF, const bool ttvaSF);
+
+    double GetTotalMuonSF(xAOD::MuonContainer& muons,
+        bool recoSF, bool isoSF, bool ttvaSF);
 
     int NumIsoTracks(const xAOD::TrackParticleContainer* inTracks,
         xAOD::Vertex* primVertex, float Pt_Low, float Pt_High);
