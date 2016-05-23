@@ -211,9 +211,9 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_useBitsetCutflow = true;
 
   // Event Channel
-  m_isZvv = false;
-  m_isZmumu = true;
-  m_isWmunu = true;
+  m_isZvv = true;
+  m_isZmumu = false;
+  m_isWmunu = false;
   m_isZee = false;
   m_isWenu = false;
 
@@ -454,8 +454,8 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
   // Initialise MET tools
   m_metMaker = new met::METMaker("METMakerTool");
-  EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoRemoveMuonJets", true));
-  EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoSetMuonJetEMScale", true));
+  //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoRemoveMuonJets", true));
+  //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoSetMuonJetEMScale", true));
   //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoMuonEloss", true));
   //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty( "DoIsolMuonEloss", true));
   //EL_RETURN_CHECK("initialize()",m_metMaker->setProperty("JetMinWeightedPt", 20000.));
@@ -1020,7 +1020,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     selectDec(*jets) = false; // To select objects for Overlap removal
 
     // pT cut
-    if (jetPt > m_jetPtCut && jetEta < m_jetEtaCut) {
+    if (jetPt > m_jetPtCut && fabs(jetEta) < m_jetEtaCut) {
       dec_baseline(*jets) = true;
       selectDec(*jets) = true; // To select objects for Overlap removal
     }
@@ -1487,11 +1487,16 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   // iterate over our shallow copy
   for (const auto& jet : *m_goodJet) { // C++11 shortcut
 
-    if (m_doORmanual) {
+    if (m_doORmanual) { // If jets are selected jet for overlap removal and if you want overlap removal manually
       bool isORjet = false;
 
       for (const auto& muon : *m_goodMuon) {
-        if (DeltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi()) < m_ORJETdeltaR) isORjet = true;
+        if (DeltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi()) < m_ORJETdeltaR) {
+          int ntrks = 0;
+          std::vector<int> ntrks_vec = jet->auxdata<std::vector<int> >("NumTrkPt1000");          
+          if (ntrks_vec.size() > 0) ntrks = ntrks_vec[primVertex->index()];
+          if (ntrks < 5) isORjet = true;
+        }
       }
 
       for (const auto& electron : *m_goodElectron) {
@@ -1502,7 +1507,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         if (DeltaR(jet->eta(), tau->eta(), jet->phi(), tau->phi()) < m_ORJETdeltaR) isORjet = true;
       }
 
-      if (!isORjet) m_signalJet->push_back( jet );
+      if ( !isORjet ) m_signalJet->push_back( jet );
     }
     else m_signalJet->push_back( jet );
 
@@ -1551,8 +1556,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //Info("execute()", "  jet1 = %.2f GeV, jet2 = %.2f GeV", jet1_pt, jet2_pt);
     //Info("execute()", "  mjj = %.2f GeV", mjj);
 
-    if ( jet1_pt >  m_diJet1PtCut && jet2_pt > m_diJet2PtCut ){
-      if ( jet1_rapidity < m_diJetEtaCut && jet2_rapidity < m_diJetEtaCut ){
+    if ( jet1_pt > m_diJet1PtCut && jet2_pt > m_diJet2PtCut ){
+      if ( fabs(jet1_rapidity) < m_diJetEtaCut && fabs(jet2_rapidity) < m_diJetEtaCut ){
         if ( m_jetCleaningTight->accept( *m_signalJet->at(0) ) ){ //Tight Leading Jet 
           pass_diJet = true;
         }
@@ -1592,7 +1597,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       if ( m_signalJet->size() > 2 && pass_diJet ){
         if (m_signalJet->at(0) != jet && m_signalJet->at(1) != jet){
           //cout << "m_signalJet->at(0) = " << m_signalJet->at(0) << " jet = " << jet << endl;
-          if (signal_jet_pt > m_CJVptCut) {
+          if (signal_jet_pt > m_CJVptCut && fabs(signal_jet_rapidity) < m_diJetEtaCut) {
             if ( (jet1_rapidity > jet2_rapidity) && (signal_jet_rapidity < jet1_rapidity && signal_jet_rapidity > jet2_rapidity)){
               pass_CJV = false;
             }
@@ -2920,7 +2925,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     double jetPt = (jet.pt()) * 0.001; /// GeV
 
     // pT, eta cut
-    if ( jetPt < m_jetPtCut || fabs(jet.eta()) > m_jetEtaCut) return false;
+    if ( jetPt < m_jetPtCut || fabs(jet.eta()) > m_jetEtaCut ) return false;
 
     bool isgoodjet = !dec_bad(jet) && (cacc_jvt(jet) > 0.59 || fabs(jet.eta()) > 2.4 || jetPt > 50.0);
 
