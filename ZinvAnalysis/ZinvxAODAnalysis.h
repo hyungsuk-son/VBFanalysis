@@ -303,10 +303,8 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
 
     // Custom made functions
-    virtual EL::StatusCode passMuonSelection(xAOD::Muon& mu,
-        const xAOD::EventInfo* eventInfo);
 
-    bool passMuonSignal(xAOD::Muon& mu,
+    virtual EL::StatusCode passMuonSelection(xAOD::Muon& mu,
         const xAOD::EventInfo* eventInfo,
         xAOD::Vertex* primVertex);
 
@@ -315,9 +313,6 @@ class ZinvxAODAnalysis : public EL::Algorithm
         xAOD::Vertex* primVertex);
 
     virtual EL::StatusCode passElectronSelection(xAOD::Electron& elec,
-        const xAOD::EventInfo* eventInfo);
-
-    bool passElectronSignal(xAOD::Electron& elec,
         const xAOD::EventInfo* eventInfo,
         xAOD::Vertex* primVertex);
 

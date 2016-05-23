@@ -767,8 +767,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   ///////////////////
   // For MET study //
   ///////////////////
-  // [For Muon identification] filter the Muon container m_muons, placing selected muons into m_signalMuon
-  xAOD::MuonContainer* m_signalMuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
 
   // iterate over our shallow copy
   for (const auto& muon : *muonSC) { // C++11 shortcut
@@ -776,13 +774,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //if(((*muonSC_itr)->eta()) > 2.5)
     //Info("execute()", "  muon eta = %.2f ", ((*muonSC_itr)->eta())); // just to print out something
     //Info("execute()", "  corrected muon pt = %.2f GeV", ((*muonSC_itr)->pt() * 0.001));
-    passMuonSelection(*muon, eventInfo);
-
-    // Signal Muon Selection
-    if (passMuonSignal(*muon, eventInfo, primVertex)) {
-      m_signalMuon->push_back( muon );
-      //Info("execute()", "  Signal muon pt = %.2f GeV", (muon->pt() * 0.001));
-    }
+    passMuonSelection(*muon, eventInfo, primVertex);
 
   } // end for loop over shallow copied muons
   */
@@ -831,20 +823,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   ///////////////////
   // For MET study //
   ///////////////////
-  // [For Electron identification] filter the Electron container m_electrons, placing selected electrons into m_signalElectron
-  xAOD::ElectronContainer* m_signalElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
 
   // iterate over our shallow copy
   for (const auto& electron : *elecSC) { // C++11 shortcut
     //Info("execute()", "  original electron pt = %.2f GeV", ((*elecSC_itr)->pt() * 0.001));
     //Info("execute()", "  corrected electron pt = %.2f GeV", ((*elecSC_itr)->pt() * 0.001));
-    passElectronSelection(*electron, eventInfo);
-
-    // Signal Electron Selection
-    if (passElectronSignal(*electron, eventInfo, primVertex)) {
-      m_signalElectron->push_back( electron );
-      //Info("execute()", "  Signal electron pt = %.2f GeV", (electron->pt() * 0.001));
-    }
+    passElectronSelection(*electron, eventInfo, primVertex);
 
   } // end for loop over shallow copied electrons
   */
@@ -1447,6 +1431,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& muon : *muonSC) { // C++11 shortcut
     // Muon Selection for VBF study
     if (dec_baseline(*muon)) {
+    //if (dec_signal(*muon)) { // For MET Trigger study
       if(m_doORtool){
         if (!overlapAcc(*muon)){
           m_goodMuon->push_back( muon );
@@ -1465,6 +1450,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& electron : *elecSC) { // C++11 shortcut
     // Electron Selection for VBF study
     if (dec_baseline(*electron)) {
+    //if (dec_signal(*electron)) { // MET Trigger sutdy
       if(m_doORtool){
         if(!overlapAcc(*electron)){
           m_goodElectron->push_back( electron );
@@ -1625,21 +1611,25 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
  
 
-  //------------------------
-  // Define Zmumu Selection
-  // -----------------------
+  //----------------------------------
+  // Define Zmumu and Wmunu Selection
+  //----------------------------------
 
   bool pass_Zmumu = false; // Select Zmumu channel
-  float mll_muon = 0;
-  if (m_isZmumu){
+  bool pass_Wmunu = false; // Select Wmunu channel
+  float mll_muon = 0.; // For Zmumu channel
+  float mT_muon = 0.;// For Wmunu channel
+  if (m_isZmumu || m_isWmunu){
+    // Zmumu muons
     TLorentzVector muon1;
     TLorentzVector muon2;
-    float muon1_pt = 0;
-    float muon2_pt = 0;
-    float muon1_charge = 0;
-    float muon2_charge = 0;
-
-
+    float muon1_pt = 0.;
+    float muon2_pt = 0.;
+    float muon1_charge = 0.;
+    float muon2_charge = 0.;
+    // Wmunu muon
+    float muon_pt = 0.;
+    float muon_phi = 0.;
 
     // Zmumu Selection
     if (m_goodMuon->size() > 1) {
@@ -1663,8 +1653,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
           //Info("execute()", "  Leading muon = %.2f GeV, Subleading muon = %.2f GeV", muon1_pt, muon2_pt);
         }
       }
-
     } // Zmumu selection loop
+
+    // Wmunu Selection
+    if (m_goodMuon->size() == 1) {
+      muon_pt = m_goodMuon->at(0)->pt() * 0.001;
+      muon_phi = m_goodMuon->at(0)->phi();
+      mT_muon = TMath::Sqrt( 2. * muon_pt * MET * ( 1. - TMath::Cos(muon_phi - MET_phi) ) );
+
+      if ( muon_pt > 25. ){
+        pass_Wmunu = true;
+      }
+    } //Wmunu Selection loop
+
   }
 
 
@@ -1865,11 +1866,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if ( pass_Zmumu && m_goodMuon->size() == 2 && mll_muon > 66. && mll_muon < 116. ){
                 if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]mll cut");
                 m_eventCutflow[10]+=1;
-                // Calculate muon SF
-                if (!m_isData) {
-                  double totalMuonSF = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
-                  Info("execute()", " totalMuonSF = %.3f ", totalMuonSF);
-                }
                 if ( m_signalJet->size() > 1 ) {
                   if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]At least Two Jets");
                   m_eventCutflow[11]+=1;
@@ -1885,6 +1881,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         if ( pass_dPhiDijetMet ) {
                           if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]dPhi(j,MET) cut");
                           m_eventCutflow[15]+=1;
+                          // Calculate muon SF
+                          if (!m_isData) {
+                            double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
+                            //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                          }
                         }
                       }
                     }
@@ -1897,11 +1898,44 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       }
     }
   }
-/*
-  if (m_isZmumu){
-    if 
+
+
+  //---------------------------------
+  // W -> munu + JET EVENT SELECTION
+  //---------------------------------
+
+  if (m_isWmunu){
+    if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+      if ( emulMET > m_metCut ) {
+        if (m_goodElectron->size() == 0) {
+          if ( m_goodMuon->size() > 0 ) {
+            if (m_goodTau->size() == 0) {
+              if ( pass_Wmunu && m_goodMuon->size() == 1 && mT_muon > 30. && mT_muon < 100. ){
+                if ( m_signalJet->size() > 1 ) {
+                  if ( pass_diJet ) {
+                    if ( mjj > m_mjjCut ) {
+                      if ( pass_CJV ) {
+                        if ( pass_dPhiDijetMet ) {
+                          // Calculate muon SF
+                          if (!m_isData) {
+                            double totalMuonSF_Wmunu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
+                            Info("execute()", " Wmunu Total Muon SF = %.3f ", totalMuonSF_Wmunu);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
-*/
+
+
+
 
   //-------------------------------
   // Z -> ee + JET EVENT SELECTION
@@ -2324,11 +2358,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   }
 
 
+
   EL::StatusCode ZinvxAODAnalysis :: passMuonSelection(xAOD::Muon& mu,
-      const xAOD::EventInfo* eventInfo){
+      const xAOD::EventInfo* eventInfo, xAOD::Vertex* primVertex){
 
     dec_baseline(mu) = false;
     selectDec(mu) = false; // To select objects for Overlap removal
+    dec_signal(mu) = false;
 
     // Event information
     if( ! m_event->retrieve( eventInfo, "EventInfo").isSuccess() ){
@@ -2336,11 +2372,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       return EL::StatusCode::FAILURE;
     }
 
-    //  if (mu.muonType()=xAOD::Muon_v1::Combined) return EL::StatusCode::SUCCESS;
-
     // don't bother calibrating or computing WP
     double muPt = (mu.pt()) * 0.001; /// GeV
-    if ( muPt < 4. ) return EL::StatusCode::SUCCESS;
+    //if ( muPt < 4. ) return EL::StatusCode::SUCCESS;
 
     // Muon Calibration
     if (!m_isData){
@@ -2357,80 +2391,53 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //if(!m_loosemuonSelection->accept(mu)) return EL::StatusCode::SUCCESS;
 
     // Muon tranverse momentum cut
-    double muPtCut = 10.0; /// GeV
-    if (muPt <= muPtCut ) return EL::StatusCode::SUCCESS; /// veto muon
+    if (muPt <= 10. ) return EL::StatusCode::SUCCESS; /// veto muon
 
     // Muon eta cut
     double muEta = mu.eta();
     if (fabs(muEta) >= 2.47) return EL::StatusCode::SUCCESS;
 
-    /*
-    // eta cut
-    // only for Stand-alone (SA) muons, Combined (CB) muons, Segment-tagged (ST) muons
-    double muEta = mu.eta();
-    if (mu.muonType()==xAOD::Muon::MuonStandAlone){
-    if(fabs(mu.eta())<m_mu_minEtaSA) return EL::StatusCode::SUCCESS;
-    }
-    else 
+    //  if (mu.muonType()=xAOD::Muon_v1::Combined) return EL::StatusCode::SUCCESS;
+    if (mu.muonType() != xAOD::Muon_v1::Combined && mu.muonType() != xAOD::Muon_v1::SegmentTagged) return EL::StatusCode::SUCCESS;
 
-    if (fabs(muEta) >= 2.5) return EL::StatusCode::SUCCESS;
-    */
 
-    // Muon eta Test after Muon selection
-    //if((mu.eta()) > 2.5)
-    //Info("execute()", "  selected muon eta = %.2f ", (mu.eta())); // just to print out something
-
+    // Baseline Muon
     dec_baseline(mu) = true;
     selectDec(mu) = true; // To select objects for Overlap removal
+
+
+    // Muon pt cut
+    if (muPt <= 25. ) return EL::StatusCode::SUCCESS;
+    // Muon eta cut
+    if (fabs(muEta) >= 2.4) return EL::StatusCode::SUCCESS;
+
+    // d0 / z0 cuts applied
+    // d0 significance (Transverse impact parameter)
+    const xAOD::TrackParticle* tp;
+    if (mu.muonType() == xAOD::Muon::SiliconAssociatedForwardMuon)
+      tp = mu.trackParticle(xAOD::Muon::ExtrapolatedMuonSpectrometerTrackParticle);
+    else
+      tp = mu.primaryTrackParticle();
+    double d0sig = xAOD::TrackingHelpers::d0significance( tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
+    if (fabs(d0sig) > 3.0) return EL::StatusCode::SUCCESS;
+    // zo cut
+    float z0sintheta = 1e8;
+    //if (primVertex) z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( mu.p4().Theta() );
+    z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
+    if (fabs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
+
+    // Isolation requirement
+    if (!m_IsolationSelectionTool->accept(mu)) return EL::StatusCode::SUCCESS;
+
+    // Signal Muon
+    dec_signal(mu) = true;
 
     return EL::StatusCode::SUCCESS;
 
   }
 
 
-  bool ZinvxAODAnalysis :: passMuonSignal(xAOD::Muon& mu,
-      const xAOD::EventInfo* eventInfo,
-      xAOD::Vertex* primVertex){
 
-    dec_signal(mu) = false;
-    if (!dec_baseline(mu)) return false;
-
-    // Event information
-    if( ! m_event->retrieve( eventInfo, "EventInfo").isSuccess() ){
-      Error("execute()", "Failed to retrieve event info collection in passMuonSignal. Exiting." );
-      return EL::StatusCode::FAILURE;
-    }
-
-    // Muon tranverse momentum
-    double muPt = (mu.pt()) * 0.001;
-    double ptCut = 25.;
-    if (muPt <= ptCut ) return false;
-    // Muon eta cut
-    double muEta = mu.eta();
-    if (fabs(muEta) >= 2.4) return false;
-
-    // Isolation requirement
-    if (!m_IsolationSelectionTool->accept(mu)) return false;
-
-    /*
-    // d0 / z0 cuts applied 
-    // do significance 
-    double d0_sig = TMath::Abs(mu.primaryTrackParticle()->d0()) /
-    TMath::Sqrt(mu.primaryTrackParticle()->definingParametersCovMatrix()(0,0)
-    + eventInfo->beamPosSigmaX()*eventInfo->beamPosSigmaX() );
-    if (d0_sig>3.0) return false;
-
-    // zo cut
-    double z0_vrtPVx = mu.primaryTrackParticle()->z0() +
-    mu.primaryTrackParticle()->vz() - primVertex->z();
-    double sintheta = 1.0/TMath::CosH(mu.eta());
-    if (abs( z0_vrtPVx*sintheta )>10.0) return false;
-    */
-
-    dec_signal(mu) = true;
-    return true;
-
-  }
 
 
   EL::StatusCode ZinvxAODAnalysis :: passMuonVBF(xAOD::Muon& mu,
@@ -2500,12 +2507,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-
   EL::StatusCode ZinvxAODAnalysis :: passElectronSelection(xAOD::Electron& elec,
-      const xAOD::EventInfo* eventInfo){
+      const xAOD::EventInfo* eventInfo, xAOD::Vertex* primVertex){
 
     dec_baseline(elec) = false;
     selectDec(elec) = false; // To select objects for Overlap removal
+    dec_signal(elec) = false;
 
     // According to https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2#Electron_identification
 
@@ -2517,11 +2524,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     // don't bother calibrating or computing WP
     double elecPt = (elec.pt()) * 0.001; /// GeV
-    if ( elecPt < 4. ) return EL::StatusCode::SUCCESS;
+    //if ( elecPt < 4. ) return EL::StatusCode::SUCCESS;
 
     // goodOQ(object quality cut) : Bad Electron Cluster
     // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/EGammaIdentificationRun2#Object_quality_cut
-    if( !elec.isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) return false;
+    if( !elec.isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) return EL::StatusCode::SUCCESS;
 
     // "Please apply the identification to uncalibrated electron object. ID scale factors are to be applied to calibrated objects."
     // LH Electron (Medium)
@@ -2543,59 +2550,44 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     // Eta cut
-    double Eta = elec.caloCluster()->eta();
-    //double Eta = elec.caloCluster()->etaBE(2);
+    //double Eta = elec.caloCluster()->eta();
+    double Eta = elec.caloCluster()->etaBE(2);
     if ( fabs(Eta) >= 2.47 || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
 
     // pT cut
     double elecPtCut = 10.0; /// GeV
     if (elecPt <= elecPtCut) return EL::StatusCode::SUCCESS; /// veto electron
 
+    // Baseline Electron
     dec_baseline(elec) = true;
     selectDec(elec) = true; // To select objects for Overlap removal
+
+
+    // pT cut
+    if (elecPt <= 25.) return EL::StatusCode::SUCCESS; /// veto electron
+
+    // d0 / z0 cuts applied
+    // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2#Electron_d0_and_z0_cut_definitio
+    // d0 significance (Transverse impact parameter)
+    const xAOD::TrackParticle *tp = elec.trackParticle() ; //your input track particle from the electron
+    double d0sig = xAOD::TrackingHelpers::d0significance( tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
+    if (fabs(d0sig) > 5.0) return EL::StatusCode::SUCCESS;
+    // zo cut
+    float z0sintheta = 1e8;
+    //if (primVertex) z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( elec.p4().Theta() );
+    z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
+    if (fabs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
+
+    // Isolation requirement
+    if (!m_IsolationSelectionTool->accept(elec)) return EL::StatusCode::SUCCESS;
+
+    // Signal Electron
+    dec_signal(elec) = true;
 
     return EL::StatusCode::SUCCESS;
 
   }
 
-
-  bool ZinvxAODAnalysis :: passElectronSignal(xAOD::Electron& elec,
-      const xAOD::EventInfo* eventInfo,
-      xAOD::Vertex* primVertex){
-
-    dec_signal(elec) = false;
-    if (!dec_baseline(elec)) return false;
-
-    // According to https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2#Electron_identification:
-
-    // Event information
-    if( ! m_event->retrieve( eventInfo, "EventInfo").isSuccess() ){
-      Error("execute()", "Failed to retrieve event info collection in passElectronSignal. Exiting." );
-      return EL::StatusCode::FAILURE;
-    }
-
-    /// pT cut
-    double elecPt = (elec.pt()) * 0.001;
-    double ptCut = 25.0; /// GeV
-    if (elecPt <= ptCut) return false; /// veto electron
-
-    /*
-    // d0 / z0 cuts applied 
-    // d0 significance
-    const xAOD::TrackParticle *trk = elec.trackParticle();
-    float d0_sig =  TMath::Abs(trk->d0())/TMath::Sqrt(trk->definingParametersCovMatrix()(0,0)
-    + eventInfo->beamPosSigmaX()*eventInfo->beamPosSigmaX() );
-    if (d0_sig>5.0) return false;
-    */
-
-    // Isolation requirement
-    if (!m_IsolationSelectionTool->accept(elec)) return false;
-
-
-    dec_signal(elec) = true;
-    return true;
-
-  }
 
 
 
@@ -2680,6 +2672,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
+
+
   EL::StatusCode ZinvxAODAnalysis :: passPhotonSelection(xAOD::Photon& phot,
       const xAOD::EventInfo* eventInfo){
 
@@ -2742,6 +2736,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return EL::StatusCode::SUCCESS;
 
   }
+
+
 
 
   EL::StatusCode ZinvxAODAnalysis :: passPhotonVBF(xAOD::Photon& phot,
