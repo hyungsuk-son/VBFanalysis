@@ -111,8 +111,8 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
   // trees.  This method gets called before any input files are
   // connected.
 
-  h_jet_selection_pt = new TH1F("h_jet_selection_pt", "Jet Signal p_{T};p_{T} (GeV)", 250, 0, 500); // Jet pt [GeV]
-  wk()->addOutput (h_jet_selection_pt);
+
+  TH1::SetDefaultSumw2(kTRUE);
 
   h_met_ex = new TH1F("h_met_ex", "Missing E_{x};E_{x} (GeV)", 150, -150,  150); // MEx [GeV]
   h_met_ey = new TH1F("h_met_ey", "Missing E_{y};E_{y} (GeV)", 150, -150,  150); // MEy [GeV]
@@ -143,6 +143,95 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
   // Zvv
   h_zvv_offline_met = new TH1F("h_zvv_offline_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500); // Offline MET [GeV]
   wk()->addOutput (h_zvv_offline_met);
+
+
+  // Zmumu
+  // MET
+  //h_zmumu_hlt_met = new TH1F("h_zmumu_hlt_met", "HLT |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
+  //h_zmumu_hlt_topocl_met = new TH1F("h_zmumu_hlt_topocl_met", "HLT |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
+  h_zmumu_met = new TH1F("h_zmumu_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
+  h_zmumu_emulmet = new TH1F("h_zmumu_emulmet", "Emulated Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
+  //h_zmumu_met_pass_HLT_xe70 = new TH1F("h_zmumu_met_pass_HLT_xe70", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
+  //h_zmumu_corr_met_pass_HLT_xe70 = new TH1F("h_zmumu_corr_met_pass_HLT_xe70", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
+  //h_zmumu_met_pass_HLT_xe70_topocl = new TH1F("h_zmumu_met_pass_HLT_xe70_topocl", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
+  //h_zmumu_corr_met_pass_HLT_xe70_topocl = new TH1F("h_zmumu_corr_met_pass_HLT_xe70_topocl", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
+  //wk()->addOutput (h_zmumu_hlt_met);
+  //wk()->addOutput (h_zmumu_hlt_topocl_met);
+  wk()->addOutput (h_zmumu_met);
+  wk()->addOutput (h_zmumu_emulmet);
+  //wk()->addOutput (h_zmumu_met_pass_HLT_xe70);
+  //wk()->addOutput (h_zmumu_corr_met_pass_HLT_xe70);
+  //wk()->addOutput (h_zmumu_met_pass_HLT_xe70_topocl);
+  //wk()->addOutput (h_zmumu_corr_met_pass_HLT_xe70_topocl);
+  // Jets
+  h_zmumu_njet = new TH1F("h_zmumu_njet", "Number of Jets;Numbers", 20, 0, 20);
+  h_zmumu_jet1_pt = new TH1F("h_zmumu_jet1_pt", "Jet p_{T};p_{T} (GeV)", 250, 0, 500); // Jet pt [GeV]
+  h_zmumu_jet2_pt = new TH1F("h_zmumu_jet2_pt", "Jet p_{T};p_{T} (GeV)", 250, 0, 500); // Jet pt [GeV]
+  h_zmumu_jet1_phi = new TH1F("h_zmumu_jet1_phi", "Jet Phi;#phi (rad)", 40, 0, 4);
+  h_zmumu_jet2_phi = new TH1F("h_zmumu_jet2_phi", "Jet Phi;#phi (rad)", 40, 0, 4);
+  h_zmumu_jet1_eta = new TH1F("h_zmumu_jet1_eta", "Jet eta;#eta", 100, -5, 5);
+  h_zmumu_jet2_eta = new TH1F("h_zmumu_jet2_eta", "Jet eta;#eta", 100, -5, 5);
+  h_zmumu_jet1_rap = new TH1F("h_zmumu_jet1_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_zmumu_jet2_rap = new TH1F("h_zmumu_jet2_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_zmumu_mjj = new TH1F("h_zmumu_mjj", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
+  h_zmumu_dPhijj = new TH1F("h_zmumu_dPhijj", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_mjj_pass_HLT_xe70 = new TH1F("h_zmumu_mjj_pass_HLT_xe70", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
+  //h_zmumu_dPhijj_pass_HLT_xe70 = new TH1F("h_zmumu_dPhijj_pass_HLT_xe70", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_mjj_pass_HLT_xe70_topocl = new TH1F("h_zmumu_mjj_pass_HLT_xe70_topocl", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
+  //h_zmumu_dPhijj_pass_HLT_xe70_topocl = new TH1F("h_zmumu_dPhijj_pass_HLT_xe70_topocl", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
+  h_zmumu_dPhimetj1 = new TH1F("h_zmumu_dPhimetj1", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
+  h_zmumu_dPhimetj2 = new TH1F("h_zmumu_dPhimetj2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj1_pass_HLT_xe70 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj2_pass_HLT_xe70 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj1_pass_HLT_xe70_topocl = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_topocl", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj2_pass_HLT_xe70_topocl = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_topocl", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_mjj_pass_dPhijetmet = new TH1F("h_zmumu_mjj_pass_dPhijetmet", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
+  //h_zmumu_dPhijj_pass_dPhijetmet = new TH1F("h_zmumu_dPhijj_pass_dPhijetmet", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_mjj_pass_HLT_xe70_pass_dPhijetmet = new TH1F("h_zmumu_mjj_pass_HLT_xe70_pass_dPhijetmet", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
+  //h_zmumu_dPhijj_pass_HLT_xe70_pass_dPhijetmet = new TH1F("h_zmumu_dPhijj_pass_HLT_xe70_pass_dPhijetmet", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_mjj_pass_HLT_xe70_topocl_pass_dPhijetmet = new TH1F("h_zmumu_mjj_pass_HLT_xe70_topocl_pass_dPhijetmet", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
+  //h_zmumu_dPhijj_pass_HLT_xe70_topocl_pass_dPhijetmet = new TH1F("h_zmumu_dPhijj_pass_HLT_xe70_topocl_pass_dPhijetmet", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj1_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj1_pass_dPhijj_lt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj2_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj2_pass_dPhijj_lt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj1_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj1_pass_dPhijj_gt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj2_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj2_pass_dPhijj_gt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj1_pass_HLT_xe70_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_pass_dPhijj_lt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj2_pass_HLT_xe70_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_pass_dPhijj_lt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj1_pass_HLT_xe70_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_pass_dPhijj_gt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj2_pass_HLT_xe70_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_pass_dPhijj_gt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj1_pass_HLT_xe70_topocl_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_topocl_pass_dPhijj_lt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj2_pass_HLT_xe70_topocl_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_topocl_pass_dPhijj_lt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj1_pass_HLT_xe70_topocl_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_topocl_pass_dPhijj_gt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
+  //h_zmumu_dPhimetj2_pass_HLT_xe70_topocl_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_topocl_pass_dPhijj_gt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  wk()->addOutput (h_zmumu_njet);
+  wk()->addOutput (h_zmumu_jet1_pt);
+  wk()->addOutput (h_zmumu_jet2_pt);
+  wk()->addOutput (h_zmumu_jet1_phi);
+  wk()->addOutput (h_zmumu_jet2_phi);
+  wk()->addOutput (h_zmumu_jet1_eta);
+  wk()->addOutput (h_zmumu_jet2_eta);
+  wk()->addOutput (h_zmumu_jet1_rap);
+  wk()->addOutput (h_zmumu_jet2_rap);
+  wk()->addOutput (h_zmumu_mjj);
+  wk()->addOutput (h_zmumu_dPhijj);
+  wk()->addOutput (h_zmumu_dPhimetj1);
+  wk()->addOutput (h_zmumu_dPhimetj2);
+  // Leptons
+  h_zmumu_muon1_pt = new TH1F("h_zmumu_muon1_pt", "Muon p_{T};p_{T} (GeV)", 250, 0, 500); // [GeV]
+  h_zmumu_muon2_pt = new TH1F("h_zmumu_muon2_pt", "Muon p_{T};p_{T} (GeV)", 250, 0, 500); // [GeV]
+  h_zmumu_muon1_phi = new TH1F("h_zmumu_muon1_phi", "Muon Phi;#phi (rad)", 40, 0, 4);
+  h_zmumu_muon2_phi = new TH1F("h_zmumu_muon2_phi", "Muon Phi;#phi (rad)", 40, 0, 4);
+  h_zmumu_muon1_eta = new TH1F("h_zmumu_muon1_eta", "Muon eta;#eta", 100, -5, 5);
+  h_zmumu_muon2_eta = new TH1F("h_zmumu_muon2_eta", "Muon eta;#eta", 100, -5, 5);
+  h_zmumu_mll = new TH1F("h_zmumu_mll", "Invariant mass;m_{ll} (GeV)", 100, 0, 200);
+  wk()->addOutput (h_zmumu_muon1_pt);
+  wk()->addOutput (h_zmumu_muon2_pt);
+  wk()->addOutput (h_zmumu_muon1_phi);
+  wk()->addOutput (h_zmumu_muon2_phi);
+  wk()->addOutput (h_zmumu_muon1_eta);
+  wk()->addOutput (h_zmumu_muon2_eta);
+  wk()->addOutput (h_zmumu_mll);
+
 
 
 
@@ -211,9 +300,9 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_useBitsetCutflow = true;
 
   // Event Channel
-  m_isZvv = true;
-  m_isZmumu = false;
-  m_isWmunu = false;
+  m_isZvv = false;
+  m_isZmumu = true;
+  m_isWmunu = true;
   m_isZee = false;
   m_isWenu = false;
 
@@ -223,7 +312,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
   // Cut values
   m_muonPtCut = 7.; /// GeV
-  m_muonEtaCut = 2.5;
+  m_muonEtaCut = 2.47;
   m_elecPtCut = 7.; /// GeV
   m_elecEtaCut = 2.47;
   m_photPtCut = 20.; /// GeV
@@ -1094,7 +1183,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Jet Signal Selection
     if (IsSignalJet(*jets)) {
       double jetPt = (jets->pt()) * 0.001; /// GeV
-      h_jet_selection_pt->Fill( jetPt ); // GeV
 
       m_goodJet->push_back( jets );
     }
@@ -1869,6 +1957,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]Tau Veto");
               m_eventCutflow[9]+=1;
               if ( pass_Zmumu && m_goodMuon->size() == 2 && mll_muon > 66. && mll_muon < 116. ){
+                // Calculate muon SF
+                if (!m_isData) {
+                  double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
+                  //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                  mcEventWeight *= totalMuonSF_Zmumu;
+                }
                 if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]mll cut");
                 m_eventCutflow[10]+=1;
                 if ( m_signalJet->size() > 1 ) {
@@ -1883,26 +1977,48 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       if ( pass_CJV ) {
                         if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]CJV cut");
                         m_eventCutflow[14]+=1;
+                        // Fill histogram
+                        // MET
+                        h_zmumu_met->Fill(MET, mcEventWeight);
+                        h_zmumu_emulmet->Fill(emulMET, mcEventWeight);
+                        // Jets
+                        h_zmumu_njet->Fill(m_signalJet->size(), mcEventWeight);
+                        h_zmumu_jet1_pt->Fill(m_signalJet->at(0)->pt() * 0.001, mcEventWeight);
+                        h_zmumu_jet2_pt->Fill(m_signalJet->at(1)->pt() * 0.001, mcEventWeight);
+                        h_zmumu_jet1_phi->Fill(m_signalJet->at(0)->phi(), mcEventWeight);
+                        h_zmumu_jet2_phi->Fill(m_signalJet->at(1)->phi(), mcEventWeight);
+                        h_zmumu_jet1_eta->Fill(m_signalJet->at(0)->eta(), mcEventWeight);
+                        h_zmumu_jet2_eta->Fill(m_signalJet->at(1)->eta(), mcEventWeight);
+                        h_zmumu_jet1_rap->Fill(m_signalJet->at(0)->rapidity(), mcEventWeight);
+                        h_zmumu_jet2_rap->Fill(m_signalJet->at(1)->rapidity(), mcEventWeight);
+                        h_zmumu_mjj->Fill(mjj, mcEventWeight);
+                        h_zmumu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight);
+                        h_zmumu_dPhimetj1->Fill(dPhiJet1Met, mcEventWeight);
+                        h_zmumu_dPhimetj2->Fill(dPhiJet2Met, mcEventWeight);
+                        // Muons
+                        h_zmumu_muon1_pt->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight);
+                        h_zmumu_muon2_pt->Fill(m_goodMuon->at(1)->pt() * 0.001, mcEventWeight);
+                        h_zmumu_muon1_phi->Fill(m_goodMuon->at(0)->phi(), mcEventWeight);
+                        h_zmumu_muon2_phi->Fill(m_goodMuon->at(1)->phi(), mcEventWeight);
+                        h_zmumu_muon1_eta->Fill(m_goodMuon->at(0)->eta(), mcEventWeight);
+                        h_zmumu_muon2_eta->Fill(m_goodMuon->at(1)->eta(), mcEventWeight);
+                        h_zmumu_mll->Fill(mll_muon, mcEventWeight);
+
                         if ( pass_dPhiDijetMet ) {
                           if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]dPhi(j,MET) cut");
                           m_eventCutflow[15]+=1;
-                          // Calculate muon SF
-                          if (!m_isData) {
-                            double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
-                            //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+                        } // pass dPhiDijetMet
+                      } // pass CJV
+                    } // mjj Cut
+                  } // pass diJet
+                } // at least 1 jet
+              } // pass Zmumu 
+            } // Tau veto
+          } // at least 1 muon
+        } // Electron veto
+      } // MET cut
+    } // HLT_xe70
+  } // m_isZmumu
 
 
   //---------------------------------
@@ -1924,7 +2040,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           // Calculate muon SF
                           if (!m_isData) {
                             double totalMuonSF_Wmunu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
-                            Info("execute()", " Wmunu Total Muon SF = %.3f ", totalMuonSF_Wmunu);
+                            //Info("execute()", " Wmunu Total Muon SF = %.3f ", totalMuonSF_Wmunu);
                           }
                         }
                       }
@@ -2647,8 +2763,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Eta cut
     //double Eta = elec.caloCluster()->eta();
     double Eta = elec.caloCluster()->etaBE(2);
-    //if ( fabs(Eta) >= m_elecEtaCut || (fabs(Eta) >= 1.37 && fabs(Eta) <= 1.52)) return EL::StatusCode::SUCCESS;
-    if ( fabs(Eta) > m_elecEtaCut ) return EL::StatusCode::SUCCESS;
+    if ( fabs(Eta) > m_elecEtaCut || (fabs(Eta) > 1.37 && fabs(Eta) < 1.52)) return EL::StatusCode::SUCCESS;
+    //if ( fabs(Eta) > m_elecEtaCut ) return EL::StatusCode::SUCCESS;
 
     /// pT cut
     if (elecPt < m_elecPtCut ) return EL::StatusCode::SUCCESS; /// veto electron

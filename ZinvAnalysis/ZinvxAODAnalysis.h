@@ -184,8 +184,6 @@ class ZinvxAODAnalysis : public EL::Algorithm
     GoodRunsListSelectionTool *m_grl; //!
 
 
-    TH1 *h_jet_selection_pt; //!
-
     TH1 *h_met_ex; //!
     TH1 *h_met_ey; //!
     TH1 *h_met; //!
@@ -200,8 +198,32 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
 
     // Zinv study
+    // Zvv
     TH1 *h_zvv_offline_met; //!
 
+    // Zmumu
+    TH1 *h_zmumu_met; //!
+    TH1 * h_zmumu_emulmet; //!
+    TH1 * h_zmumu_njet; //!
+    TH1 * h_zmumu_jet1_pt; //!
+    TH1 * h_zmumu_jet2_pt; //!
+    TH1 * h_zmumu_jet1_phi; //!
+    TH1 * h_zmumu_jet2_phi; //!
+    TH1 * h_zmumu_jet1_eta; //!
+    TH1 * h_zmumu_jet2_eta; //!
+    TH1 * h_zmumu_jet1_rap; //!
+    TH1 * h_zmumu_jet2_rap; //!
+    TH1 * h_zmumu_mjj; //!
+    TH1 * h_zmumu_dPhijj; //!
+    TH1 * h_zmumu_dPhimetj1; //!
+    TH1 * h_zmumu_dPhimetj2; //!
+    TH1 * h_zmumu_muon1_pt; //!
+    TH1 * h_zmumu_muon2_pt; //!
+    TH1 * h_zmumu_muon1_phi; //!
+    TH1 * h_zmumu_muon2_phi; //!
+    TH1 * h_zmumu_muon1_eta; //!
+    TH1 * h_zmumu_muon2_eta; //!
+    TH1 * h_zmumu_mll; //!
 
     // trigger tools member variables
     Trig::TrigDecisionTool *m_trigDecisionTool; //!
