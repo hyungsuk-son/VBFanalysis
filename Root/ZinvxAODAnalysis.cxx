@@ -301,10 +301,10 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
   // Event Channel
   m_isZvv = false;
-  m_isZmumu = true;
-  m_isWmunu = true;
-  m_isZee = false;
-  m_isWenu = false;
+  m_isZmumu = false;
+  m_isWmunu = false;
+  m_isZee = true;
+  m_isWenu = true;
 
   // Enable Overlap Removal tool
   m_doORtool = false;
@@ -312,7 +312,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
   // Cut values
   m_muonPtCut = 7.; /// GeV
-  m_muonEtaCut = 2.47;
+  m_muonEtaCut = 2.5;
   m_elecPtCut = 7.; /// GeV
   m_elecEtaCut = 2.47;
   m_photPtCut = 20.; /// GeV
@@ -331,6 +331,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_isoMuonPtMin = 10.; ///GeV
   m_isoMuonPtMax = 500.; ///GeV
   m_recoSF = true;
+  m_idSF = true;
   m_isoSF = true;
   m_ttvaSF = true;
 
@@ -732,8 +733,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   }
 
   // Calculate EventWeight
-  if (m_isData) // it's data!
-    mcEventWeight = 1.0;
+  if (m_isData) {// it's data!
+    mcEventWeight = 1.;
+    mcEventWeight_Zmumu = 1.;
+    mcEventWeight_Wmunu = 1.;
+    mcEventWeight_Zee = 1.;
+    mcEventWeight_Wenu = 1.;
+  }
   else {
     float pu_weight = m_prwTool->getCombinedWeight(*eventInfo); // Get Pile-up weight
     mcEventWeight = eventInfo->mcEventWeight() * pu_weight;
@@ -1957,12 +1963,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]Tau Veto");
               m_eventCutflow[9]+=1;
               if ( pass_Zmumu && m_goodMuon->size() == 2 && mll_muon > 66. && mll_muon < 116. ){
-                // Calculate muon SF
-                if (!m_isData) {
-                  double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
-                  //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
-                  mcEventWeight *= totalMuonSF_Zmumu;
-                }
                 if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]mll cut");
                 m_eventCutflow[10]+=1;
                 if ( m_signalJet->size() > 1 ) {
@@ -1977,36 +1977,41 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       if ( pass_CJV ) {
                         if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]CJV cut");
                         m_eventCutflow[14]+=1;
-                        // Fill histogram
-                        // MET
-                        h_zmumu_met->Fill(MET, mcEventWeight);
-                        h_zmumu_emulmet->Fill(emulMET, mcEventWeight);
-                        // Jets
-                        h_zmumu_njet->Fill(m_signalJet->size(), mcEventWeight);
-                        h_zmumu_jet1_pt->Fill(m_signalJet->at(0)->pt() * 0.001, mcEventWeight);
-                        h_zmumu_jet2_pt->Fill(m_signalJet->at(1)->pt() * 0.001, mcEventWeight);
-                        h_zmumu_jet1_phi->Fill(m_signalJet->at(0)->phi(), mcEventWeight);
-                        h_zmumu_jet2_phi->Fill(m_signalJet->at(1)->phi(), mcEventWeight);
-                        h_zmumu_jet1_eta->Fill(m_signalJet->at(0)->eta(), mcEventWeight);
-                        h_zmumu_jet2_eta->Fill(m_signalJet->at(1)->eta(), mcEventWeight);
-                        h_zmumu_jet1_rap->Fill(m_signalJet->at(0)->rapidity(), mcEventWeight);
-                        h_zmumu_jet2_rap->Fill(m_signalJet->at(1)->rapidity(), mcEventWeight);
-                        h_zmumu_mjj->Fill(mjj, mcEventWeight);
-                        h_zmumu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight);
-                        h_zmumu_dPhimetj1->Fill(dPhiJet1Met, mcEventWeight);
-                        h_zmumu_dPhimetj2->Fill(dPhiJet2Met, mcEventWeight);
-                        // Muons
-                        h_zmumu_muon1_pt->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight);
-                        h_zmumu_muon2_pt->Fill(m_goodMuon->at(1)->pt() * 0.001, mcEventWeight);
-                        h_zmumu_muon1_phi->Fill(m_goodMuon->at(0)->phi(), mcEventWeight);
-                        h_zmumu_muon2_phi->Fill(m_goodMuon->at(1)->phi(), mcEventWeight);
-                        h_zmumu_muon1_eta->Fill(m_goodMuon->at(0)->eta(), mcEventWeight);
-                        h_zmumu_muon2_eta->Fill(m_goodMuon->at(1)->eta(), mcEventWeight);
-                        h_zmumu_mll->Fill(mll_muon, mcEventWeight);
-
                         if ( pass_dPhiDijetMet ) {
                           if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]dPhi(j,MET) cut");
                           m_eventCutflow[15]+=1;
+                          // Calculate muon SF
+                          if (!m_isData) {
+                            double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
+                            //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                            mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
+                          }
+                          // Fill histogram
+                          // MET
+                          h_zmumu_met->Fill(MET, mcEventWeight_Zmumu);
+                          h_zmumu_emulmet->Fill(emulMET, mcEventWeight_Zmumu);
+                          // Jets
+                          h_zmumu_njet->Fill(m_signalJet->size(), mcEventWeight_Zmumu);
+                          h_zmumu_jet1_pt->Fill(m_signalJet->at(0)->pt() * 0.001, mcEventWeight_Zmumu);
+                          h_zmumu_jet2_pt->Fill(m_signalJet->at(1)->pt() * 0.001, mcEventWeight_Zmumu);
+                          h_zmumu_jet1_phi->Fill(m_signalJet->at(0)->phi(), mcEventWeight_Zmumu);
+                          h_zmumu_jet2_phi->Fill(m_signalJet->at(1)->phi(), mcEventWeight_Zmumu);
+                          h_zmumu_jet1_eta->Fill(m_signalJet->at(0)->eta(), mcEventWeight_Zmumu);
+                          h_zmumu_jet2_eta->Fill(m_signalJet->at(1)->eta(), mcEventWeight_Zmumu);
+                          h_zmumu_jet1_rap->Fill(m_signalJet->at(0)->rapidity(), mcEventWeight_Zmumu);
+                          h_zmumu_jet2_rap->Fill(m_signalJet->at(1)->rapidity(), mcEventWeight_Zmumu);
+                          h_zmumu_mjj->Fill(mjj, mcEventWeight_Zmumu);
+                          h_zmumu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                          h_zmumu_dPhimetj1->Fill(dPhiJet1Met, mcEventWeight_Zmumu);
+                          h_zmumu_dPhimetj2->Fill(dPhiJet2Met, mcEventWeight_Zmumu);
+                          // Muons
+                          h_zmumu_muon1_pt->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight_Zmumu);
+                          h_zmumu_muon2_pt->Fill(m_goodMuon->at(1)->pt() * 0.001, mcEventWeight_Zmumu);
+                          h_zmumu_muon1_phi->Fill(m_goodMuon->at(0)->phi(), mcEventWeight_Zmumu);
+                          h_zmumu_muon2_phi->Fill(m_goodMuon->at(1)->phi(), mcEventWeight_Zmumu);
+                          h_zmumu_muon1_eta->Fill(m_goodMuon->at(0)->eta(), mcEventWeight_Zmumu);
+                          h_zmumu_muon2_eta->Fill(m_goodMuon->at(1)->eta(), mcEventWeight_Zmumu);
+                          h_zmumu_mll->Fill(mll_muon, mcEventWeight_Zmumu);
                         } // pass dPhiDijetMet
                       } // pass CJV
                     } // mjj Cut
@@ -2041,6 +2046,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           if (!m_isData) {
                             double totalMuonSF_Wmunu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
                             //Info("execute()", " Wmunu Total Muon SF = %.3f ", totalMuonSF_Wmunu);
+                            mcEventWeight_Wmunu = mcEventWeight * totalMuonSF_Wmunu;
                           }
                         }
                       }
@@ -2064,7 +2070,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   if (m_isZee){
     if ( m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH") || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose") ) {
-    //if (m_trigDecisionTool->isPassed("HLT_e24_lhmedium_iloose_L1EM20VH") || m_trigDecisionTool->isPassed("HLT_e60_lhmedium*")) {
       m_eventCutflow[5]+=1;
       if ( emulMET > m_metCut ) {
         m_eventCutflow[6]+=1;
@@ -2086,6 +2091,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         m_eventCutflow[14]+=1;
                         if ( pass_dPhiDijetMet ) {
                           m_eventCutflow[15]+=1;
+                          // Calculate electron SF
+                          if (!m_isData) {
+                            double totalElectronSF_Zee = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoSF);
+                            //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
+                            mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
+                          }
                         }
                       }
                     }
@@ -2763,8 +2774,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Eta cut
     //double Eta = elec.caloCluster()->eta();
     double Eta = elec.caloCluster()->etaBE(2);
-    if ( fabs(Eta) > m_elecEtaCut || (fabs(Eta) > 1.37 && fabs(Eta) < 1.52)) return EL::StatusCode::SUCCESS;
-    //if ( fabs(Eta) > m_elecEtaCut ) return EL::StatusCode::SUCCESS;
+    //if ( fabs(Eta) > m_elecEtaCut || (fabs(Eta) > 1.37 && fabs(Eta) < 1.52)) return EL::StatusCode::SUCCESS;
+    if ( fabs(Eta) > m_elecEtaCut ) return EL::StatusCode::SUCCESS;
 
     /// pT cut
     if (elecPt < m_elecPtCut ) return EL::StatusCode::SUCCESS; /// veto electron
@@ -3059,8 +3070,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     if (recoSF) {
       float sf_reco(1.);
-      if (m_muonEfficiencySFTool->getEfficiencyScaleFactor( mu, sf_reco ) == CP::CorrectionCode::Error) {
-        Error("execute()", " GetGoodMuonSF: Reco getEfficiencyScaleFactor returns Error CorrectionCode");
+      if (m_muonEfficiencySFTool->getEfficiencyScaleFactor( mu, sf_reco ) == CP::CorrectionCode::OutOfValidityRange) {
+        Error("execute()", " GetGoodMuonSF: Reco getEfficiencyScaleFactor out of validity range");
       }
       //Info("execute()", "  GetGoodMuonSF: sf_reco = %.5f ", sf_reco );
       sf *= sf_reco;
@@ -3068,8 +3079,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     if (isoSF) {
       float sf_iso(1.);
-      if (m_muonIsolationSFTool->getEfficiencyScaleFactor( mu, sf_iso ) == CP::CorrectionCode::Error) {
-        Error("execute()", " GetGoodMuonSF: Iso getEfficiencyScaleFactor returns Error CorrectionCode");
+      if (m_muonIsolationSFTool->getEfficiencyScaleFactor( mu, sf_iso ) == CP::CorrectionCode::OutOfValidityRange) {
+        Error("execute()", " GetGoodMuonSF: Iso getEfficiencyScaleFactor out of validity range");
       }
       //Info("execute()", "  GetGoodMuonSF: sf_iso = %.5f ", sf_iso );
       sf *= sf_iso;
@@ -3077,8 +3088,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     if (ttvaSF) {
       float sf_TTVA(1.);
-      if (m_muonTTVAEfficiencySFTool->getEfficiencyScaleFactor( mu, sf_TTVA ) == CP::CorrectionCode::Error) {
-        Error("execute()", " GetGoodMuonSF: TTVA getEfficiencyScaleFactor returns Error CorrectionCode");
+      if (m_muonTTVAEfficiencySFTool->getEfficiencyScaleFactor( mu, sf_TTVA ) == CP::CorrectionCode::OutOfValidityRange) {
+        Error("execute()", " GetGoodMuonSF: TTVA getEfficiencyScaleFactor out of validity range");
       }
       //Info("execute()", "  GetGoodMuonSF: sf_TTVA = %.5f ", sf_TTVA );
       sf *= sf_TTVA;
@@ -3108,6 +3119,71 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return sf;
 
   }
+
+
+  float ZinvxAODAnalysis :: GetGoodElectronSF(xAOD::Electron& elec,
+      const bool recoSF, const bool idSF, const bool isoSF) {
+
+    float sf(1.);
+
+    if (recoSF) {
+      double sf_reco(1.);
+      if (m_elecEfficiencySFTool_reco->getEfficiencyScaleFactor( elec, sf_reco ) == CP::CorrectionCode::Ok) {
+        sf *= sf_reco;
+        //Info("execute()", "  GetGoodElectronSF: sf_reco = %.5f ", sf_reco );
+      }
+      else {
+        Error("execute()", " GetGoodElectronSF: Reco getEfficiencyScaleFactor returns Error CorrectionCode");
+      }
+    }
+
+    if (idSF) {
+      double sf_id(1.);
+      if (m_elecEfficiencySFTool_id_Loose->getEfficiencyScaleFactor( elec, sf_id ) == CP::CorrectionCode::Ok) {
+        sf *= sf_id;
+        //Info("execute()", "  GetGoodElectronSF: sf_id = %.5f ", sf_id );
+      }
+      else {
+        Error("execute()", " GetGoodElectronSF: Id (Loose) getEfficiencyScaleFactor returns Error CorrectionCode");
+      }
+    }
+
+    if (isoSF) {
+      double sf_iso(1.);
+      if (m_elecEfficiencySFTool_iso_Loose->getEfficiencyScaleFactor( elec, sf_iso ) == CP::CorrectionCode::Ok) {
+        sf *= sf_iso;
+        //Info("execute()", "  GetGoodElectronSF: sf_iso = %.5f ", sf_iso );
+      }
+      else {
+        Error("execute()", " GetGoodElectronSF: Iso (Loose) getEfficiencyScaleFactor returns Error CorrectionCode");
+      }
+    }
+
+    //Info("execute()", "  GetGoodElectronSF: Good Electron SF = %.5f ", sf );
+    dec_scalefactor(elec) = sf;
+    return sf;
+
+  }
+
+
+  float ZinvxAODAnalysis :: GetTotalElectronSF(xAOD::ElectronContainer& electrons,
+      bool recoSF, bool idSF, bool isoSF) {
+
+    float sf(1.);
+
+    for (const auto& electron : electrons) {
+      sf *= GetGoodElectronSF(*electron, recoSF, idSF, isoSF);
+    }
+
+    //Info("execute()", "  GetTotalElectronSF: Total Electron SF = %.5f ", sf );
+    return sf;
+
+  }
+
+
+
+
+
 
   int ZinvxAODAnalysis :: NumIsoTracks(const xAOD::TrackParticleContainer* inTracks,
       xAOD::Vertex* primVertex, float Pt_Low, float Pt_High) {
