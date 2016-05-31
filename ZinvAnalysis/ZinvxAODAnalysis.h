@@ -142,7 +142,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
     // Cutflow
     bool m_useBitsetCutflow; //!
-    int m_eventCutflow[20]; //!
+    int m_eventCutflow[40]; //!
 
     // Enable Overlap Removal tool
     bool m_doORtool; //!
@@ -195,11 +195,17 @@ class ZinvxAODAnalysis : public EL::Algorithm
     TH1 *h_sumet; //!
     TH1 *h_met_phi; //!
 
-    TH1 *h_emulmet_ex; //!
-    TH1 *h_emulmet_ey; //!
-    TH1 *h_emulmet; //!
-    TH1 *h_emulsumet; //!
-    TH1 *h_emulmet_phi; //!
+    TH1 *h_emulmet_nomu_ex; //!
+    TH1 *h_emulmet_nomu_ey; //!
+    TH1 *h_emulmet_nomu; //!
+    TH1 *h_emulsumet_nomu; //!
+    TH1 *h_emulmet_nomu_phi; //!
+
+    TH1 *h_emulmet_noelec_ex; //!
+    TH1 *h_emulmet_noelec_ey; //!
+    TH1 *h_emulmet_noelec; //!
+    TH1 *h_emulsumet_noelec; //!
+    TH1 *h_emulmet_noelec_phi; //!
 
 
     // Zinv study
@@ -208,27 +214,27 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
     // Zmumu
     TH1 *h_zmumu_met; //!
-    TH1 * h_zmumu_emulmet; //!
-    TH1 * h_zmumu_njet; //!
-    TH1 * h_zmumu_jet1_pt; //!
-    TH1 * h_zmumu_jet2_pt; //!
-    TH1 * h_zmumu_jet1_phi; //!
-    TH1 * h_zmumu_jet2_phi; //!
-    TH1 * h_zmumu_jet1_eta; //!
-    TH1 * h_zmumu_jet2_eta; //!
-    TH1 * h_zmumu_jet1_rap; //!
-    TH1 * h_zmumu_jet2_rap; //!
-    TH1 * h_zmumu_mjj; //!
-    TH1 * h_zmumu_dPhijj; //!
-    TH1 * h_zmumu_dPhimetj1; //!
-    TH1 * h_zmumu_dPhimetj2; //!
-    TH1 * h_zmumu_muon1_pt; //!
-    TH1 * h_zmumu_muon2_pt; //!
-    TH1 * h_zmumu_muon1_phi; //!
-    TH1 * h_zmumu_muon2_phi; //!
-    TH1 * h_zmumu_muon1_eta; //!
-    TH1 * h_zmumu_muon2_eta; //!
-    TH1 * h_zmumu_mll; //!
+    TH1 *h_zmumu_emulmet_nomu; //!
+    TH1 *h_zmumu_njet; //!
+    TH1 *h_zmumu_jet1_pt; //!
+    TH1 *h_zmumu_jet2_pt; //!
+    TH1 *h_zmumu_jet1_phi; //!
+    TH1 *h_zmumu_jet2_phi; //!
+    TH1 *h_zmumu_jet1_eta; //!
+    TH1 *h_zmumu_jet2_eta; //!
+    TH1 *h_zmumu_jet1_rap; //!
+    TH1 *h_zmumu_jet2_rap; //!
+    TH1 *h_zmumu_mjj; //!
+    TH1 *h_zmumu_dPhijj; //!
+    TH1 *h_zmumu_dPhimetj1; //!
+    TH1 *h_zmumu_dPhimetj2; //!
+    TH1 *h_zmumu_muon1_pt; //!
+    TH1 *h_zmumu_muon2_pt; //!
+    TH1 *h_zmumu_muon1_phi; //!
+    TH1 *h_zmumu_muon2_phi; //!
+    TH1 *h_zmumu_muon1_eta; //!
+    TH1 *h_zmumu_muon2_eta; //!
+    TH1 *h_zmumu_mll; //!
 
     // trigger tools member variables
     Trig::TrigDecisionTool *m_trigDecisionTool; //!
