@@ -218,16 +218,23 @@ class ZinvxAODAnalysis : public EL::Algorithm
     TH1 *h_zmumu_njet; //!
     TH1 *h_zmumu_jet1_pt; //!
     TH1 *h_zmumu_jet2_pt; //!
+    TH1 *h_zmumu_jet3_pt; //!
     TH1 *h_zmumu_jet1_phi; //!
     TH1 *h_zmumu_jet2_phi; //!
+    TH1 *h_zmumu_jet3_phi; //!
     TH1 *h_zmumu_jet1_eta; //!
     TH1 *h_zmumu_jet2_eta; //!
+    TH1 *h_zmumu_jet3_eta; //!
     TH1 *h_zmumu_jet1_rap; //!
     TH1 *h_zmumu_jet2_rap; //!
+    TH1 *h_zmumu_jet3_rap; //!
     TH1 *h_zmumu_mjj; //!
     TH1 *h_zmumu_dPhijj; //!
+    TH1 *h_zmumu_dRjj; //!
     TH1 *h_zmumu_dPhimetj1; //!
     TH1 *h_zmumu_dPhimetj2; //!
+    TH1 *h_zmumu_dPhimetj3; //!
+    TH1 *h_zmumu_dPhiMinmetjet; //!
     TH1 *h_zmumu_muon1_pt; //!
     TH1 *h_zmumu_muon2_pt; //!
     TH1 *h_zmumu_muon1_phi; //!

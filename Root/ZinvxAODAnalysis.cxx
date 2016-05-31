@@ -155,89 +155,65 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
 
   // Zinv study
   // Zvv
-  h_zvv_offline_met = new TH1F("h_zvv_offline_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500); // Offline MET [GeV]
+  h_zvv_offline_met = new TH1F("h_zvv_offline_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500); // Offline MET [GeV]
   wk()->addOutput (h_zvv_offline_met);
 
 
   // Zmumu
   // MET
-  //h_zmumu_hlt_met = new TH1F("h_zmumu_hlt_met", "HLT |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
-  //h_zmumu_hlt_topocl_met = new TH1F("h_zmumu_hlt_topocl_met", "HLT |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
-  h_zmumu_met = new TH1F("h_zmumu_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
-  h_zmumu_emulmet_nomu = new TH1F("h_zmumu_emulmet_nomu", "Emulated Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
-  //h_zmumu_met_pass_HLT_xe70 = new TH1F("h_zmumu_met_pass_HLT_xe70", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
-  //h_zmumu_corr_met_pass_HLT_xe70 = new TH1F("h_zmumu_corr_met_pass_HLT_xe70", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
-  //h_zmumu_met_pass_HLT_xe70_topocl = new TH1F("h_zmumu_met_pass_HLT_xe70_topocl", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
-  //h_zmumu_corr_met_pass_HLT_xe70_topocl = new TH1F("h_zmumu_corr_met_pass_HLT_xe70_topocl", "Offline |Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500);
-  //wk()->addOutput (h_zmumu_hlt_met);
-  //wk()->addOutput (h_zmumu_hlt_topocl_met);
+  h_zmumu_met = new TH1F("h_zmumu_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
+  h_zmumu_emulmet_nomu = new TH1F("h_zmumu_emulmet_nomu", "Emulated Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
   wk()->addOutput (h_zmumu_met);
   wk()->addOutput (h_zmumu_emulmet_nomu);
-  //wk()->addOutput (h_zmumu_met_pass_HLT_xe70);
-  //wk()->addOutput (h_zmumu_corr_met_pass_HLT_xe70);
-  //wk()->addOutput (h_zmumu_met_pass_HLT_xe70_topocl);
-  //wk()->addOutput (h_zmumu_corr_met_pass_HLT_xe70_topocl);
   // Jets
-  h_zmumu_njet = new TH1F("h_zmumu_njet", "Number of Jets;Numbers", 20, 0, 20);
-  h_zmumu_jet1_pt = new TH1F("h_zmumu_jet1_pt", "Jet p_{T};p_{T} (GeV)", 250, 0, 500); // Jet pt [GeV]
-  h_zmumu_jet2_pt = new TH1F("h_zmumu_jet2_pt", "Jet p_{T};p_{T} (GeV)", 250, 0, 500); // Jet pt [GeV]
-  h_zmumu_jet1_phi = new TH1F("h_zmumu_jet1_phi", "Jet Phi;#phi (rad)", 40, 0, 4);
-  h_zmumu_jet2_phi = new TH1F("h_zmumu_jet2_phi", "Jet Phi;#phi (rad)", 40, 0, 4);
+  h_zmumu_njet = new TH1F("h_zmumu_njet", "Number of Jets;Numbers", 40, 0, 40);
+  h_zmumu_jet1_pt = new TH1F("h_zmumu_jet1_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_zmumu_jet2_pt = new TH1F("h_zmumu_jet2_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_zmumu_jet3_pt = new TH1F("h_zmumu_jet3_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_zmumu_jet1_phi = new TH1F("h_zmumu_jet1_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zmumu_jet2_phi = new TH1F("h_zmumu_jet2_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zmumu_jet3_phi = new TH1F("h_zmumu_jet3_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
   h_zmumu_jet1_eta = new TH1F("h_zmumu_jet1_eta", "Jet eta;#eta", 100, -5, 5);
   h_zmumu_jet2_eta = new TH1F("h_zmumu_jet2_eta", "Jet eta;#eta", 100, -5, 5);
+  h_zmumu_jet3_eta = new TH1F("h_zmumu_jet3_eta", "Jet eta;#eta", 100, -5, 5);
   h_zmumu_jet1_rap = new TH1F("h_zmumu_jet1_rap", "Jet rapidity;#eta", 100, -5, 5);
   h_zmumu_jet2_rap = new TH1F("h_zmumu_jet2_rap", "Jet rapidity;#eta", 100, -5, 5);
-  h_zmumu_mjj = new TH1F("h_zmumu_mjj", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
-  h_zmumu_dPhijj = new TH1F("h_zmumu_dPhijj", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_mjj_pass_HLT_xe70 = new TH1F("h_zmumu_mjj_pass_HLT_xe70", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
-  //h_zmumu_dPhijj_pass_HLT_xe70 = new TH1F("h_zmumu_dPhijj_pass_HLT_xe70", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_mjj_pass_HLT_xe70_topocl = new TH1F("h_zmumu_mjj_pass_HLT_xe70_topocl", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
-  //h_zmumu_dPhijj_pass_HLT_xe70_topocl = new TH1F("h_zmumu_dPhijj_pass_HLT_xe70_topocl", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
-  h_zmumu_dPhimetj1 = new TH1F("h_zmumu_dPhimetj1", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
-  h_zmumu_dPhimetj2 = new TH1F("h_zmumu_dPhimetj2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj1_pass_HLT_xe70 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj2_pass_HLT_xe70 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj1_pass_HLT_xe70_topocl = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_topocl", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj2_pass_HLT_xe70_topocl = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_topocl", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_mjj_pass_dPhijetmet = new TH1F("h_zmumu_mjj_pass_dPhijetmet", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
-  //h_zmumu_dPhijj_pass_dPhijetmet = new TH1F("h_zmumu_dPhijj_pass_dPhijetmet", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_mjj_pass_HLT_xe70_pass_dPhijetmet = new TH1F("h_zmumu_mjj_pass_HLT_xe70_pass_dPhijetmet", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
-  //h_zmumu_dPhijj_pass_HLT_xe70_pass_dPhijetmet = new TH1F("h_zmumu_dPhijj_pass_HLT_xe70_pass_dPhijetmet", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_mjj_pass_HLT_xe70_topocl_pass_dPhijetmet = new TH1F("h_zmumu_mjj_pass_HLT_xe70_topocl_pass_dPhijetmet", "Invariant mass;m_{jj} (GeV)", 100, 0, 2000);
-  //h_zmumu_dPhijj_pass_HLT_xe70_topocl_pass_dPhijetmet = new TH1F("h_zmumu_dPhijj_pass_HLT_xe70_topocl_pass_dPhijetmet", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj1_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj1_pass_dPhijj_lt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj2_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj2_pass_dPhijj_lt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj1_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj1_pass_dPhijj_gt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj2_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj2_pass_dPhijj_gt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj1_pass_HLT_xe70_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_pass_dPhijj_lt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj2_pass_HLT_xe70_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_pass_dPhijj_lt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj1_pass_HLT_xe70_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_pass_dPhijj_gt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj2_pass_HLT_xe70_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_pass_dPhijj_gt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj1_pass_HLT_xe70_topocl_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_topocl_pass_dPhijj_lt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj2_pass_HLT_xe70_topocl_pass_dPhijj_lt2 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_topocl_pass_dPhijj_lt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj1_pass_HLT_xe70_topocl_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj1_pass_HLT_xe70_topocl_pass_dPhijj_gt2", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 40, 0, 4);
-  //h_zmumu_dPhimetj2_pass_HLT_xe70_topocl_pass_dPhijj_gt2 = new TH1F("h_zmumu_dPhimetj2_pass_HLT_xe70_topocl_pass_dPhijj_gt2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 40, 0, 4);
+  h_zmumu_jet3_rap = new TH1F("h_zmumu_jet3_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_zmumu_mjj = new TH1F("h_zmumu_mjj", "Invariant mass;m_{jj} (GeV)", 80, 0, 4000);
+  h_zmumu_dPhijj = new TH1F("h_zmumu_dPhijj", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 32, 0, 3.2);
+  h_zmumu_dRjj = new TH1F("h_zmumu_dRjj", "Delta R between J1 and J2;#DeltaR(j_{1},j_{2}) (rad)", 50, 0, 5);
+  h_zmumu_dPhimetj1 = new TH1F("h_zmumu_dPhimetj1", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 32, 0, 3.2);
+  h_zmumu_dPhimetj2 = new TH1F("h_zmumu_dPhimetj2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 32, 0, 3.2);
+  h_zmumu_dPhimetj3 = new TH1F("h_zmumu_dPhimetj3", "Delta Phi between MET and J3;#Delta#phi(MET,j_{3}) (rad)", 32, 0, 3.2);
+  h_zmumu_dPhiMinmetjet = new TH1F("h_zmumu_dPhiMinmetjet", "Minimum Delta Phi between MET and Jet;#Delta#phi_{min}(MET,jet) (rad)", 32, 0, 3.2);
   wk()->addOutput (h_zmumu_njet);
   wk()->addOutput (h_zmumu_jet1_pt);
   wk()->addOutput (h_zmumu_jet2_pt);
+  wk()->addOutput (h_zmumu_jet3_pt);
   wk()->addOutput (h_zmumu_jet1_phi);
   wk()->addOutput (h_zmumu_jet2_phi);
+  wk()->addOutput (h_zmumu_jet3_phi);
   wk()->addOutput (h_zmumu_jet1_eta);
   wk()->addOutput (h_zmumu_jet2_eta);
+  wk()->addOutput (h_zmumu_jet3_eta);
   wk()->addOutput (h_zmumu_jet1_rap);
   wk()->addOutput (h_zmumu_jet2_rap);
+  wk()->addOutput (h_zmumu_jet3_rap);
   wk()->addOutput (h_zmumu_mjj);
   wk()->addOutput (h_zmumu_dPhijj);
+  wk()->addOutput (h_zmumu_dRjj);
   wk()->addOutput (h_zmumu_dPhimetj1);
   wk()->addOutput (h_zmumu_dPhimetj2);
+  wk()->addOutput (h_zmumu_dPhimetj3);
+  wk()->addOutput (h_zmumu_dPhiMinmetjet);
   // Leptons
-  h_zmumu_muon1_pt = new TH1F("h_zmumu_muon1_pt", "Muon p_{T};p_{T} (GeV)", 250, 0, 500); // [GeV]
-  h_zmumu_muon2_pt = new TH1F("h_zmumu_muon2_pt", "Muon p_{T};p_{T} (GeV)", 250, 0, 500); // [GeV]
-  h_zmumu_muon1_phi = new TH1F("h_zmumu_muon1_phi", "Muon Phi;#phi (rad)", 40, 0, 4);
-  h_zmumu_muon2_phi = new TH1F("h_zmumu_muon2_phi", "Muon Phi;#phi (rad)", 40, 0, 4);
+  h_zmumu_muon1_pt = new TH1F("h_zmumu_muon1_pt", "Muon p_{T};p_{T} (GeV)", 30, 0, 1500); // [GeV]
+  h_zmumu_muon2_pt = new TH1F("h_zmumu_muon2_pt", "Muon p_{T};p_{T} (GeV)", 30, 0, 1500); // [GeV]
+  h_zmumu_muon1_phi = new TH1F("h_zmumu_muon1_phi", "Muon Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zmumu_muon2_phi = new TH1F("h_zmumu_muon2_phi", "Muon Phi;#phi (rad)", 64, -3.2, 3.2);
   h_zmumu_muon1_eta = new TH1F("h_zmumu_muon1_eta", "Muon eta;#eta", 100, -5, 5);
   h_zmumu_muon2_eta = new TH1F("h_zmumu_muon2_eta", "Muon eta;#eta", 100, -5, 5);
-  h_zmumu_mll = new TH1F("h_zmumu_mll", "Invariant mass;m_{ll} (GeV)", 100, 0, 200);
+  h_zmumu_mll = new TH1F("h_zmumu_mll", "Invariant mass;m_{ll} (GeV)", 150, 0, 300);
   wk()->addOutput (h_zmumu_muon1_pt);
   wk()->addOutput (h_zmumu_muon2_pt);
   wk()->addOutput (h_zmumu_muon1_phi);
@@ -1713,18 +1689,27 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   TLorentzVector jet2;
   float jet1_pt = 0;
   float jet2_pt = 0;
+  float jet3_pt = 0;
   float jet1_phi = 0;
   float jet2_phi = 0;
+  float jet3_phi = 0;
+  float jet1_eta = 0;
+  float jet2_eta = 0;
+  float jet3_eta = 0;
   float jet1_rapidity = 0;
   float jet2_rapidity = 0;
+  float jet3_rapidity = 0;
 
   float signalJet_ht = 0;
   float dPhiJet1Met = 0;
   float dPhiJet2Met = 0;
+  float dPhiJet3Met = 0;
   float dPhiJet1Met_nomu = 0;
   float dPhiJet2Met_nomu = 0;
+  float dPhiJet3Met_nomu = 0;
   float dPhiJet1Met_noelec = 0;
   float dPhiJet2Met_noelec = 0;
+  float dPhiJet3Met_noelec = 0;
 
   float mjj = 0;
   bool pass_diJet = false; // Select DiJet
@@ -1732,6 +1717,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   bool pass_dPhijetmet = true; // deltaPhi(Jet_i,MET)
   bool pass_dPhijetmet_nomu = true; // deltaPhi(Jet_i,MET_nomu)
   bool pass_dPhijetmet_noelec = true; // deltaPhi(Jet,MET_noelec)
+  float dPhiMinjetmet = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+  float dPhiMinjetmet_nomu = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+  float dPhiMinjetmet_noelec = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
   bool pass_dPhiDijetMet = true; // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET)
   bool pass_dPhiDijetMet_nomu = true; // deltaPhi(Jet1,MET_nomu) or deltaPhi(Jet2,MET_nomu)
   bool pass_dPhiDijetMet_noelec = true; // deltaPhi(Jet1,MET_noelec) or deltaPhi(Jet2,MET_noelec)
@@ -1747,6 +1735,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     jet2_pt = m_signalJet->at(1)->pt() * 0.001;
     jet1_phi = m_signalJet->at(0)->phi();
     jet2_phi = m_signalJet->at(1)->phi();
+    jet1_eta = m_signalJet->at(0)->eta();
+    jet2_eta = m_signalJet->at(1)->eta();
     jet1_rapidity = m_signalJet->at(0)->rapidity();
     jet2_rapidity = m_signalJet->at(1)->rapidity();
     auto dijet = jet1 + jet2;
@@ -1790,6 +1780,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   } // DiJet selection loop
 
 
+  // For jet3
+  if (m_signalJet->size() > 2) {
+    jet3_pt = m_signalJet->at(2)->pt() * 0.001;
+    jet3_phi = m_signalJet->at(2)->phi();
+    jet3_eta = m_signalJet->at(2)->eta();
+    jet3_rapidity = m_signalJet->at(2)->rapidity();
+    // deltaPhi(Jet3,MET)
+    dPhiJet3Met = DeltaPhi(jet3_phi, MET_phi);
+    dPhiJet3Met_nomu = DeltaPhi(jet3_phi, emulMET_nomu_phi);
+    dPhiJet3Met_noelec = DeltaPhi(jet3_phi, emulMET_noelec_phi);
+  }
+
+
   // N_jet >= 1
   if (m_signalJet->size() > 0) {
 
@@ -1799,22 +1802,33 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       float signal_jet_rapidity = jet->rapidity();
       float signal_jet_phi = jet->phi();
 
-      // dPhi(Jet_i,MET)
+      // Calculate dPhi(Jet_i,MET) and dPhi_min(Jet_i,MET)
       // For Zvv
       if (m_isZvv){
         float dPhijetmet = DeltaPhi(signal_jet_phi,MET_phi);
-        //Info("execute()", "  delta phi = %.2f", dPhijetmet);
+        //Info("execute()", " [Zvv] Event # = %llu", eventInfo->eventNumber());
+        //Info("execute()", " [Zvv] dPhi = %.2f", dPhijetmet);
         if ( dPhijetmet < 0.4 ) pass_dPhijetmet = false;
+        dPhiMinjetmet = std::min(dPhiMinjetmet, dPhijetmet);
+        //Info("execute()", " [Zvv] dPhi_min = %.2f", dPhiMinjetmet);
       }
       // For Zmumu
       if (m_isZmumu){
         float dPhijetmet_nomu = DeltaPhi(signal_jet_phi,emulMET_nomu_phi);
+        //Info("execute()", " [Zmumu] Event # = %llu", eventInfo->eventNumber());
+        //Info("execute()", " [Zmumu] dPhi = %.2f", dPhijetmet_nomu);
         if ( dPhijetmet_nomu < 0.4 ) pass_dPhijetmet_nomu = false;
+        dPhiMinjetmet_nomu = std::min(dPhiMinjetmet_nomu, dPhijetmet_nomu);
+        //Info("execute()", " [Zmumu] dPhi_min = %.2f", dPhiMinjetmet_nomu);
       }
       // For Zee
       if (m_isZee){
         float dPhijetmet_noelec = DeltaPhi(signal_jet_phi,emulMET_noelec_phi);
+        //Info("execute()", " [Zee] Event # = %llu", eventInfo->eventNumber());
+        //Info("execute()", " [Zee] dPhi = %.2f", dPhijetmet_noelec);
         if ( dPhijetmet_noelec < 0.4 ) pass_dPhijetmet_noelec = false;
+        dPhiMinjetmet_noelec = std::min(dPhiMinjetmet_noelec, dPhijetmet_noelec);
+        //Info("execute()", " [Zee] dPhi_min = %.2f", dPhiMinjetmet_noelec);
       }
 
       // Central Jet Veto (CJV)
@@ -1849,24 +1863,20 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   bool pass_Wmunu = false; // Select Wmunu channel
   float mll_muon = 0.; // For Zmumu channel
   float mT_muon = 0.;// For Wmunu channel
+  // Zmumu muons
+  float muon1_pt = 0.;
+  float muon2_pt = 0.;
+  float muon1_charge = 0.;
+  float muon2_charge = 0.;
+
   if (m_isZmumu || m_isWmunu){
-    // Zmumu muons
-    TLorentzVector muon1;
-    TLorentzVector muon2;
-    float muon1_pt = 0.;
-    float muon2_pt = 0.;
-    float muon1_charge = 0.;
-    float muon2_charge = 0.;
-    // Wmunu muon
-    float muon_pt = 0.;
-    float muon_phi = 0.;
 
     // Zmumu Selection
     if (m_goodMuon->size() > 1) {
       std::partial_sort(m_goodMuon->begin(), m_goodMuon->begin()+2, m_goodMuon->end(), DescendingPt());
 
-      muon1 = m_goodMuon->at(0)->p4();
-      muon2 = m_goodMuon->at(1)->p4();
+      TLorentzVector muon1 = m_goodMuon->at(0)->p4();
+      TLorentzVector muon2 = m_goodMuon->at(1)->p4();
       muon1_pt = m_goodMuon->at(0)->pt() * 0.001;
       muon2_pt = m_goodMuon->at(1)->pt() * 0.001;
       muon1_charge = m_goodMuon->at(0)->charge();
@@ -1887,8 +1897,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     // Wmunu Selection
     if (m_goodMuon->size() == 1) {
-      muon_pt = m_goodMuon->at(0)->pt() * 0.001;
-      muon_phi = m_goodMuon->at(0)->phi();
+      float muon_pt = m_goodMuon->at(0)->pt() * 0.001;
+      float muon_phi = m_goodMuon->at(0)->phi();
       mT_muon = TMath::Sqrt( 2. * muon_pt * MET * ( 1. - TMath::Cos(muon_phi - MET_phi) ) );
 
       if ( muon_pt > 25. ){
@@ -1899,28 +1909,28 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   }
 
 
-  //----------------------
-  // Define Zee Selection
-  // ---------------------
+  //-------------------------------
+  // Define Zee and Wenu Selection
+  // ------------------------------
 
   bool pass_Zee = false; // Select Zee channel
-  float mll_electron = 0;
-  if (m_isZee){
-    TLorentzVector electron1;
-    TLorentzVector electron2;
-    float electron1_pt = 0;
-    float electron2_pt = 0;
-    float electron1_charge = 0;
-    float electron2_charge = 0;
+  bool pass_Wenu = false; // Select Wenu channel
+  float mll_electron = 0.; // Select Zee channel
+  float mT_electron = 0.;// For Wenu channel
+  // Zee electrons
+  float electron1_pt = 0.;
+  float electron2_pt = 0.;
+  float electron1_charge = 0.;
+  float electron2_charge = 0.;
 
-
+  if (m_isZee || m_isWenu){
 
     // Zee Selection
     if (m_goodElectron->size() > 1) {
       std::partial_sort(m_goodElectron->begin(), m_goodElectron->begin()+2, m_goodElectron->end(), DescendingPt());
 
-      electron1 = m_goodElectron->at(0)->p4();
-      electron2 = m_goodElectron->at(1)->p4();
+      TLorentzVector electron1 = m_goodElectron->at(0)->p4();
+      TLorentzVector electron2 = m_goodElectron->at(1)->p4();
       electron1_pt = m_goodElectron->at(0)->pt() * 0.001;
       electron2_pt = m_goodElectron->at(1)->pt() * 0.001;
       electron1_charge = m_goodElectron->at(0)->charge();
@@ -1937,8 +1947,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
           //Info("execute()", "  Leading electron = %.2f GeV, Subleading electron = %.2f GeV", electron1_pt, electron2_pt);
         }
       }
-
     } // Zee selection loop
+
+    // Wenu Selection
+    if (m_goodElectron->size() == 1) {
+      float electron_pt = m_goodElectron->at(0)->pt() * 0.001;
+      float electron_phi = m_goodElectron->at(0)->phi();
+      mT_electron = TMath::Sqrt( 2. * electron_pt * MET * ( 1. - TMath::Cos(electron_phi - MET_phi) ) );
+
+      if ( electron_pt > 25. ){
+        pass_Wenu = true;
+      }
+    } //Wenu Selection loop
+
   }
 
 
@@ -2127,18 +2148,28 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           h_zmumu_emulmet_nomu->Fill(emulMET_nomu, mcEventWeight_Zmumu);
                           // Jets
                           h_zmumu_njet->Fill(m_signalJet->size(), mcEventWeight_Zmumu);
-                          h_zmumu_jet1_pt->Fill(m_signalJet->at(0)->pt() * 0.001, mcEventWeight_Zmumu);
-                          h_zmumu_jet2_pt->Fill(m_signalJet->at(1)->pt() * 0.001, mcEventWeight_Zmumu);
-                          h_zmumu_jet1_phi->Fill(m_signalJet->at(0)->phi(), mcEventWeight_Zmumu);
-                          h_zmumu_jet2_phi->Fill(m_signalJet->at(1)->phi(), mcEventWeight_Zmumu);
-                          h_zmumu_jet1_eta->Fill(m_signalJet->at(0)->eta(), mcEventWeight_Zmumu);
-                          h_zmumu_jet2_eta->Fill(m_signalJet->at(1)->eta(), mcEventWeight_Zmumu);
-                          h_zmumu_jet1_rap->Fill(m_signalJet->at(0)->rapidity(), mcEventWeight_Zmumu);
-                          h_zmumu_jet2_rap->Fill(m_signalJet->at(1)->rapidity(), mcEventWeight_Zmumu);
+                          h_zmumu_jet1_pt->Fill(jet1_pt, mcEventWeight_Zmumu);
+                          h_zmumu_jet2_pt->Fill(jet2_pt, mcEventWeight_Zmumu);
+                          h_zmumu_jet1_phi->Fill(jet1_phi, mcEventWeight_Zmumu);
+                          h_zmumu_jet2_phi->Fill(jet2_phi, mcEventWeight_Zmumu);
+                          h_zmumu_jet1_eta->Fill(jet1_eta, mcEventWeight_Zmumu);
+                          h_zmumu_jet2_eta->Fill(jet2_eta, mcEventWeight_Zmumu);
+                          h_zmumu_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Zmumu);
+                          h_zmumu_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Zmumu);
                           h_zmumu_mjj->Fill(mjj, mcEventWeight_Zmumu);
                           h_zmumu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
-                          h_zmumu_dPhimetj1->Fill(dPhiJet1Met, mcEventWeight_Zmumu);
-                          h_zmumu_dPhimetj2->Fill(dPhiJet2Met, mcEventWeight_Zmumu);
+                          h_zmumu_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                          h_zmumu_dPhimetj1->Fill(dPhiJet1Met_nomu, mcEventWeight_Zmumu);
+                          h_zmumu_dPhimetj2->Fill(dPhiJet2Met_nomu, mcEventWeight_Zmumu);
+                          h_zmumu_dPhiMinmetjet->Fill(dPhiMinjetmet_nomu, mcEventWeight_Zmumu);
+                          // For jet3
+                          if (m_signalJet->size() > 2){
+                            h_zmumu_jet3_pt->Fill(jet3_pt, mcEventWeight_Zmumu);
+                            h_zmumu_jet3_phi->Fill(jet3_phi, mcEventWeight_Zmumu);
+                            h_zmumu_jet3_eta->Fill(jet3_eta, mcEventWeight_Zmumu);
+                            h_zmumu_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Zmumu);
+                            h_zmumu_dPhimetj3->Fill(dPhiJet3Met_nomu, mcEventWeight_Zmumu);
+                          }
                           // Muons
                           h_zmumu_muon1_pt->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight_Zmumu);
                           h_zmumu_muon2_pt->Fill(m_goodMuon->at(1)->pt() * 0.001, mcEventWeight_Zmumu);
@@ -2149,7 +2180,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           h_zmumu_mll->Fill(mll_muon, mcEventWeight_Zmumu);
 
                           if ( pass_dPhijetmet_nomu ) {
-                            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]dPhi(jet_i,MET) cut");
+                            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]dPhi(jet_i,MET) cut");
                             m_eventCutflow[27]+=1;
                           } // pass diPhijetMET
                         } // pass dPhiDijetMet
@@ -2265,6 +2296,42 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
   }
 
+
+
+  //---------------------------------
+  // W -> enu + JET EVENT SELECTION
+  //---------------------------------
+
+  if (m_isWenu){
+    if ( m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH") || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose") ) {
+      if ( emulMET_noelec > m_metCut ) {
+        if (m_goodElectron->size() > 0) {
+          if ( m_goodMuon->size() == 0 ) {
+            if (m_goodTau->size() == 0) {
+              if ( pass_Wenu && m_goodElectron->size() == 1 && mT_electron > 30. && mT_electron < 100. ){
+                if ( m_signalJet->size() > 1 ) {
+                  if ( pass_diJet ) {
+                    if ( mjj > m_mjjCut ) {
+                      if ( pass_CJV ) {
+                        if ( pass_dPhiDijetMet_noelec ) {
+                          // Calculate electron SF
+                          if (!m_isData) {
+                            double totalElectronSF_Wenu = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoSF);
+                            //Info("execute()", " Wenu Total Electron SF = %.3f ", totalElectronSF_Wenu);
+                            mcEventWeight_Wenu = mcEventWeight * totalElectronSF_Wenu;
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
 
 
