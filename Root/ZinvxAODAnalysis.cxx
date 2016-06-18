@@ -155,8 +155,50 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
 
   // Zinv study
   // Zvv
-  h_zvv_offline_met = new TH1F("h_zvv_offline_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500); // Offline MET [GeV]
-  wk()->addOutput (h_zvv_offline_met);
+  // MET
+  h_zvv_met = new TH1F("h_zvv_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
+  wk()->addOutput (h_zvv_met);
+  // Jets
+  h_zvv_njet = new TH1F("h_zvv_njet", "Number of Jets;Numbers", 40, 0, 40);
+  h_zvv_jet1_pt = new TH1F("h_zvv_jet1_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_zvv_jet2_pt = new TH1F("h_zvv_jet2_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_zvv_jet3_pt = new TH1F("h_zvv_jet3_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_zvv_jet1_phi = new TH1F("h_zvv_jet1_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zvv_jet2_phi = new TH1F("h_zvv_jet2_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zvv_jet3_phi = new TH1F("h_zvv_jet3_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zvv_jet1_eta = new TH1F("h_zvv_jet1_eta", "Jet eta;#eta", 100, -5, 5);
+  h_zvv_jet2_eta = new TH1F("h_zvv_jet2_eta", "Jet eta;#eta", 100, -5, 5);
+  h_zvv_jet3_eta = new TH1F("h_zvv_jet3_eta", "Jet eta;#eta", 100, -5, 5);
+  h_zvv_jet1_rap = new TH1F("h_zvv_jet1_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_zvv_jet2_rap = new TH1F("h_zvv_jet2_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_zvv_jet3_rap = new TH1F("h_zvv_jet3_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_zvv_mjj = new TH1F("h_zvv_mjj", "Invariant mass;m_{jj} (GeV)", 80, 0, 4000);
+  h_zvv_dPhijj = new TH1F("h_zvv_dPhijj", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 32, 0, 3.2);
+  h_zvv_dRjj = new TH1F("h_zvv_dRjj", "Delta R between J1 and J2;#DeltaR(j_{1},j_{2}) (rad)", 50, 0, 5);
+  h_zvv_dPhimetj1 = new TH1F("h_zvv_dPhimetj1", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 32, 0, 3.2);
+  h_zvv_dPhimetj2 = new TH1F("h_zvv_dPhimetj2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 32, 0, 3.2);
+  h_zvv_dPhimetj3 = new TH1F("h_zvv_dPhimetj3", "Delta Phi between MET and J3;#Delta#phi(MET,j_{3}) (rad)", 32, 0, 3.2);
+  h_zvv_dPhiMinmetjet = new TH1F("h_zvv_dPhiMinmetjet", "Minimum Delta Phi between MET and Jet;#Delta#phi_{min}(MET,jet) (rad)", 32, 0, 3.2);
+  wk()->addOutput (h_zvv_njet);
+  wk()->addOutput (h_zvv_jet1_pt);
+  wk()->addOutput (h_zvv_jet2_pt);
+  wk()->addOutput (h_zvv_jet3_pt);
+  wk()->addOutput (h_zvv_jet1_phi);
+  wk()->addOutput (h_zvv_jet2_phi);
+  wk()->addOutput (h_zvv_jet3_phi);
+  wk()->addOutput (h_zvv_jet1_eta);
+  wk()->addOutput (h_zvv_jet2_eta);
+  wk()->addOutput (h_zvv_jet3_eta);
+  wk()->addOutput (h_zvv_jet1_rap);
+  wk()->addOutput (h_zvv_jet2_rap);
+  wk()->addOutput (h_zvv_jet3_rap);
+  wk()->addOutput (h_zvv_mjj);
+  wk()->addOutput (h_zvv_dPhijj);
+  wk()->addOutput (h_zvv_dRjj);
+  wk()->addOutput (h_zvv_dPhimetj1);
+  wk()->addOutput (h_zvv_dPhimetj2);
+  wk()->addOutput (h_zvv_dPhimetj3);
+  wk()->addOutput (h_zvv_dPhiMinmetjet);
 
 
   // Zmumu
@@ -223,6 +265,185 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
   wk()->addOutput (h_zmumu_mll);
 
 
+  // Wmunu
+  // MET
+  h_wmunu_met = new TH1F("h_wmunu_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
+  h_wmunu_emulmet_nomu = new TH1F("h_wmunu_emulmet_nomu", "Emulated Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
+  wk()->addOutput (h_wmunu_met);
+  wk()->addOutput (h_wmunu_emulmet_nomu);
+  // Jets
+  h_wmunu_njet = new TH1F("h_wmunu_njet", "Number of Jets;Numbers", 40, 0, 40);
+  h_wmunu_jet1_pt = new TH1F("h_wmunu_jet1_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_wmunu_jet2_pt = new TH1F("h_wmunu_jet2_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_wmunu_jet3_pt = new TH1F("h_wmunu_jet3_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_wmunu_jet1_phi = new TH1F("h_wmunu_jet1_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_wmunu_jet2_phi = new TH1F("h_wmunu_jet2_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_wmunu_jet3_phi = new TH1F("h_wmunu_jet3_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_wmunu_jet1_eta = new TH1F("h_wmunu_jet1_eta", "Jet eta;#eta", 100, -5, 5);
+  h_wmunu_jet2_eta = new TH1F("h_wmunu_jet2_eta", "Jet eta;#eta", 100, -5, 5);
+  h_wmunu_jet3_eta = new TH1F("h_wmunu_jet3_eta", "Jet eta;#eta", 100, -5, 5);
+  h_wmunu_jet1_rap = new TH1F("h_wmunu_jet1_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_wmunu_jet2_rap = new TH1F("h_wmunu_jet2_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_wmunu_jet3_rap = new TH1F("h_wmunu_jet3_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_wmunu_mjj = new TH1F("h_wmunu_mjj", "Invariant mass;m_{jj} (GeV)", 80, 0, 4000);
+  h_wmunu_dPhijj = new TH1F("h_wmunu_dPhijj", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 32, 0, 3.2);
+  h_wmunu_dRjj = new TH1F("h_wmunu_dRjj", "Delta R between J1 and J2;#DeltaR(j_{1},j_{2}) (rad)", 50, 0, 5);
+  h_wmunu_dPhimetj1 = new TH1F("h_wmunu_dPhimetj1", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 32, 0, 3.2);
+  h_wmunu_dPhimetj2 = new TH1F("h_wmunu_dPhimetj2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 32, 0, 3.2);
+  h_wmunu_dPhimetj3 = new TH1F("h_wmunu_dPhimetj3", "Delta Phi between MET and J3;#Delta#phi(MET,j_{3}) (rad)", 32, 0, 3.2);
+  h_wmunu_dPhiMinmetjet = new TH1F("h_wmunu_dPhiMinmetjet", "Minimum Delta Phi between MET and Jet;#Delta#phi_{min}(MET,jet) (rad)", 32, 0, 3.2);
+  wk()->addOutput (h_wmunu_njet);
+  wk()->addOutput (h_wmunu_jet1_pt);
+  wk()->addOutput (h_wmunu_jet2_pt);
+  wk()->addOutput (h_wmunu_jet3_pt);
+  wk()->addOutput (h_wmunu_jet1_phi);
+  wk()->addOutput (h_wmunu_jet2_phi);
+  wk()->addOutput (h_wmunu_jet3_phi);
+  wk()->addOutput (h_wmunu_jet1_eta);
+  wk()->addOutput (h_wmunu_jet2_eta);
+  wk()->addOutput (h_wmunu_jet3_eta);
+  wk()->addOutput (h_wmunu_jet1_rap);
+  wk()->addOutput (h_wmunu_jet2_rap);
+  wk()->addOutput (h_wmunu_jet3_rap);
+  wk()->addOutput (h_wmunu_mjj);
+  wk()->addOutput (h_wmunu_dPhijj);
+  wk()->addOutput (h_wmunu_dRjj);
+  wk()->addOutput (h_wmunu_dPhimetj1);
+  wk()->addOutput (h_wmunu_dPhimetj2);
+  wk()->addOutput (h_wmunu_dPhimetj3);
+  wk()->addOutput (h_wmunu_dPhiMinmetjet);
+  // Leptons
+  h_wmunu_muon_pt = new TH1F("h_wmunu_muon_pt", "Muon p_{T};p_{T} (GeV)", 30, 0, 1500); // [GeV]
+  h_wmunu_muon_phi = new TH1F("h_wmunu_muon_phi", "Muon Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_wmunu_muon_eta = new TH1F("h_wmunu_muon_eta", "Muon eta;#eta", 100, -5, 5);
+  h_wmunu_mT = new TH1F("h_wmunu_mT", "Transverse mass;m_{T} (GeV)", 75, 0, 150);
+  wk()->addOutput (h_wmunu_muon_pt);
+  wk()->addOutput (h_wmunu_muon_phi);
+  wk()->addOutput (h_wmunu_muon_eta);
+  wk()->addOutput (h_wmunu_mT);
+
+
+
+  // Zee
+  // MET
+  h_zee_met = new TH1F("h_zee_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
+  h_zee_emulmet_noelec = new TH1F("h_zee_emulmet_noelec", "Emulated Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
+  wk()->addOutput (h_zee_met);
+  wk()->addOutput (h_zee_emulmet_noelec);
+  // Jets
+  h_zee_njet = new TH1F("h_zee_njet", "Number of Jets;Numbers", 40, 0, 40);
+  h_zee_jet1_pt = new TH1F("h_zee_jet1_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_zee_jet2_pt = new TH1F("h_zee_jet2_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_zee_jet3_pt = new TH1F("h_zee_jet3_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_zee_jet1_phi = new TH1F("h_zee_jet1_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zee_jet2_phi = new TH1F("h_zee_jet2_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zee_jet3_phi = new TH1F("h_zee_jet3_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zee_jet1_eta = new TH1F("h_zee_jet1_eta", "Jet eta;#eta", 100, -5, 5);
+  h_zee_jet2_eta = new TH1F("h_zee_jet2_eta", "Jet eta;#eta", 100, -5, 5);
+  h_zee_jet3_eta = new TH1F("h_zee_jet3_eta", "Jet eta;#eta", 100, -5, 5);
+  h_zee_jet1_rap = new TH1F("h_zee_jet1_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_zee_jet2_rap = new TH1F("h_zee_jet2_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_zee_jet3_rap = new TH1F("h_zee_jet3_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_zee_mjj = new TH1F("h_zee_mjj", "Invariant mass;m_{jj} (GeV)", 80, 0, 4000);
+  h_zee_dPhijj = new TH1F("h_zee_dPhijj", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 32, 0, 3.2);
+  h_zee_dRjj = new TH1F("h_zee_dRjj", "Delta R between J1 and J2;#DeltaR(j_{1},j_{2}) (rad)", 50, 0, 5);
+  h_zee_dPhimetj1 = new TH1F("h_zee_dPhimetj1", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 32, 0, 3.2);
+  h_zee_dPhimetj2 = new TH1F("h_zee_dPhimetj2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 32, 0, 3.2);
+  h_zee_dPhimetj3 = new TH1F("h_zee_dPhimetj3", "Delta Phi between MET and J3;#Delta#phi(MET,j_{3}) (rad)", 32, 0, 3.2);
+  h_zee_dPhiMinmetjet = new TH1F("h_zee_dPhiMinmetjet", "Minimum Delta Phi between MET and Jet;#Delta#phi_{min}(MET,jet) (rad)", 32, 0, 3.2);
+  wk()->addOutput (h_zee_njet);
+  wk()->addOutput (h_zee_jet1_pt);
+  wk()->addOutput (h_zee_jet2_pt);
+  wk()->addOutput (h_zee_jet3_pt);
+  wk()->addOutput (h_zee_jet1_phi);
+  wk()->addOutput (h_zee_jet2_phi);
+  wk()->addOutput (h_zee_jet3_phi);
+  wk()->addOutput (h_zee_jet1_eta);
+  wk()->addOutput (h_zee_jet2_eta);
+  wk()->addOutput (h_zee_jet3_eta);
+  wk()->addOutput (h_zee_jet1_rap);
+  wk()->addOutput (h_zee_jet2_rap);
+  wk()->addOutput (h_zee_jet3_rap);
+  wk()->addOutput (h_zee_mjj);
+  wk()->addOutput (h_zee_dPhijj);
+  wk()->addOutput (h_zee_dRjj);
+  wk()->addOutput (h_zee_dPhimetj1);
+  wk()->addOutput (h_zee_dPhimetj2);
+  wk()->addOutput (h_zee_dPhimetj3);
+  wk()->addOutput (h_zee_dPhiMinmetjet);
+  // Leptons
+  h_zee_electron1_pt = new TH1F("h_zee_electron1_pt", "Electron p_{T};p_{T} (GeV)", 30, 0, 1500); // [GeV]
+  h_zee_electron2_pt = new TH1F("h_zee_electron2_pt", "Electron p_{T};p_{T} (GeV)", 30, 0, 1500); // [GeV]
+  h_zee_electron1_phi = new TH1F("h_zee_electron1_phi", "Electron Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zee_electron2_phi = new TH1F("h_zee_electron2_phi", "Electron Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_zee_electron1_eta = new TH1F("h_zee_electron1_eta", "Electron eta;#eta", 100, -5, 5);
+  h_zee_electron2_eta = new TH1F("h_zee_electron2_eta", "Electron eta;#eta", 100, -5, 5);
+  h_zee_mll = new TH1F("h_zee_mll", "Invariant mass;m_{ll} (GeV)", 150, 0, 300);
+  wk()->addOutput (h_zee_electron1_pt);
+  wk()->addOutput (h_zee_electron2_pt);
+  wk()->addOutput (h_zee_electron1_phi);
+  wk()->addOutput (h_zee_electron2_phi);
+  wk()->addOutput (h_zee_electron1_eta);
+  wk()->addOutput (h_zee_electron2_eta);
+  wk()->addOutput (h_zee_mll);
+
+
+  // Wenu
+  // MET
+  h_wenu_met = new TH1F("h_wenu_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
+  h_wenu_emulmet_noelec = new TH1F("h_wenu_emulmet_noelec", "Emulated Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
+  wk()->addOutput (h_wenu_met);
+  wk()->addOutput (h_wenu_emulmet_noelec);
+  // Jets
+  h_wenu_njet = new TH1F("h_wenu_njet", "Number of Jets;Numbers", 40, 0, 40);
+  h_wenu_jet1_pt = new TH1F("h_wenu_jet1_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_wenu_jet2_pt = new TH1F("h_wenu_jet2_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_wenu_jet3_pt = new TH1F("h_wenu_jet3_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_wenu_jet1_phi = new TH1F("h_wenu_jet1_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_wenu_jet2_phi = new TH1F("h_wenu_jet2_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_wenu_jet3_phi = new TH1F("h_wenu_jet3_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_wenu_jet1_eta = new TH1F("h_wenu_jet1_eta", "Jet eta;#eta", 100, -5, 5);
+  h_wenu_jet2_eta = new TH1F("h_wenu_jet2_eta", "Jet eta;#eta", 100, -5, 5);
+  h_wenu_jet3_eta = new TH1F("h_wenu_jet3_eta", "Jet eta;#eta", 100, -5, 5);
+  h_wenu_jet1_rap = new TH1F("h_wenu_jet1_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_wenu_jet2_rap = new TH1F("h_wenu_jet2_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_wenu_jet3_rap = new TH1F("h_wenu_jet3_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_wenu_mjj = new TH1F("h_wenu_mjj", "Invariant mass;m_{jj} (GeV)", 80, 0, 4000);
+  h_wenu_dPhijj = new TH1F("h_wenu_dPhijj", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 32, 0, 3.2);
+  h_wenu_dRjj = new TH1F("h_wenu_dRjj", "Delta R between J1 and J2;#DeltaR(j_{1},j_{2}) (rad)", 50, 0, 5);
+  h_wenu_dPhimetj1 = new TH1F("h_wenu_dPhimetj1", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 32, 0, 3.2);
+  h_wenu_dPhimetj2 = new TH1F("h_wenu_dPhimetj2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 32, 0, 3.2);
+  h_wenu_dPhimetj3 = new TH1F("h_wenu_dPhimetj3", "Delta Phi between MET and J3;#Delta#phi(MET,j_{3}) (rad)", 32, 0, 3.2);
+  h_wenu_dPhiMinmetjet = new TH1F("h_wenu_dPhiMinmetjet", "Minimum Delta Phi between MET and Jet;#Delta#phi_{min}(MET,jet) (rad)", 32, 0, 3.2);
+  wk()->addOutput (h_wenu_njet);
+  wk()->addOutput (h_wenu_jet1_pt);
+  wk()->addOutput (h_wenu_jet2_pt);
+  wk()->addOutput (h_wenu_jet3_pt);
+  wk()->addOutput (h_wenu_jet1_phi);
+  wk()->addOutput (h_wenu_jet2_phi);
+  wk()->addOutput (h_wenu_jet3_phi);
+  wk()->addOutput (h_wenu_jet1_eta);
+  wk()->addOutput (h_wenu_jet2_eta);
+  wk()->addOutput (h_wenu_jet3_eta);
+  wk()->addOutput (h_wenu_jet1_rap);
+  wk()->addOutput (h_wenu_jet2_rap);
+  wk()->addOutput (h_wenu_jet3_rap);
+  wk()->addOutput (h_wenu_mjj);
+  wk()->addOutput (h_wenu_dPhijj);
+  wk()->addOutput (h_wenu_dRjj);
+  wk()->addOutput (h_wenu_dPhimetj1);
+  wk()->addOutput (h_wenu_dPhimetj2);
+  wk()->addOutput (h_wenu_dPhimetj3);
+  wk()->addOutput (h_wenu_dPhiMinmetjet);
+  // Leptons
+  h_wenu_electron_pt = new TH1F("h_wenu_electron_pt", "Electron p_{T};p_{T} (GeV)", 30, 0, 1500); // [GeV]
+  h_wenu_electron_phi = new TH1F("h_wenu_electron_phi", "Electron Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_wenu_electron_eta = new TH1F("h_wenu_electron_eta", "Electron eta;#eta", 100, -5, 5);
+  h_wenu_mT = new TH1F("h_wenu_mT", "Transverse mass;m_{T} (GeV)", 75, 0, 150);
+  wk()->addOutput (h_wenu_electron_pt);
+  wk()->addOutput (h_wenu_electron_phi);
+  wk()->addOutput (h_wenu_electron_eta);
+  wk()->addOutput (h_wenu_mT);
 
 
 
@@ -2080,7 +2301,34 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       if ( pass_dPhiDijetMet ) {
                         if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]dPhi(dijet,MET) cut");
                         m_eventCutflow[14]+=1;
-                        //h_zvv_offline_met->Fill( MET ); // GeV
+                        // Fill histogram
+                        // MET
+                        h_zvv_met->Fill(MET);
+                        // Jets
+                        h_zvv_njet->Fill(m_signalJet->size());
+                        h_zvv_jet1_pt->Fill(jet1_pt);
+                        h_zvv_jet2_pt->Fill(jet2_pt);
+                        h_zvv_jet1_phi->Fill(jet1_phi);
+                        h_zvv_jet2_phi->Fill(jet2_phi);
+                        h_zvv_jet1_eta->Fill(jet1_eta);
+                        h_zvv_jet2_eta->Fill(jet2_eta);
+                        h_zvv_jet1_rap->Fill(jet1_rapidity);
+                        h_zvv_jet2_rap->Fill(jet2_rapidity);
+                        h_zvv_mjj->Fill(mjj);
+                        h_zvv_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi));
+                        h_zvv_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi));
+                        h_zvv_dPhimetj1->Fill(dPhiJet1Met);
+                        h_zvv_dPhimetj2->Fill(dPhiJet2Met);
+                        h_zvv_dPhiMinmetjet->Fill(dPhiMinjetmet);
+                        // For jet3
+                        if (m_signalJet->size() > 2){
+                          h_zvv_jet3_pt->Fill(jet3_pt);
+                          h_zvv_jet3_phi->Fill(jet3_phi);
+                          h_zvv_jet3_eta->Fill(jet3_eta);
+                          h_zvv_jet3_rap->Fill(jet3_rapidity);
+                          h_zvv_dPhimetj3->Fill(dPhiJet3Met);
+                        }
+
                         if ( pass_dPhijetmet ) {
                           if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]dPhi(jet_i,MET) cut");
                           m_eventCutflow[15]+=1;
@@ -2170,7 +2418,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             h_zmumu_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Zmumu);
                             h_zmumu_dPhimetj3->Fill(dPhiJet3Met_nomu, mcEventWeight_Zmumu);
                           }
-                          // Muons
+                          // Leptons
                           h_zmumu_muon1_pt->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight_Zmumu);
                           h_zmumu_muon2_pt->Fill(m_goodMuon->at(1)->pt() * 0.001, mcEventWeight_Zmumu);
                           h_zmumu_muon1_phi->Fill(m_goodMuon->at(0)->phi(), mcEventWeight_Zmumu);
@@ -2219,6 +2467,40 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             //Info("execute()", " Wmunu Total Muon SF = %.3f ", totalMuonSF_Wmunu);
                             mcEventWeight_Wmunu = mcEventWeight * totalMuonSF_Wmunu;
                           }
+                          // Fill histogram
+                          // MET
+                          h_wmunu_met->Fill(MET, mcEventWeight_Wmunu);
+                          h_wmunu_emulmet_nomu->Fill(emulMET_nomu, mcEventWeight_Wmunu);
+                          // Jets
+                          h_wmunu_njet->Fill(m_signalJet->size(), mcEventWeight_Wmunu);
+                          h_wmunu_jet1_pt->Fill(jet1_pt, mcEventWeight_Wmunu);
+                          h_wmunu_jet2_pt->Fill(jet2_pt, mcEventWeight_Wmunu);
+                          h_wmunu_jet1_phi->Fill(jet1_phi, mcEventWeight_Wmunu);
+                          h_wmunu_jet2_phi->Fill(jet2_phi, mcEventWeight_Wmunu);
+                          h_wmunu_jet1_eta->Fill(jet1_eta, mcEventWeight_Wmunu);
+                          h_wmunu_jet2_eta->Fill(jet2_eta, mcEventWeight_Wmunu);
+                          h_wmunu_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Wmunu);
+                          h_wmunu_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Wmunu);
+                          h_wmunu_mjj->Fill(mjj, mcEventWeight_Wmunu);
+                          h_wmunu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Wmunu);
+                          h_wmunu_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Wmunu);
+                          h_wmunu_dPhimetj1->Fill(dPhiJet1Met_nomu, mcEventWeight_Wmunu);
+                          h_wmunu_dPhimetj2->Fill(dPhiJet2Met_nomu, mcEventWeight_Wmunu);
+                          h_wmunu_dPhiMinmetjet->Fill(dPhiMinjetmet_nomu, mcEventWeight_Wmunu);
+                          // For jet3
+                          if (m_signalJet->size() > 2){
+                            h_wmunu_jet3_pt->Fill(jet3_pt, mcEventWeight_Wmunu);
+                            h_wmunu_jet3_phi->Fill(jet3_phi, mcEventWeight_Wmunu);
+                            h_wmunu_jet3_eta->Fill(jet3_eta, mcEventWeight_Wmunu);
+                            h_wmunu_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Wmunu);
+                            h_wmunu_dPhimetj3->Fill(dPhiJet3Met_nomu, mcEventWeight_Wmunu);
+                          }
+                          // Leptons
+                          h_wmunu_muon_pt->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight_Wmunu);
+                          h_wmunu_muon_phi->Fill(m_goodMuon->at(0)->phi(), mcEventWeight_Wmunu);
+                          h_wmunu_muon_eta->Fill(m_goodMuon->at(0)->eta(), mcEventWeight_Wmunu);
+                          h_wmunu_mT->Fill(mT_muon, mcEventWeight_Wmunu);
+
                         }
                       }
                     }
@@ -2278,23 +2560,60 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             float totalElectronSF_Zee = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoSF);
                             //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
                             mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
-                            if ( pass_dPhijetmet_noelec ) {
-                              if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]dPhi(jet_i,MET) cut");
-                              m_eventCutflow[39]+=1;
-                            }
                           }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+                          // Fill histogram
+                          // MET
+                          h_zee_met->Fill(MET, mcEventWeight_Zee);
+                          h_zee_emulmet_noelec->Fill(emulMET_noelec, mcEventWeight_Zee);
+                          // Jets
+                          h_zee_njet->Fill(m_signalJet->size(), mcEventWeight_Zee);
+                          h_zee_jet1_pt->Fill(jet1_pt, mcEventWeight_Zee);
+                          h_zee_jet2_pt->Fill(jet2_pt, mcEventWeight_Zee);
+                          h_zee_jet1_phi->Fill(jet1_phi, mcEventWeight_Zee);
+                          h_zee_jet2_phi->Fill(jet2_phi, mcEventWeight_Zee);
+                          h_zee_jet1_eta->Fill(jet1_eta, mcEventWeight_Zee);
+                          h_zee_jet2_eta->Fill(jet2_eta, mcEventWeight_Zee);
+                          h_zee_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Zee);
+                          h_zee_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Zee);
+                          h_zee_mjj->Fill(mjj, mcEventWeight_Zee);
+                          h_zee_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                          h_zee_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Zee);
+                          h_zee_dPhimetj1->Fill(dPhiJet1Met_noelec, mcEventWeight_Zee);
+                          h_zee_dPhimetj2->Fill(dPhiJet2Met_noelec, mcEventWeight_Zee);
+                          h_zee_dPhiMinmetjet->Fill(dPhiMinjetmet_noelec, mcEventWeight_Zee);
+                          // For jet3
+                          if (m_signalJet->size() > 2){
+                            h_zee_jet3_pt->Fill(jet3_pt, mcEventWeight_Zee);
+                            h_zee_jet3_phi->Fill(jet3_phi, mcEventWeight_Zee);
+                            h_zee_jet3_eta->Fill(jet3_eta, mcEventWeight_Zee);
+                            h_zee_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Zee);
+                            h_zee_dPhimetj3->Fill(dPhiJet3Met_noelec, mcEventWeight_Zee);
+                          }
+                          // Leptons
+                          h_zee_electron1_pt->Fill(m_goodElectron->at(0)->pt() * 0.001, mcEventWeight_Zee);
+                          h_zee_electron2_pt->Fill(m_goodElectron->at(1)->pt() * 0.001, mcEventWeight_Zee);
+                          h_zee_electron1_phi->Fill(m_goodElectron->at(0)->phi(), mcEventWeight_Zee);
+                          h_zee_electron2_phi->Fill(m_goodElectron->at(1)->phi(), mcEventWeight_Zee);
+                          h_zee_electron1_eta->Fill(m_goodElectron->at(0)->eta(), mcEventWeight_Zee);
+                          h_zee_electron2_eta->Fill(m_goodElectron->at(1)->eta(), mcEventWeight_Zee);
+                          h_zee_mll->Fill(mll_electron, mcEventWeight_Zee);
+
+                          if ( pass_dPhijetmet_noelec ) {
+                            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]dPhi(jet_i,MET) cut");
+                            m_eventCutflow[39]+=1;
+                          } // pass dPhijetmet_noelec
+                        } // pass dPhiDijetMet_noelec
+                      } // pass CJV
+                    } // mjj cut
+                  } // pass diJEt
+                } // at least 1 jet
+              } // pass Zee
+            } // Tau Veto
+          } // Muon Veto
+        } // at least 1 electron
+      } // MET cut
+    } // sigle electron trigger
+  } // m_isZee
 
 
 
@@ -2320,6 +2639,40 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             //Info("execute()", " Wenu Total Electron SF = %.3f ", totalElectronSF_Wenu);
                             mcEventWeight_Wenu = mcEventWeight * totalElectronSF_Wenu;
                           }
+                          // Fill histogram
+                          // MET
+                          h_wenu_met->Fill(MET, mcEventWeight_Wenu);
+                          h_wenu_emulmet_noelec->Fill(emulMET_noelec, mcEventWeight_Wenu);
+                          // Jets
+                          h_wenu_njet->Fill(m_signalJet->size(), mcEventWeight_Wenu);
+                          h_wenu_jet1_pt->Fill(jet1_pt, mcEventWeight_Wenu);
+                          h_wenu_jet2_pt->Fill(jet2_pt, mcEventWeight_Wenu);
+                          h_wenu_jet1_phi->Fill(jet1_phi, mcEventWeight_Wenu);
+                          h_wenu_jet2_phi->Fill(jet2_phi, mcEventWeight_Wenu);
+                          h_wenu_jet1_eta->Fill(jet1_eta, mcEventWeight_Wenu);
+                          h_wenu_jet2_eta->Fill(jet2_eta, mcEventWeight_Wenu);
+                          h_wenu_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Wenu);
+                          h_wenu_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Wenu);
+                          h_wenu_mjj->Fill(mjj, mcEventWeight_Wenu);
+                          h_wenu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Wenu);
+                          h_wenu_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Wenu);
+                          h_wenu_dPhimetj1->Fill(dPhiJet1Met_noelec, mcEventWeight_Wenu);
+                          h_wenu_dPhimetj2->Fill(dPhiJet2Met_noelec, mcEventWeight_Wenu);
+                          h_wenu_dPhiMinmetjet->Fill(dPhiMinjetmet_noelec, mcEventWeight_Wenu);
+                          // For jet3
+                          if (m_signalJet->size() > 2){
+                            h_wenu_jet3_pt->Fill(jet3_pt, mcEventWeight_Wenu);
+                            h_wenu_jet3_phi->Fill(jet3_phi, mcEventWeight_Wenu);
+                            h_wenu_jet3_eta->Fill(jet3_eta, mcEventWeight_Wenu);
+                            h_wenu_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Wenu);
+                            h_wenu_dPhimetj3->Fill(dPhiJet3Met_noelec, mcEventWeight_Wenu);
+                          }
+                          // Leptons
+                          h_wenu_electron_pt->Fill(m_goodElectron->at(0)->pt() * 0.001, mcEventWeight_Wenu);
+                          h_wenu_electron_phi->Fill(m_goodElectron->at(0)->phi(), mcEventWeight_Wenu);
+                          h_wenu_electron_eta->Fill(m_goodElectron->at(0)->eta(), mcEventWeight_Wenu);
+                          h_wenu_mT->Fill(mT_electron, mcEventWeight_Wenu);
+
                         }
                       }
                     }

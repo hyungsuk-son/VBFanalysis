@@ -210,7 +210,28 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
     // Zinv study
     // Zvv
-    TH1 *h_zvv_offline_met; //!
+    TH1 *h_zvv_met; //!
+    TH1 *h_zvv_njet; //!
+    TH1 *h_zvv_jet1_pt; //!
+    TH1 *h_zvv_jet2_pt; //!
+    TH1 *h_zvv_jet3_pt; //!
+    TH1 *h_zvv_jet1_phi; //!
+    TH1 *h_zvv_jet2_phi; //!
+    TH1 *h_zvv_jet3_phi; //!
+    TH1 *h_zvv_jet1_eta; //!
+    TH1 *h_zvv_jet2_eta; //!
+    TH1 *h_zvv_jet3_eta; //!
+    TH1 *h_zvv_jet1_rap; //!
+    TH1 *h_zvv_jet2_rap; //!
+    TH1 *h_zvv_jet3_rap; //!
+    TH1 *h_zvv_mjj; //!
+    TH1 *h_zvv_dPhijj; //!
+    TH1 *h_zvv_dRjj; //!
+    TH1 *h_zvv_dPhimetj1; //!
+    TH1 *h_zvv_dPhimetj2; //!
+    TH1 *h_zvv_dPhimetj3; //!
+    TH1 *h_zvv_dPhiMinmetjet; //!
+
 
     // Zmumu
     TH1 *h_zmumu_met; //!
@@ -242,6 +263,100 @@ class ZinvxAODAnalysis : public EL::Algorithm
     TH1 *h_zmumu_muon1_eta; //!
     TH1 *h_zmumu_muon2_eta; //!
     TH1 *h_zmumu_mll; //!
+
+
+    // Wmunu
+    TH1 *h_wmunu_met; //!
+    TH1 *h_wmunu_emulmet_nomu; //!
+    TH1 *h_wmunu_njet; //!
+    TH1 *h_wmunu_jet1_pt; //!
+    TH1 *h_wmunu_jet2_pt; //!
+    TH1 *h_wmunu_jet3_pt; //!
+    TH1 *h_wmunu_jet1_phi; //!
+    TH1 *h_wmunu_jet2_phi; //!
+    TH1 *h_wmunu_jet3_phi; //!
+    TH1 *h_wmunu_jet1_eta; //!
+    TH1 *h_wmunu_jet2_eta; //!
+    TH1 *h_wmunu_jet3_eta; //!
+    TH1 *h_wmunu_jet1_rap; //!
+    TH1 *h_wmunu_jet2_rap; //!
+    TH1 *h_wmunu_jet3_rap; //!
+    TH1 *h_wmunu_mjj; //!
+    TH1 *h_wmunu_dPhijj; //!
+    TH1 *h_wmunu_dRjj; //!
+    TH1 *h_wmunu_dPhimetj1; //!
+    TH1 *h_wmunu_dPhimetj2; //!
+    TH1 *h_wmunu_dPhimetj3; //!
+    TH1 *h_wmunu_dPhiMinmetjet; //!
+    TH1 *h_wmunu_muon_pt; //!
+    TH1 *h_wmunu_muon_phi; //!
+    TH1 *h_wmunu_muon_eta; //!
+    TH1 *h_wmunu_mT; //!
+
+
+    // Zee
+    TH1 *h_zee_met; //!
+    TH1 *h_zee_emulmet_noelec; //!
+    TH1 *h_zee_njet; //!
+    TH1 *h_zee_jet1_pt; //!
+    TH1 *h_zee_jet2_pt; //!
+    TH1 *h_zee_jet3_pt; //!
+    TH1 *h_zee_jet1_phi; //!
+    TH1 *h_zee_jet2_phi; //!
+    TH1 *h_zee_jet3_phi; //!
+    TH1 *h_zee_jet1_eta; //!
+    TH1 *h_zee_jet2_eta; //!
+    TH1 *h_zee_jet3_eta; //!
+    TH1 *h_zee_jet1_rap; //!
+    TH1 *h_zee_jet2_rap; //!
+    TH1 *h_zee_jet3_rap; //!
+    TH1 *h_zee_mjj; //!
+    TH1 *h_zee_dPhijj; //!
+    TH1 *h_zee_dRjj; //!
+    TH1 *h_zee_dPhimetj1; //!
+    TH1 *h_zee_dPhimetj2; //!
+    TH1 *h_zee_dPhimetj3; //!
+    TH1 *h_zee_dPhiMinmetjet; //!
+    TH1 *h_zee_electron1_pt; //!
+    TH1 *h_zee_electron2_pt; //!
+    TH1 *h_zee_electron1_phi; //!
+    TH1 *h_zee_electron2_phi; //!
+    TH1 *h_zee_electron1_eta; //!
+    TH1 *h_zee_electron2_eta; //!
+    TH1 *h_zee_mll; //!
+
+
+    // Wenu
+    TH1 *h_wenu_met; //!
+    TH1 *h_wenu_emulmet_noelec; //!
+    TH1 *h_wenu_njet; //!
+    TH1 *h_wenu_jet1_pt; //!
+    TH1 *h_wenu_jet2_pt; //!
+    TH1 *h_wenu_jet3_pt; //!
+    TH1 *h_wenu_jet1_phi; //!
+    TH1 *h_wenu_jet2_phi; //!
+    TH1 *h_wenu_jet3_phi; //!
+    TH1 *h_wenu_jet1_eta; //!
+    TH1 *h_wenu_jet2_eta; //!
+    TH1 *h_wenu_jet3_eta; //!
+    TH1 *h_wenu_jet1_rap; //!
+    TH1 *h_wenu_jet2_rap; //!
+    TH1 *h_wenu_jet3_rap; //!
+    TH1 *h_wenu_mjj; //!
+    TH1 *h_wenu_dPhijj; //!
+    TH1 *h_wenu_dRjj; //!
+    TH1 *h_wenu_dPhimetj1; //!
+    TH1 *h_wenu_dPhimetj2; //!
+    TH1 *h_wenu_dPhimetj3; //!
+    TH1 *h_wenu_dPhiMinmetjet; //!
+    TH1 *h_wenu_electron_pt; //!
+    TH1 *h_wenu_electron_phi; //!
+    TH1 *h_wenu_electron_eta; //!
+    TH1 *h_wenu_mT; //!
+
+
+
+
 
     // trigger tools member variables
     Trig::TrigDecisionTool *m_trigDecisionTool; //!
