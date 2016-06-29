@@ -91,6 +91,10 @@
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "IsolationCorrections/IsolationCorrectionTool.h"
 
+// Event Bookkeepers
+#include "xAODCutFlow/CutBookkeeper.h"
+#include "xAODCutFlow/CutBookkeeperContainer.h"
+
 // Cut Flow
 #include <ZinvAnalysis/BitsetCutflow.h>
 
@@ -188,6 +192,8 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
     GoodRunsListSelectionTool *m_grl; //!
 
+
+    TH1 *h_sumOfWeights; //!
 
     TH1 *h_met_ex; //!
     TH1 *h_met_ey; //!

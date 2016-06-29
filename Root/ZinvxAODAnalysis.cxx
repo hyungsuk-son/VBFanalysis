@@ -114,6 +114,17 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
 
   TH1::SetDefaultSumw2(kTRUE);
 
+
+  h_sumOfWeights = new TH1D("h_sumOfWeights", "MetaData_EventCount", 6, 0.5, 6.5);
+  h_sumOfWeights -> GetXaxis() -> SetBinLabel(1, "sumOfWeights DxAOD");
+  h_sumOfWeights -> GetXaxis() -> SetBinLabel(2, "sumOfWeightsSquared DxAOD");
+  h_sumOfWeights -> GetXaxis() -> SetBinLabel(3, "nEvents DxAOD");
+  h_sumOfWeights -> GetXaxis() -> SetBinLabel(4, "sumOfWeights initial");
+  h_sumOfWeights -> GetXaxis() -> SetBinLabel(5, "sumOfWeightsSquared initial");
+  h_sumOfWeights -> GetXaxis() -> SetBinLabel(6, "nEvents initial");
+  wk()->addOutput (h_sumOfWeights);
+
+
   h_met_ex = new TH1F("h_met_ex", "Missing E_{x};E_{x} (GeV)", 150, -150,  150); // MEx [GeV]
   h_met_ey = new TH1F("h_met_ey", "Missing E_{y};E_{y} (GeV)", 150, -150,  150); // MEy [GeV]
   h_met = new TH1F("h_met", "|Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500); // MET [GeV]
@@ -456,6 +467,88 @@ EL::StatusCode ZinvxAODAnalysis :: fileExecute ()
 {
   // Here you do everything that needs to be done exactly once for every
   // single file, e.g. collect a list of all lumi-blocks processed
+
+  // get TEvent and TStore - must be done here b/c we need to retrieve CutBookkeepers container from TEvent!
+  m_event = wk()->xaodEvent();
+
+  // Event Bookkeepers
+  // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/AnalysisMetadata#Luminosity_Bookkeepers
+
+  // get the MetaData tree once a new file is opened, with
+  TTree *MetaData = dynamic_cast<TTree*>(wk()->inputFile()->Get("MetaData"));
+  if (!MetaData) {
+    Error("fileExecute()", "MetaData not found! Exiting.");
+    return EL::StatusCode::FAILURE;
+  }
+  MetaData->LoadTree(0);
+
+  //check if file is from a DxAOD
+  bool m_isDerivation = !MetaData->GetBranch("StreamAOD");
+
+  if(m_isDerivation){
+
+    // check for corruption
+    const xAOD::CutBookkeeperContainer* incompleteCBC = nullptr;
+    if(!m_event->retrieveMetaInput(incompleteCBC, "IncompleteCutBookkeepers").isSuccess()){
+      Error("initializeEvent()","Failed to retrieve IncompleteCutBookkeepers from MetaData! Exiting.");
+      return EL::StatusCode::FAILURE;
+    }
+    if ( incompleteCBC->size() != 0 ) {
+      Error("initializeEvent()","Found incomplete Bookkeepers! Check file for corruption.");
+      return EL::StatusCode::FAILURE;
+    }
+
+    // Now, let's find the actual information
+    const xAOD::CutBookkeeperContainer* completeCBC = 0;
+    if(!m_event->retrieveMetaInput(completeCBC, "CutBookkeepers").isSuccess()){
+      Error("initializeEvent()","Failed to retrieve CutBookkeepers from MetaData! Exiting.");
+      return EL::StatusCode::FAILURE;
+    }
+
+    // First, let's find the smallest cycle number,
+    // i.e., the original first processing step/cycle
+    int minCycle = 10000;
+    for ( auto cbk : *completeCBC ) {
+      if ( ! cbk->name().empty()  && minCycle > cbk->cycle() ){ minCycle = cbk->cycle(); }
+    }
+
+    // Now, let's actually find the right one that contains all the needed info...
+    const xAOD::CutBookkeeper* allEventsCBK=0;
+    const xAOD::CutBookkeeper* DxAODEventsCBK=0;
+    std::string derivationName = "EXOT5Kernel"; //need to replace by appropriate name
+    int maxCycle = -1;
+    for (const auto& cbk: *completeCBC) {
+      if (cbk->cycle() > maxCycle && cbk->name() == "AllExecutedEvents" && cbk->inputStream() == "StreamAOD") {
+        allEventsCBK = cbk;
+        maxCycle = cbk->cycle();
+      }
+      if ( cbk->name() == derivationName){
+        DxAODEventsCBK = cbk;
+      }
+    }
+    uint64_t nEventsProcessed  = allEventsCBK->nAcceptedEvents();
+    double sumOfWeights        = allEventsCBK->sumOfEventWeights();
+    double sumOfWeightsSquared = allEventsCBK->sumOfEventWeightsSquared();
+
+    uint64_t nEventsDxAOD           = DxAODEventsCBK->nAcceptedEvents();
+    double sumOfWeightsDxAOD        = DxAODEventsCBK->sumOfEventWeights();
+    double sumOfWeightsSquaredDxAOD = DxAODEventsCBK->sumOfEventWeightsSquared();
+
+
+
+    //Info("execute()", " Event # = %llu, sumOfweights = %f, mcEventWeight = %f", eventInfo->eventNumber(), sumOfWeights, eventInfo->mcEventWeight());
+    //Info("execute()", " Event # = %llu, nEventsProcessed = %d, sumOfweights = %f, sumOfWeightsSquared = %f", eventInfo->eventNumber(), nEventsProcessed, sumOfWeights, sumOfWeightsSquared);
+
+    h_sumOfWeights -> Fill(1, sumOfWeightsDxAOD);
+    h_sumOfWeights -> Fill(2, sumOfWeightsSquaredDxAOD);
+    h_sumOfWeights -> Fill(3, nEventsDxAOD);
+    h_sumOfWeights -> Fill(4, sumOfWeights);
+    h_sumOfWeights -> Fill(5, sumOfWeightsSquared);
+    h_sumOfWeights -> Fill(6, nEventsProcessed);
+
+    //Info("execute()", " Event # = %llu, sumOfWeights/nEventsProcessed = %f", eventInfo->eventNumber(), sumOfWeights/double(nEventsProcessed));
+  }
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -482,7 +575,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // you create here won't be available in the output if you have no
   // input events.
 
-  m_event = wk()->xaodEvent(); // you should have already added this as described before
   // as a check, let's see the number of events in our xAOD
   Info("initialize()", "Number of events = %lli", m_event->getEntries() ); // print long long int
 
@@ -943,6 +1035,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return EL::StatusCode::FAILURE;
   }
 
+  if (m_isData)
+    mcChannelNumber = 1;
+  else mcChannelNumber = eventInfo->mcChannelNumber();
+
   // Calculate EventWeight
   if (m_isData) {// it's data!
     mcEventWeight = 1.;
@@ -956,10 +1052,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     mcEventWeight = eventInfo->mcEventWeight() * pu_weight;
   }
 
-  if (m_isData)
-    mcChannelNumber = 1;
-  else mcChannelNumber = eventInfo->mcChannelNumber();
-
   /*
   // BCID Information
   if (m_isData){
@@ -969,6 +1061,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
   }
   */
+
 
   // if data check if event passes GRL
   if(m_isData){ // it's data!
@@ -1524,15 +1617,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& electron : *elecSC) { // C++11 shortcut
     // For MET rebuilding
     if (dec_baseline(*electron)) {
-      if(m_doORtool){
-        if(!overlapAcc(*electron)) {
-          //double elecPt = (electron->pt()) * 0.001; /// GeV
-          //Info("execute()", "  Selected MET electron pt from shallow copy = %.2f GeV", ((*elecSC_itr)->pt() * 0.001));
-          //Info("execute()", "  Selected MET electron pt from new Electron Container = %.2f GeV", (electron->pt() * 0.001));  
-          m_MetElectrons.push_back( electron );
-        }
-      }
-      else m_MetElectrons.push_back( electron );
+      m_MetElectrons.push_back( electron );
     }
   } // end for loop over shallow copied electrons
   //const xAOD::ElectronContainer* p_MetElectrons = m_MetElectrons.asDataVector();
@@ -1565,15 +1650,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& photon : *photSC) { // C++11 shortcut
     // For MET rebuilding
     if (dec_baseline(*photon)) {
-      if(m_doORtool){
-        if(!overlapAcc(*photon)){
-          //double photPt = (photon->pt()) * 0.001; /// GeV
-          //Info("execute()", "  Selected MET photon pt from shallow copy = %.2f GeV", ((*photSC_itr)->pt() * 0.001));
-          //Info("execute()", "  Selected MET photon pt from new Photon Container = %.2f GeV", (phot->pt() * 0.001));  
-          m_MetPhotons.push_back( photon );
-        }
-      }
-      else m_MetPhotons.push_back( photon );
+      m_MetPhotons.push_back( photon );
     }
   } // end for loop over shallow copied photons
   // For real MET
@@ -1609,15 +1686,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& taujet : *tauSC) { // C++11 shortcut
     // For MET rebuilding
     if (dec_baseline(*taujet)) {
-      if(m_doORtool){
-        if(!overlapAcc(*taujet)){
-          //double tauPt = (taujet->pt()) * 0.001; /// GeV
-          //Info("execute()", "  Selected MET tau pt from shallow copy = %.2f GeV", ((*tauSC_itr)->pt() * 0.001));
-          //Info("execute()", "  Selected MET tau pt from new Tau Container = %.2f GeV", (tau->pt() * 0.001));  
-          m_MetTaus.push_back( taujet );
-        }
-      }
-      else m_MetTaus.push_back( taujet );
+      m_MetTaus.push_back( taujet );
     }
   } // end for loop over shallow copied taus
   // For real MET
@@ -1653,15 +1722,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   for (const auto& muon : *muonSC) { // C++11 shortcut
     // For MET rebuilding
     if (dec_baseline(*muon)) {
-      if(m_doORtool){
-        if(!overlapAcc(*muon)){
-          //double muPt = (muon->pt()) * 0.001; /// GeV
-          //Info("execute()", "  Selected Muon pt from shallow copy = %.2f GeV", ((*muonSC_itr)->pt() * 0.001));
-          //Info("execute()", "  Selected muon pt from new Muon Container = %.2f GeV", (muon->pt() * 0.001));  
-          m_MetMuons.push_back( muon );
-        }
-      }
-      else m_MetMuons.push_back( muon );
+      m_MetMuons.push_back( muon );
     }
   } // end for loop over shallow copied muons
   // For real MET
@@ -4041,4 +4102,5 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return TMath::Sqrt(dEta*dEta + dPhi*dPhi);
 
   }
+
 
