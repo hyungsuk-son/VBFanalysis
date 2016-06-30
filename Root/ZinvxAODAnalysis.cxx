@@ -112,9 +112,6 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
   // connected.
 
 
-  TH1::SetDefaultSumw2(kTRUE);
-
-
   h_sumOfWeights = new TH1D("h_sumOfWeights", "MetaData_EventCount", 6, 0.5, 6.5);
   h_sumOfWeights -> GetXaxis() -> SetBinLabel(1, "sumOfWeights DxAOD");
   h_sumOfWeights -> GetXaxis() -> SetBinLabel(2, "sumOfWeightsSquared DxAOD");
@@ -123,6 +120,10 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
   h_sumOfWeights -> GetXaxis() -> SetBinLabel(5, "sumOfWeightsSquared initial");
   h_sumOfWeights -> GetXaxis() -> SetBinLabel(6, "nEvents initial");
   wk()->addOutput (h_sumOfWeights);
+
+
+
+  TH1::SetDefaultSumw2(kTRUE);
 
 
   h_met_ex = new TH1F("h_met_ex", "Missing E_{x};E_{x} (GeV)", 150, -150,  150); // MEx [GeV]
@@ -595,6 +596,11 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
     m_isData = false; // can do something with this later
   }
 
+  // Retrieve MC channel number
+  if (m_isData)
+    mcChannelNumber = 1;
+  else mcChannelNumber = eventInfo->mcChannelNumber();
+
   // count number of events
   m_eventCounter = 0;
   m_numCleanEvents = 0;
@@ -990,10 +996,12 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("DataScaleFactorUP",   1.) );
   EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("DataScaleFactorDOWN", 1. / 1.23) );
   EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("UnrepresentedDataAction", 2));
-  EL_RETURN_CHECK("initialize()",m_prwTool->initialize() );
+  if ( !(mcChannelNumber == 363121 || mcChannelNumber == 363351) ) {
+    EL_RETURN_CHECK("initialize()",m_prwTool->initialize() );
+  }    
 
 
-  
+
   // Initialize Cutflow
   if (m_useBitsetCutflow)
     m_BitsetCutflow = new BitsetCutflow(wk());
@@ -1035,21 +1043,29 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return EL::StatusCode::FAILURE;
   }
 
-  if (m_isData)
-    mcChannelNumber = 1;
-  else mcChannelNumber = eventInfo->mcChannelNumber();
-
   // Calculate EventWeight
-  if (m_isData) {// it's data!
-    mcEventWeight = 1.;
-    mcEventWeight_Zmumu = 1.;
-    mcEventWeight_Wmunu = 1.;
-    mcEventWeight_Zee = 1.;
-    mcEventWeight_Wenu = 1.;
+  mcEventWeight = 1.;
+  mcEventWeight_Zmumu = 1.;
+  mcEventWeight_Wmunu = 1.;
+  mcEventWeight_Zee = 1.;
+  mcEventWeight_Wenu = 1.;
+
+  float mcWeight = 1.;
+  if (!m_isData) {
+    mcWeight = eventInfo->mcEventWeight();
   }
-  else {
-    float pu_weight = m_prwTool->getCombinedWeight(*eventInfo); // Get Pile-up weight
-    mcEventWeight = eventInfo->mcEventWeight() * pu_weight;
+
+  if (((mcChannelNumber > 363100 && mcChannelNumber < 363500) || (mcChannelNumber > 304010 && mcChannelNumber < 304025)) && std::abs(mcWeight) > 100.) mcWeight = 1.;
+
+  // Pile-up reweighting
+  if (!m_isData) {
+    if (mcChannelNumber == 363121 || mcChannelNumber == 363351) {
+      mcEventWeight = mcWeight;
+    }
+    else {
+      float pu_weight = m_prwTool->getCombinedWeight(*eventInfo); // Get Pile-up weight
+      mcEventWeight = mcWeight * pu_weight;
+    }
   }
 
   /*

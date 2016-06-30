@@ -36,7 +36,8 @@ int main( int argc, char* argv[] ) {
   const char* inputFilePath = gSystem->ExpandPathName ("/cluster/tufts/atlas08/MCSamples");
   //SH::ScanDir().filePattern("DAOD_EXOT5.07992543._000007.pool.root.1").scan(sh,inputFilePath); // MC Zvv
   //SH::ScanDir().filePattern("DAOD_EXOT5.07992459._000012.pool.root.1").scan(sh,inputFilePath); // MC Zmumu
-  SH::ScanDir().filePattern("DAOD_EXOT5.07992561._000006.pool.root.1").scan(sh,inputFilePath); // MC Zee
+  //SH::ScanDir().filePattern("DAOD_EXOT5.07992561._000006.pool.root.1").scan(sh,inputFilePath); // MC Zee
+  SH::ScanDir().filePattern("DAOD_EXOT5.07992407._000001.pool.root.1").scan(sh,inputFilePath); // MC Pile-up reweighting tool problem sample
 
 
 
