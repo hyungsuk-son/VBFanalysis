@@ -95,6 +95,9 @@
 #include "xAODCutFlow/CutBookkeeper.h"
 #include "xAODCutFlow/CutBookkeeperContainer.h"
 
+// PMGTools (PMGSherpa22VJetsWeightTool)
+#include "PMGTools/PMGSherpa22VJetsWeightTool.h"
+
 // Cut Flow
 #include <ZinvAnalysis/BitsetCutflow.h>
 
@@ -443,6 +446,8 @@ class ZinvxAODAnalysis : public EL::Algorithm
     met::METSystematicsTool* m_metSystTool; //!
     CP::PileupReweightingTool* m_prwTool; //!
 
+    // Initialize PMGTools (MGSherpa22VJetsWeightTool)
+    PMGSherpa22VJetsWeightTool* m_PMGSherpa22VJetsWeightTool; //!
 
     // Cutflow
     BitsetCutflow* m_BitsetCutflow; //!

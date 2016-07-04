@@ -1001,6 +1001,16 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   }    
 
 
+  // Initialize PMGTools (PMGSherpa22VJetsWeightTool)
+  // See https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/CentralMC15ProductionList#NEW_Sherpa_v2_2_V_jets_NJet_rewe 
+  // Function of njettruth which is the number of truth jets with 
+  // pt>20 and |eta|<4.5
+  m_PMGSherpa22VJetsWeightTool = new PMGSherpa22VJetsWeightTool("PMGSherpa22VJetsWeightTool");
+  EL_RETURN_CHECK("initialize()",m_PMGSherpa22VJetsWeightTool->setProperty("TruthJetContainer","AntiKt4TruthJets") );
+  EL_RETURN_CHECK("initialize()",m_PMGSherpa22VJetsWeightTool->setProperty("TruthParticleContainer","TruthParticles") );
+  EL_RETURN_CHECK("initialize()",m_PMGSherpa22VJetsWeightTool->initialize() );
+
+
 
   // Initialize Cutflow
   if (m_useBitsetCutflow)
@@ -1067,6 +1077,23 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       mcEventWeight = mcWeight * pu_weight;
     }
   }
+
+
+  // Sherpa v2.2 V+jets NJet reweight 
+  if (!m_isData) {
+    // See https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/CentralMC15ProductionList#NEW_Sherpa_v2_2_V_jets_NJet_rewe
+
+    // only reweight W and Z samples
+    if (mcChannelNumber > 363100 &&  mcChannelNumber < 363500) {
+      double sherpaReweightValue = m_PMGSherpa22VJetsWeightTool->getWeight(); 
+      //Info("execute()", " initial mcEventWeight = %.3f, sherpaReweightValue = %.3f", mcEventWeight, sherpaReweightValue);
+      mcEventWeight*=sherpaReweightValue;
+      //Info("execute()", " final mcEventWeight = %.3f", mcEventWeight);
+    }
+  }
+
+
+
 
   /*
   // BCID Information
@@ -1975,7 +2002,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     else m_signalJet->push_back( jet );
 
   } // end for loop over shallow copied jets
-
 
 
 
