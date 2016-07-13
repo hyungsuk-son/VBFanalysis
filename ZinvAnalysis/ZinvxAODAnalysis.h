@@ -98,6 +98,9 @@
 // PMGTools (PMGSherpa22VJetsWeightTool)
 #include "PMGTools/PMGSherpa22VJetsWeightTool.h"
 
+// Systematics
+#include "PATInterfaces/SystematicRegistry.h"
+
 // Cut Flow
 #include <ZinvAnalysis/BitsetCutflow.h>
 
@@ -106,6 +109,9 @@
 #include <TH2.h>
 #include <TH3.h>
 #include <TTree.h>
+#include <string>
+#include <vector>
+#include <map>
 
 // include files for using the trigger tools
 #include "TrigConfxAOD/xAODConfigTool.h"
@@ -141,14 +147,20 @@ class ZinvxAODAnalysis : public EL::Algorithm
     bool m_isData; //!
 
     // Event Channel
-    bool m_isZvv; //!
+    bool m_isZnunu; //!
     bool m_isZmumu; //!
     bool m_isWmunu; //!
     bool m_isZee; //!
     bool m_isWenu; //!
+ 
+    std::string h_channel; //!
+
+    // Enable Systematics
+    bool m_doSys; //!
 
     // Cutflow
     bool m_useBitsetCutflow; //!
+    bool m_useArrayCutflow; //!
     int m_eventCutflow[40]; //!
 
     // Enable Overlap Removal tool
@@ -198,48 +210,32 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
     TH1 *h_sumOfWeights; //!
 
-    TH1 *h_met_ex; //!
-    TH1 *h_met_ey; //!
-    TH1 *h_met; //!
-    TH1 *h_sumet; //!
-    TH1 *h_met_phi; //!
-
-    TH1 *h_emulmet_nomu_ex; //!
-    TH1 *h_emulmet_nomu_ey; //!
-    TH1 *h_emulmet_nomu; //!
-    TH1 *h_emulsumet_nomu; //!
-    TH1 *h_emulmet_nomu_phi; //!
-
-    TH1 *h_emulmet_noelec_ex; //!
-    TH1 *h_emulmet_noelec_ey; //!
-    TH1 *h_emulmet_noelec; //!
-    TH1 *h_emulsumet_noelec; //!
-    TH1 *h_emulmet_noelec_phi; //!
+    std::map<std::string, TH1*> hMap1D; //!
 
 
     // Zinv study
-    // Zvv
-    TH1 *h_zvv_met; //!
-    TH1 *h_zvv_njet; //!
-    TH1 *h_zvv_jet1_pt; //!
-    TH1 *h_zvv_jet2_pt; //!
-    TH1 *h_zvv_jet3_pt; //!
-    TH1 *h_zvv_jet1_phi; //!
-    TH1 *h_zvv_jet2_phi; //!
-    TH1 *h_zvv_jet3_phi; //!
-    TH1 *h_zvv_jet1_eta; //!
-    TH1 *h_zvv_jet2_eta; //!
-    TH1 *h_zvv_jet3_eta; //!
-    TH1 *h_zvv_jet1_rap; //!
-    TH1 *h_zvv_jet2_rap; //!
-    TH1 *h_zvv_jet3_rap; //!
-    TH1 *h_zvv_mjj; //!
-    TH1 *h_zvv_dPhijj; //!
-    TH1 *h_zvv_dRjj; //!
-    TH1 *h_zvv_dPhimetj1; //!
-    TH1 *h_zvv_dPhimetj2; //!
-    TH1 *h_zvv_dPhimetj3; //!
-    TH1 *h_zvv_dPhiMinmetjet; //!
+    // Znunu
+    TH1 *h_znunu_met; //!
+    TH1 *h_znunu_njet; //!
+    TH1 *h_znunu_jet1_pt; //!
+    TH1 *h_znunu_jet2_pt; //!
+    TH1 *h_znunu_jet3_pt; //!
+    TH1 *h_znunu_jet1_phi; //!
+    TH1 *h_znunu_jet2_phi; //!
+    TH1 *h_znunu_jet3_phi; //!
+    TH1 *h_znunu_jet1_eta; //!
+    TH1 *h_znunu_jet2_eta; //!
+    TH1 *h_znunu_jet3_eta; //!
+    TH1 *h_znunu_jet1_rap; //!
+    TH1 *h_znunu_jet2_rap; //!
+    TH1 *h_znunu_jet3_rap; //!
+    TH1 *h_znunu_mjj; //!
+    TH1 *h_znunu_dPhijj; //!
+    TH1 *h_znunu_dRjj; //!
+    TH1 *h_znunu_dPhimetj1; //!
+    TH1 *h_znunu_dPhimetj2; //!
+    TH1 *h_znunu_dPhimetj3; //!
+    TH1 *h_znunu_dPhiMinmetjet; //!
 
 
     // Zmumu
@@ -449,6 +445,9 @@ class ZinvxAODAnalysis : public EL::Algorithm
     // Initialize PMGTools (MGSherpa22VJetsWeightTool)
     PMGSherpa22VJetsWeightTool* m_PMGSherpa22VJetsWeightTool; //!
 
+    // list of systematics
+    std::vector<CP::SystematicSet> m_sysList; //!
+
     // Cutflow
     BitsetCutflow* m_BitsetCutflow; //!
 
@@ -469,6 +468,12 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
 
     // Custom made functions
+
+    virtual EL::StatusCode addHist(std::map<std::string, TH1*> &hMap, std::string tag,
+        int bins, double min, double max);
+
+    virtual EL::StatusCode addHist(std::map<std::string, TH1*> &hMap, std::string tag,
+        int bins, Float_t binArray[]);
 
     virtual EL::StatusCode passMuonSelection(xAOD::Muon& mu,
         const xAOD::EventInfo* eventInfo,

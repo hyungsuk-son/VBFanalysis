@@ -22,6 +22,11 @@
 #include "xAODCore/ShallowCopy.h"
 #include "xAODCore/AuxContainerBase.h"
 
+// header files for systematics:
+#include "PATInterfaces/SystematicVariation.h" 
+#include "PATInterfaces/SystematicsUtil.h"
+
+
 static std::string jetType = "AntiKt4EMTopoJets";
 
 // Global accessors and decorators
@@ -126,91 +131,52 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
   TH1::SetDefaultSumw2(kTRUE);
 
 
-  h_met_ex = new TH1F("h_met_ex", "Missing E_{x};E_{x} (GeV)", 150, -150,  150); // MEx [GeV]
-  h_met_ey = new TH1F("h_met_ey", "Missing E_{y};E_{y} (GeV)", 150, -150,  150); // MEy [GeV]
-  h_met = new TH1F("h_met", "|Missing E_{T}|;ME_{T} (GeV)", 250, 0, 500); // MET [GeV]
-  h_sumet = new TH1F("h_sumet", "Sum |E_{T}|;SumE_{T} (GeV)", 200, 0, 2000); // SumET [GeV]
-  h_met_phi = new TH1F("h_met_phi", "MET #phi (rad);#phi (rad)", 32, -3.1416, 3.1416); // MET phi [GeV]
-  wk()->addOutput (h_met_ex);
-  wk()->addOutput (h_met_ey);
-  wk()->addOutput (h_met);
-  wk()->addOutput (h_sumet);
-  wk()->addOutput (h_met_phi);
-
-
-  //For emulated MET marking electrons invisible 
-  h_emulmet_noelec_ex = new TH1F("h_emulmet_noelec_ex", "Emulated Missing E_{x};E_{x} (GeV)", 150, -150,  150); // MEx [GeV]
-  h_emulmet_noelec_ey = new TH1F("h_emulmet_noelec_ey", "Emulated Missing E_{y};E_{y} (GeV)", 150, -150,  150); // MEy [GeV]
-  h_emulmet_noelec = new TH1F("h_emulmet_noelec", "Emulated Missing E_{T};ME_{T} (GeV)", 250, 0, 500); // MET [GeV]
-  h_emulsumet_noelec = new TH1F("h_emulsumet_noelec", "Emulated Sum E_{T};SumE_{T} (GeV)", 200, 0, 2000); // SumET [GeV]
-  h_emulmet_noelec_phi = new TH1F("h_emulmet_noelec_phi", "Emulated MET #phi (rad);#phi (rad)", 32, -3.1416, 3.1416); // MET phi [GeV]
-  wk()->addOutput (h_emulmet_noelec_ex);
-  wk()->addOutput (h_emulmet_noelec_ey);
-  wk()->addOutput (h_emulmet_noelec);
-  wk()->addOutput (h_emulsumet_noelec);
-  wk()->addOutput (h_emulmet_noelec_phi);
-
-  //For emulated MET marking muons invisible 
-  h_emulmet_nomu_ex = new TH1F("h_emulmet_nomu_ex", "Emulated Missing E_{x};E_{x} (GeV)", 150, -150,  150); // MEx [GeV]
-  h_emulmet_nomu_ey = new TH1F("h_emulmet_nomu_ey", "Emulated Missing E_{y};E_{y} (GeV)", 150, -150,  150); // MEy [GeV]
-  h_emulmet_nomu = new TH1F("h_emulmet_nomu", "Emulated Missing E_{T};ME_{T} (GeV)", 250, 0, 500); // MET [GeV]
-  h_emulsumet_nomu = new TH1F("h_emulsumet_nomu", "Emulated Sum E_{T};SumE_{T} (GeV)", 200, 0, 2000); // SumET [GeV]
-  h_emulmet_nomu_phi = new TH1F("h_emulmet_nomu_phi", "Emulated MET #phi (rad);#phi (rad)", 32, -3.1416, 3.1416); // MET phi [GeV]
-  wk()->addOutput (h_emulmet_nomu_ex);
-  wk()->addOutput (h_emulmet_nomu_ey);
-  wk()->addOutput (h_emulmet_nomu);
-  wk()->addOutput (h_emulsumet_nomu);
-  wk()->addOutput (h_emulmet_nomu_phi);
-
-
-
-
   // Zinv study
-  // Zvv
+  // Znunu
   // MET
-  h_zvv_met = new TH1F("h_zvv_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
-  wk()->addOutput (h_zvv_met);
+  h_znunu_met = new TH1F("h_znunu_met", "Offline |Missing E_{T}|;ME_{T} (GeV)", 30, 0, 1500);
+  wk()->addOutput (h_znunu_met);
   // Jets
-  h_zvv_njet = new TH1F("h_zvv_njet", "Number of Jets;Numbers", 40, 0, 40);
-  h_zvv_jet1_pt = new TH1F("h_zvv_jet1_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
-  h_zvv_jet2_pt = new TH1F("h_zvv_jet2_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
-  h_zvv_jet3_pt = new TH1F("h_zvv_jet3_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
-  h_zvv_jet1_phi = new TH1F("h_zvv_jet1_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
-  h_zvv_jet2_phi = new TH1F("h_zvv_jet2_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
-  h_zvv_jet3_phi = new TH1F("h_zvv_jet3_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
-  h_zvv_jet1_eta = new TH1F("h_zvv_jet1_eta", "Jet eta;#eta", 100, -5, 5);
-  h_zvv_jet2_eta = new TH1F("h_zvv_jet2_eta", "Jet eta;#eta", 100, -5, 5);
-  h_zvv_jet3_eta = new TH1F("h_zvv_jet3_eta", "Jet eta;#eta", 100, -5, 5);
-  h_zvv_jet1_rap = new TH1F("h_zvv_jet1_rap", "Jet rapidity;#eta", 100, -5, 5);
-  h_zvv_jet2_rap = new TH1F("h_zvv_jet2_rap", "Jet rapidity;#eta", 100, -5, 5);
-  h_zvv_jet3_rap = new TH1F("h_zvv_jet3_rap", "Jet rapidity;#eta", 100, -5, 5);
-  h_zvv_mjj = new TH1F("h_zvv_mjj", "Invariant mass;m_{jj} (GeV)", 80, 0, 4000);
-  h_zvv_dPhijj = new TH1F("h_zvv_dPhijj", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 32, 0, 3.2);
-  h_zvv_dRjj = new TH1F("h_zvv_dRjj", "Delta R between J1 and J2;#DeltaR(j_{1},j_{2}) (rad)", 50, 0, 5);
-  h_zvv_dPhimetj1 = new TH1F("h_zvv_dPhimetj1", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 32, 0, 3.2);
-  h_zvv_dPhimetj2 = new TH1F("h_zvv_dPhimetj2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 32, 0, 3.2);
-  h_zvv_dPhimetj3 = new TH1F("h_zvv_dPhimetj3", "Delta Phi between MET and J3;#Delta#phi(MET,j_{3}) (rad)", 32, 0, 3.2);
-  h_zvv_dPhiMinmetjet = new TH1F("h_zvv_dPhiMinmetjet", "Minimum Delta Phi between MET and Jet;#Delta#phi_{min}(MET,jet) (rad)", 32, 0, 3.2);
-  wk()->addOutput (h_zvv_njet);
-  wk()->addOutput (h_zvv_jet1_pt);
-  wk()->addOutput (h_zvv_jet2_pt);
-  wk()->addOutput (h_zvv_jet3_pt);
-  wk()->addOutput (h_zvv_jet1_phi);
-  wk()->addOutput (h_zvv_jet2_phi);
-  wk()->addOutput (h_zvv_jet3_phi);
-  wk()->addOutput (h_zvv_jet1_eta);
-  wk()->addOutput (h_zvv_jet2_eta);
-  wk()->addOutput (h_zvv_jet3_eta);
-  wk()->addOutput (h_zvv_jet1_rap);
-  wk()->addOutput (h_zvv_jet2_rap);
-  wk()->addOutput (h_zvv_jet3_rap);
-  wk()->addOutput (h_zvv_mjj);
-  wk()->addOutput (h_zvv_dPhijj);
-  wk()->addOutput (h_zvv_dRjj);
-  wk()->addOutput (h_zvv_dPhimetj1);
-  wk()->addOutput (h_zvv_dPhimetj2);
-  wk()->addOutput (h_zvv_dPhimetj3);
-  wk()->addOutput (h_zvv_dPhiMinmetjet);
+  h_znunu_njet = new TH1F("h_znunu_njet", "Number of Jets;Numbers", 40, 0, 40);
+  h_znunu_jet1_pt = new TH1F("h_znunu_jet1_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_znunu_jet2_pt = new TH1F("h_znunu_jet2_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_znunu_jet3_pt = new TH1F("h_znunu_jet3_pt", "Jet p_{T};p_{T} (GeV)", 60, 0, 3000); // Jet pt [GeV]
+  h_znunu_jet1_phi = new TH1F("h_znunu_jet1_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_znunu_jet2_phi = new TH1F("h_znunu_jet2_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_znunu_jet3_phi = new TH1F("h_znunu_jet3_phi", "Jet Phi;#phi (rad)", 64, -3.2, 3.2);
+  h_znunu_jet1_eta = new TH1F("h_znunu_jet1_eta", "Jet eta;#eta", 100, -5, 5);
+  h_znunu_jet2_eta = new TH1F("h_znunu_jet2_eta", "Jet eta;#eta", 100, -5, 5);
+  h_znunu_jet3_eta = new TH1F("h_znunu_jet3_eta", "Jet eta;#eta", 100, -5, 5);
+  h_znunu_jet1_rap = new TH1F("h_znunu_jet1_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_znunu_jet2_rap = new TH1F("h_znunu_jet2_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_znunu_jet3_rap = new TH1F("h_znunu_jet3_rap", "Jet rapidity;#eta", 100, -5, 5);
+  h_znunu_mjj = new TH1F("h_znunu_mjj", "Invariant mass;m_{jj} (GeV)", 80, 0, 4000);
+  h_znunu_dPhijj = new TH1F("h_znunu_dPhijj", "Delta Phi between J1 and J2;#Delta#phi(j_{1},j_{2}) (rad)", 32, 0, 3.2);
+  h_znunu_dRjj = new TH1F("h_znunu_dRjj", "Delta R between J1 and J2;#DeltaR(j_{1},j_{2}) (rad)", 50, 0, 5);
+  h_znunu_dPhimetj1 = new TH1F("h_znunu_dPhimetj1", "Delta Phi between MET and J1;#Delta#phi(MET,j_{1}) (rad)", 32, 0, 3.2);
+  h_znunu_dPhimetj2 = new TH1F("h_znunu_dPhimetj2", "Delta Phi between MET and J2;#Delta#phi(MET,j_{2}) (rad)", 32, 0, 3.2);
+  h_znunu_dPhimetj3 = new TH1F("h_znunu_dPhimetj3", "Delta Phi between MET and J3;#Delta#phi(MET,j_{3}) (rad)", 32, 0, 3.2);
+  h_znunu_dPhiMinmetjet = new TH1F("h_znunu_dPhiMinmetjet", "Minimum Delta Phi between MET and Jet;#Delta#phi_{min}(MET,jet) (rad)", 32, 0, 3.2);
+  wk()->addOutput (h_znunu_njet);
+  wk()->addOutput (h_znunu_jet1_pt);
+  wk()->addOutput (h_znunu_jet2_pt);
+  wk()->addOutput (h_znunu_jet3_pt);
+  wk()->addOutput (h_znunu_jet1_phi);
+  wk()->addOutput (h_znunu_jet2_phi);
+  wk()->addOutput (h_znunu_jet3_phi);
+  wk()->addOutput (h_znunu_jet1_eta);
+  wk()->addOutput (h_znunu_jet2_eta);
+  wk()->addOutput (h_znunu_jet3_eta);
+  wk()->addOutput (h_znunu_jet1_rap);
+  wk()->addOutput (h_znunu_jet2_rap);
+  wk()->addOutput (h_znunu_jet3_rap);
+  wk()->addOutput (h_znunu_mjj);
+  wk()->addOutput (h_znunu_dPhijj);
+  wk()->addOutput (h_znunu_dRjj);
+  wk()->addOutput (h_znunu_dPhimetj1);
+  wk()->addOutput (h_znunu_dPhimetj2);
+  wk()->addOutput (h_znunu_dPhimetj3);
+  wk()->addOutput (h_znunu_dPhiMinmetjet);
 
 
   // Zmumu
@@ -606,14 +572,18 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_numCleanEvents = 0;
 
   // Enable Cutflow plot
+  m_useArrayCutflow = true;
   m_useBitsetCutflow = true;
 
   // Event Channel
-  m_isZvv = true;
+  m_isZnunu = false;
   m_isZmumu = true;
-  m_isWmunu = true;
-  m_isZee = true;
-  m_isWenu = true;
+  m_isWmunu = false;
+  m_isZee = false;
+  m_isWenu = false;
+
+  // Enable Systematics
+  m_doSys = true;
 
   // Enable Overlap Removal tool
   m_doORtool = false;
@@ -812,7 +782,8 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_jetUncertaintiesTool = new JetUncertaintiesTool("JetUncertaintiesTool");
   EL_RETURN_CHECK("initialize()",m_jetUncertaintiesTool->setProperty("JetDefinition", "AntiKt4EMTopo"));
   EL_RETURN_CHECK("initialize()",m_jetUncertaintiesTool->setProperty("MCType", "MC15"));
-  EL_RETURN_CHECK("initialize()",m_jetUncertaintiesTool->setProperty("ConfigFile", "JES_2015/Prerec/PrerecJES2015_AllNuisanceParameters_25ns.config"));
+  //EL_RETURN_CHECK("initialize()",m_jetUncertaintiesTool->setProperty("ConfigFile", "JES_2015/Prerec/PrerecJES2015_AllNuisanceParameters_25ns.config"));
+  EL_RETURN_CHECK("initialize()",m_jetUncertaintiesTool->setProperty("ConfigFile", "JES_2015/Moriond2016/JES2015_SR_Scenario1.config"));
   // Initialise jet uncertainty tool
   EL_RETURN_CHECK("initialize()",m_jetUncertaintiesTool->initialize());
 
@@ -1011,6 +982,11 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_PMGSherpa22VJetsWeightTool->initialize() );
 
 
+  // Get the systematics registry and add the recommended systematics into our list of systematics to run over (+/-1 sigma):
+  const CP::SystematicRegistry& registry = CP::SystematicRegistry::getInstance();
+  const CP::SystematicSet& recommendedSystematics = registry.recommendedSystematics(); // get list of recommended systematics
+  m_sysList = CP::make_systematics_vector(recommendedSystematics); 
+
 
   // Initialize Cutflow
   if (m_useBitsetCutflow)
@@ -1020,7 +996,92 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // Initialize Cutflow count array
   for (int i=0; i<40; i++) {
     m_eventCutflow[i]=0;
-  }  
+  }
+
+
+  ///////////////////////////////
+  // Create Histograms //////////
+  ///////////////////////////////
+
+  if (m_isZnunu) h_channel = "h_znunu_";
+  if (m_isZmumu) h_channel = "h_zmumu_";
+  if (m_isZee) h_channel = "h_zee_";
+  if (m_isWmunu) h_channel = "h_wmunu_";
+  if (m_isWenu) h_channel = "h_wenu_";
+
+  // Publication bins
+  // Monojet and VBF MET
+  Float_t binsMET[] = {200.,250.,300.,350.,500.,700.,1000.,1400.};
+  Int_t nbinMET = sizeof(binsMET)/sizeof(Float_t) - 1;
+  // VBF mjj
+  Float_t binsMjj[] = {200.,400.,600.,1000.,2000.,3000.,4000.};
+  Int_t nbinMjj = sizeof(binsMjj)/sizeof(Float_t) - 1;
+  // VBF dPhi(j1,j2)
+  Float_t pi = TMath::Pi();
+  Float_t binsDPhi[] = {0., pi/(7-1), 2*pi/(7-1), 3*pi/(7-1), 4*pi/(7-1), 5*pi/(7-1), pi}; // where 7 is number of bins
+  Int_t nbinDPhi = sizeof(binsDPhi)/sizeof(Float_t) - 1;
+
+
+  TH1::SetDefaultSumw2(kTRUE);
+
+  for (const auto &sysList : m_sysList){
+    if ((!m_doSys || m_isData) && (sysList).name() != "") continue;
+    std::string sysName = (sysList).name();
+
+
+    if (m_doSys && (sysName.find("TAUS_")!=std::string::npos || sysName.find("PH_")!=std::string::npos )) continue;
+    if (m_isZmumu && m_doSys && ((sysName.find("EL_")!=std::string::npos || sysName.find("EG_")!=std::string::npos))) continue;
+    if (m_isZee && m_doSys && ((sysName.find("MUON_")!=std::string::npos || sysName.find("MUONS_")!=std::string::npos))) continue;
+    if (m_isZnunu && m_doSys && ((sysName.find("MUON_")!=std::string::npos || sysName.find("MUONS_")!=std::string::npos || sysName.find("EL_")!=std::string::npos || sysName.find("EG_")!=std::string::npos)) ) continue;
+
+
+    if (m_isZmumu || m_isZee) {
+      // MET
+      addHist(hMap1D, h_channel+"vbf_met"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_met_emulmet"+sysName, nbinMET, binsMET);
+      //addHist(hMap1D, h_channel+"vbf_met"+sysName, 30, 0., 1500.);
+      //addHist(hMap1D, h_channel+"vbf_met_emulmet"+sysName, 30, 0., 1500.);
+
+      // Jets
+      addHist(hMap1D, h_channel+"vbf_mjj"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
+      //addHist(hMap1D, h_channel+"vbf_mjj"+sysName, 80, 0., 4000.);
+      //addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, 16, 0., 3.2);
+
+      addHist(hMap1D, h_channel+"vbf_njet"+sysName, 40, 0., 40.);
+      addHist(hMap1D, h_channel+"vbf_jet1_pt"+sysName, 60, 0., 3000.);
+      addHist(hMap1D, h_channel+"vbf_jet2_pt"+sysName, 60, 0., 3000.);
+      addHist(hMap1D, h_channel+"vbf_jet3_pt"+sysName, 60, 0., 3000.);
+      addHist(hMap1D, h_channel+"vbf_jet1_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"vbf_jet2_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"vbf_jet3_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"vbf_jet1_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"vbf_jet2_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"vbf_jet3_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"vbf_jet1_rap"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"vbf_jet2_rap"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"vbf_jet3_rap"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"vbf_dRjj"+sysName, 25, 0., 5.);
+      addHist(hMap1D, h_channel+"vbf_dPhimetj1"+sysName, 16, 0., 3.2);
+      addHist(hMap1D, h_channel+"vbf_dPhimetj2"+sysName, 16, 0., 3.2);
+      addHist(hMap1D, h_channel+"vbf_dPhimetj3"+sysName, 16, 0., 3.2);
+      addHist(hMap1D, h_channel+"vbf_dPhiMinmetjet"+sysName, 16, 0., 3.2);
+
+      // Leptons
+      addHist(hMap1D, h_channel+"vbf_muon1_pt"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"vbf_muon2_pt"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"vbf_muon1_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"vbf_muon2_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"vbf_muon1_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"vbf_muon2_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"vbf_mll"+sysName, 150, 0., 300.);
+    }
+
+
+  } // Systematic loop end
+
+
+
 
   return EL::StatusCode::SUCCESS;
 }
@@ -1042,7 +1103,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   // print every 100 events, so we know where we are:
   if( (m_eventCounter % 100) ==0 ) Info("execute()", "Event number = %i", m_eventCounter );
   m_eventCounter++;
-  m_eventCutflow[0]+=1;
+  if (m_useArrayCutflow) m_eventCutflow[0]+=1;
 
   //----------------------------
   // Event information
@@ -1064,31 +1125,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   if (!m_isData) {
     mcWeight = eventInfo->mcEventWeight();
   }
-
   if (((mcChannelNumber > 363100 && mcChannelNumber < 363500) || (mcChannelNumber > 304010 && mcChannelNumber < 304025)) && std::abs(mcWeight) > 100.) mcWeight = 1.;
-
-  // Pile-up reweighting
-  if (!m_isData) {
-    if (mcChannelNumber == 363121 || mcChannelNumber == 363351) {
-      mcEventWeight = mcWeight;
-    }
-    else {
-      float pu_weight = m_prwTool->getCombinedWeight(*eventInfo); // Get Pile-up weight
-      mcEventWeight = mcWeight * pu_weight;
-    }
-  }
-
 
   // Sherpa v2.2 V+jets NJet reweight 
   if (!m_isData) {
     // See https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/CentralMC15ProductionList#NEW_Sherpa_v2_2_V_jets_NJet_rewe
-
     // only reweight W and Z samples
     if (mcChannelNumber > 363100 &&  mcChannelNumber < 363500) {
       double sherpaReweightValue = m_PMGSherpa22VJetsWeightTool->getWeight(); 
-      //Info("execute()", " initial mcEventWeight = %.3f, sherpaReweightValue = %.3f", mcEventWeight, sherpaReweightValue);
-      mcEventWeight*=sherpaReweightValue;
-      //Info("execute()", " final mcEventWeight = %.3f", mcEventWeight);
+      mcWeight*=sherpaReweightValue;
     }
   }
 
@@ -1113,7 +1158,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
   } // end if not MC
   if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("GRL");
-  m_eventCutflow[1]+=1;
+  if (m_useArrayCutflow) m_eventCutflow[1]+=1;
 
 
   //------------------------------------------------------------
@@ -1133,7 +1178,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   } // end if the event is data
   m_numCleanEvents++;
   if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("LAr_Tile_Core");
-  m_eventCutflow[2]+=1;
+  if (m_useArrayCutflow) m_eventCutflow[2]+=1;
 
 
   //---------------------
@@ -1175,7 +1220,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   if (primVertex->nTrackParticles() < 2) return EL::StatusCode::SUCCESS;
 
   if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Primary vertex");
-  m_eventCutflow[3]+=1;
+  if (m_useArrayCutflow) m_eventCutflow[3]+=1;
+
 
 
 
@@ -1191,49 +1237,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return EL::StatusCode::FAILURE;
   }
 
-  /// shallow copy for muon calibration and smearing tool
-  // create a shallow copy of the muons container for MET building
-  std::pair< xAOD::MuonContainer*, xAOD::ShallowAuxContainer* > muons_shallowCopy = xAOD::shallowCopyContainer( *m_muons );
-  xAOD::MuonContainer* muonSC = muons_shallowCopy.first;
-
-  // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
-  // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
-  // The method is defined in the header file xAODBase/IParticleHelpers.h
-  bool setLinksMuon = xAOD::setOriginalObjectLink(*m_muons,*muonSC);
-  if(!setLinksMuon) {
-    Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
-    return StatusCode::FAILURE;
-  }
-
-  /*
-  ///////////////////
-  // For MET study //
-  ///////////////////
-
-  // iterate over our shallow copy
-  for (const auto& muon : *muonSC) { // C++11 shortcut
-    //Info("execute()", "  original muon pt = %.2f GeV", ((*muonSC_itr)->pt() * 0.001)); // just to print out something
-    //if(((*muonSC_itr)->eta()) > 2.5)
-    //Info("execute()", "  muon eta = %.2f ", ((*muonSC_itr)->eta())); // just to print out something
-    //Info("execute()", "  corrected muon pt = %.2f GeV", ((*muonSC_itr)->pt() * 0.001));
-    passMuonSelection(*muon, eventInfo, primVertex);
-
-  } // end for loop over shallow copied muons
-  */
-
-  ///////////////////
-  // For VBF study //
-  ///////////////////
-
-  // iterate over our shallow copy
-  for (const auto& muon : *muonSC) { // C++11 shortcut
-    // VBF Muon Selection
-    passMuonVBF(*muon, eventInfo, primVertex);
-    //Info("execute()", "  VBF muon pt = %.2f GeV", (muon->pt() * 0.001));
-  } // end for loop over shallow copied muons
-
-
-
   //------------
   // ELECTRONS
   //------------
@@ -1245,50 +1248,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     Error("execute()", "Failed to retrieve Electron container. Exiting." );
     return EL::StatusCode::FAILURE;
   }
-
-
-  /// shallow copy for electron calibration tool
-  // create a shallow copy of the electrons container for MET building
-  std::pair< xAOD::ElectronContainer*, xAOD::ShallowAuxContainer* > elec_shallowCopy = xAOD::shallowCopyContainer( *m_electrons );
-  xAOD::ElectronContainer* elecSC = elec_shallowCopy.first;
-
-  // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
-  // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
-  // The method is defined in the header file xAODBase/IParticleHelpers.h
-  bool setLinksElec = xAOD::setOriginalObjectLink(*m_electrons,*elecSC);
-  if(!setLinksElec) {
-    Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
-    return StatusCode::FAILURE;
-  }
-
-  /*
-  ///////////////////
-  // For MET study //
-  ///////////////////
-
-  // iterate over our shallow copy
-  for (const auto& electron : *elecSC) { // C++11 shortcut
-    //Info("execute()", "  original electron pt = %.2f GeV", ((*elecSC_itr)->pt() * 0.001));
-    //Info("execute()", "  corrected electron pt = %.2f GeV", ((*elecSC_itr)->pt() * 0.001));
-    passElectronSelection(*electron, eventInfo, primVertex);
-
-  } // end for loop over shallow copied electrons
-  */
-
-  ///////////////////
-  // For VBF study //
-  ///////////////////
-
-  // iterate over our shallow copy
-  for (const auto& electron : *elecSC) { // C++11 shortcut
-    // VBF Electron Selection
-    passElectronVBF(*electron, eventInfo, primVertex);
-    //Info("execute()", "  VBF electron pt = %.2f GeV", (electron->pt() * 0.001));
-  } // end for loop over shallow copied electrons
-
-
-
-
 
   //------------
   // PHOTONS
@@ -1302,44 +1261,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return EL::StatusCode::FAILURE;
   }
 
-  /// shallow copy for photon calibration tool
-  // create a shallow copy of the photons container for MET building
-  std::pair< xAOD::PhotonContainer*, xAOD::ShallowAuxContainer* > phot_shallowCopy = xAOD::shallowCopyContainer( *m_photons );
-  xAOD::PhotonContainer* photSC = phot_shallowCopy.first;
-
-  // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
-  // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
-  // The method is defined in the header file xAODBase/IParticleHelpers.h
-  bool setLinksPhoton = xAOD::setOriginalObjectLink(*m_photons,*photSC);
-  if(!setLinksPhoton) {
-    Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
-    return StatusCode::FAILURE;
-  }
-
-  /*
-  ///////////////////
-  // For MET study //
-  ///////////////////
-  // iterate over our shallow copy
-  for (const auto& photon : *photSC) { // C++11 shortcut
-    //Info("execute()", "  original photon pt = %.2f GeV", ((*photSC_itr)->pt() * 0.001));
-    //Info("execute()", "  corrected photon pt = %.2f GeV", ((*photSC_itr)->pt() * 0.001));
-    passPhotonSelection(*photon, eventInfo);
-  } // end for loop over shallow copied photons
-  */
-
-  ///////////////////
-  // For VBF study //
-  ///////////////////
-
-  // iterate over our shallow copy
-  for (const auto& photon : *photSC) { // C++11 shortcut
-    // VBF Tau Selection
-    passPhotonVBF(*photon, eventInfo); 
-  } // end for loop over shallow copied photons
-
-
-
   //------------
   // TAUS
   //------------
@@ -1351,46 +1272,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     Error("execute()", "Failed to retrieve Tau container. Exiting." );
     return EL::StatusCode::FAILURE;
   }
-
-  m_tauOverlappingElectronLLHDecorator->initializeEvent();
-
-  /// shallow copy for tau calibration tool
-  // create a shallow copy of the taus container for MET building
-  std::pair< xAOD::TauJetContainer*, xAOD::ShallowAuxContainer* > tau_shallowCopy = xAOD::shallowCopyContainer( *m_taus );
-  xAOD::TauJetContainer* tauSC = tau_shallowCopy.first;
-
-  // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
-  // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
-  // The method is defined in the header file xAODBase/IParticleHelpers.h
-  bool setLinksTau = xAOD::setOriginalObjectLink(*m_taus,*tauSC);
-  if(!setLinksTau) {
-    Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
-    return StatusCode::FAILURE;
-  }
-
-  /*
-  ///////////////////
-  // For MET study //
-  ///////////////////
-  // iterate over our shallow copy
-  for (const auto& taujet : *tauSC) { // C++11 shortcut
-    //Info("execute()", "  original tau pt = %.2f GeV", ((*tauSC_itr)->pt() * 0.001));
-    //Info("execute()", "  corrected tau pt = %.2f GeV", ((*tauSC_itr)->pt() * 0.001));
-    passTauSelection(*taujet, eventInfo);
-  } // end for loop over shallow copied taus
-  */
-
-  ///////////////////
-  // For VBF study //
-  ///////////////////
-
-  // iterate over our shallow copy
-  for (const auto& taujet : *tauSC) { // C++11 shortcut
-    // VBF Tau Selection
-    passTauVBF(*taujet, eventInfo);
-  } // end for loop over shallow copied taus
-
-
 
   //------------
   // JETS
@@ -1404,1037 +1285,1211 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return EL::StatusCode::FAILURE;
   }
 
-  /// shallow copy for jet calibration tool
-  // create a shallow copy of the jets container for MET building
-  std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jet_shallowCopy = xAOD::shallowCopyContainer( *m_jets );
-  xAOD::JetContainer* jetSC = jet_shallowCopy.first;
 
-  // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
-  // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
-  // The method is defined in the header file xAODBase/IParticleHelpers.h
-  bool setLinksJet = xAOD::setOriginalObjectLink(*m_jets,*jetSC);
-  if(!setLinksJet) {
-    Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
-    return StatusCode::FAILURE;
-  }
+  //-----------------------
+  // Systematics Start
+  //-----------------------
+  // loop over recommended systematics
+  for (const auto &sysList : m_sysList){
+    std::string sysName = (sysList).name();
+    if ((!m_doSys || m_isData) && sysName != "") continue;
 
-  // iterate over our shallow copy
-  for (const auto& jets : *jetSC) { // C++11 shortcut
-    //Info("execute()", "  original jet pt = %.2f GeV", jets->pt() * 0.001);
+    if (m_doSys && (sysName.find("TAUS_")!=std::string::npos || sysName.find("PH_")!=std::string::npos )) continue;
+    if (m_isZmumu && m_doSys && ((sysName.find("EL_")!=std::string::npos || sysName.find("EG_")!=std::string::npos))) continue;
+    if (m_isZee && m_doSys && ((sysName.find("MUON_")!=std::string::npos || sysName.find("MUONS_")!=std::string::npos))) continue;
+    if (m_isZnunu && m_doSys && ((sysName.find("MUON_")!=std::string::npos || sysName.find("MUONS_")!=std::string::npos || sysName.find("EL_")!=std::string::npos || sysName.find("EG_")!=std::string::npos)) ) continue;
 
-    // According to https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/JetEtmissRecommendationsMC15
+    //if(sysName=="") std::cout << "Nominal (no syst) "  << std::endl;
+    //else std::cout << "Systematic: " << sysName << std::endl;
 
-    // JES calibration
-    if ( !m_jetCalibration->applyCalibration(*jets).isSuccess() ){
-      Error("execute()", "Failed to apply calibration to Jet objects. Exiting." );
-      return EL::StatusCode::FAILURE;
+
+    if (!m_isData) {
+      if (m_prwTool->applySystematicVariation( sysList ) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure PileupReweightingTool for systematics");
+        return EL::StatusCode::FAILURE;
+      }  
+
     }
 
-    float jetPt = jets->pt() * 0.001; /// GeV
-    float jetEta = jets->eta();
 
-    // JES correction
-    if (!m_isData){
-      if (jetPt > 15. ){
-        if ( m_jetUncertaintiesTool->applyCorrection(*jets) != CP::CorrectionCode::Ok){ // apply correction and check return code
-          Error("execute()", "Failed to apply JES correction to Jet objects. Exiting." );
-          return EL::StatusCode::FAILURE;
-        }
+
+
+    //---------------------
+    // Pile-up reweighting
+    //---------------------
+    if (!m_isData) {
+      if (mcChannelNumber == 363121 || mcChannelNumber == 363351) { // These samples have missing mu values and the pileup reweighting tool doesn't like that and crashes.
+        mcEventWeight = mcWeight;
+      }
+      else {
+        float pu_weight = m_prwTool->getCombinedWeight(*eventInfo); // Get Pile-up weight
+        mcEventWeight = mcWeight * pu_weight;
       }
     }
 
-    // JER smearing
-    if (!m_isData){
-      if ( m_jerSmearingTool->applyCorrection(*jets) != CP::CorrectionCode::Ok){ // apply correction and check return code
-        Error("execute()", "Failed to apply JER smearing. Exiting. ");
+
+
+
+    ///////////////////
+    // For VBF study //
+    ///////////////////
+
+    //------------
+    // MUONS
+    //------------
+    /// shallow copy for muon calibration and smearing tool
+    // create a shallow copy of the muons container for MET building
+    std::pair< xAOD::MuonContainer*, xAOD::ShallowAuxContainer* > muons_shallowCopy = xAOD::shallowCopyContainer( *m_muons );
+    xAOD::MuonContainer* muonSC = muons_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
+    // The method is defined in the header file xAODBase/IParticleHelpers.h
+    bool setLinksMuon = xAOD::setOriginalObjectLink(*m_muons,*muonSC);
+    if(!setLinksMuon) {
+      Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
+      return StatusCode::FAILURE;
+    }
+    // iterate over our shallow copy
+    for (const auto& muon : *muonSC) { // C++11 shortcut
+      // VBF Muon Selection
+      passMuonVBF(*muon, eventInfo, primVertex);
+      //Info("execute()", "  VBF muon pt = %.2f GeV", (muon->pt() * 0.001));
+    } // end for loop over shallow copied muons
+
+
+    //------------
+    // ELECTRONS
+    //------------
+    /// shallow copy for electron calibration tool
+    // create a shallow copy of the electrons container for MET building
+    std::pair< xAOD::ElectronContainer*, xAOD::ShallowAuxContainer* > elec_shallowCopy = xAOD::shallowCopyContainer( *m_electrons );
+    xAOD::ElectronContainer* elecSC = elec_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
+    // The method is defined in the header file xAODBase/IParticleHelpers.h
+    bool setLinksElec = xAOD::setOriginalObjectLink(*m_electrons,*elecSC);
+    if(!setLinksElec) {
+      Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
+      return StatusCode::FAILURE;
+    }
+    // iterate over our shallow copy
+    for (const auto& electron : *elecSC) { // C++11 shortcut
+      // VBF Electron Selection
+      passElectronVBF(*electron, eventInfo, primVertex);
+      //Info("execute()", "  VBF electron pt = %.2f GeV", (electron->pt() * 0.001));
+    } // end for loop over shallow copied electrons
+
+
+
+
+
+    //------------
+    // PHOTONS
+    //------------
+    /// shallow copy for photon calibration tool
+    // create a shallow copy of the photons container for MET building
+    std::pair< xAOD::PhotonContainer*, xAOD::ShallowAuxContainer* > phot_shallowCopy = xAOD::shallowCopyContainer( *m_photons );
+    xAOD::PhotonContainer* photSC = phot_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
+    // The method is defined in the header file xAODBase/IParticleHelpers.h
+    bool setLinksPhoton = xAOD::setOriginalObjectLink(*m_photons,*photSC);
+    if(!setLinksPhoton) {
+      Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
+      return StatusCode::FAILURE;
+    }
+    // iterate over our shallow copy
+    for (const auto& photon : *photSC) { // C++11 shortcut
+      // VBF Tau Selection
+      passPhotonVBF(*photon, eventInfo); 
+    } // end for loop over shallow copied photons
+
+
+
+    //------------
+    // TAUS
+    //------------
+    m_tauOverlappingElectronLLHDecorator->initializeEvent();
+    /// shallow copy for tau calibration tool
+    // create a shallow copy of the taus container for MET building
+    std::pair< xAOD::TauJetContainer*, xAOD::ShallowAuxContainer* > tau_shallowCopy = xAOD::shallowCopyContainer( *m_taus );
+    xAOD::TauJetContainer* tauSC = tau_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
+    // The method is defined in the header file xAODBase/IParticleHelpers.h
+    bool setLinksTau = xAOD::setOriginalObjectLink(*m_taus,*tauSC);
+    if(!setLinksTau) {
+      Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
+      return StatusCode::FAILURE;
+    }
+    // iterate over our shallow copy
+    for (const auto& taujet : *tauSC) { // C++11 shortcut
+      // VBF Tau Selection
+      passTauVBF(*taujet, eventInfo);
+    } // end for loop over shallow copied taus
+
+
+
+    //------------
+    // JETS
+    //------------
+    /// shallow copy for jet calibration tool
+    // create a shallow copy of the jets container for MET building
+    std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jet_shallowCopy = xAOD::shallowCopyContainer( *m_jets );
+    xAOD::JetContainer* jetSC = jet_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
+    // The method is defined in the header file xAODBase/IParticleHelpers.h
+    bool setLinksJet = xAOD::setOriginalObjectLink(*m_jets,*jetSC);
+    if(!setLinksJet) {
+      Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
+      return StatusCode::FAILURE;
+    }
+
+    // iterate over our shallow copy
+    for (const auto& jets : *jetSC) { // C++11 shortcut
+      //Info("execute()", "  original jet pt = %.2f GeV", jets->pt() * 0.001);
+
+      // According to https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/JetEtmissRecommendationsMC15
+
+      // JES calibration
+      if ( !m_jetCalibration->applyCalibration(*jets).isSuccess() ){
+        Error("execute()", "Failed to apply calibration to Jet objects. Exiting." );
         return EL::StatusCode::FAILURE;
       }
-    }
 
-    // JVT Tool
-    float newjvt = m_jvtagup->updateJvt(*jets);
-    acc_jvt(*jets) = newjvt;
-
-    //Info("execute()", "  corrected jet pt = %.2f GeV", jets->pt() * 0.001);
-    //Info("execute()", "  updated jet jvt = %.2f ", newjvt);
-
-    dec_baseline(*jets) = false;
-    selectDec(*jets) = false; // To select objects for Overlap removal
-
-    // pT cut
-    if (jetPt > m_jetPtCut && fabs(jetEta) < m_jetEtaCut) {
-      dec_baseline(*jets) = true;
-      selectDec(*jets) = true; // To select objects for Overlap removal
-    }
-
-  } // end for loop over shallow copied jets
-
-
-  //----------------
-  // Overlap Removal
-  //----------------
-
-  if (m_doORtool){
-    //auto m_orTool = m_toolBox->getMasterHandle();
-    if ( !m_orTool->removeOverlaps(elecSC, muonSC, jetSC, tauSC, photSC).isSuccess() ){
-      Error("execute()", "Failed to apply the overlap removal to all objects. Exiting." );
-      return EL::StatusCode::FAILURE;
-    }
-
-
-    // Now, dump all of the results
-
-    // electrons
-    for(auto electron : *elecSC){
-      if(overlapAcc(*electron)) {
-        nOverlapElectrons++;
-        //Info("execute()", "  EventNumber : %i |  Overlap electron pt = %.2f GeV", EventNumber, (electron->pt() * 0.001));
-      }
-      nInputElectrons++;
-    }
-    // muons
-    for(auto muon : *muonSC){
-      if(overlapAcc(*muon)) nOverlapMuons++;
-      nInputMuons++;
-    }
-    // jets
-    for (auto jet : *jetSC) {
-      if(overlapAcc(*jet)){
-        nOverlapJets++;
-        //Info("execute()", "  EventNumber : %i |  Overlap jet pt = %.2f GeV", EventNumber, (jet->pt() * 0.001));
-      }
-      nInputJets++;
-    }
-    // taus
-    for(auto tau : *tauSC){
-      if(overlapAcc(*tau)) nOverlapTaus++;
-      nInputTaus++;
-    }
-    // photons
-    for(auto photon : *photSC){
-      if(overlapAcc(*photon)) nOverlapPhotons++;
-      nInputPhotons++;
-    }
-  }
-
-
-  // --------------------------------------------------------
-  // Select Signal Jet and Bad Jet applying overlap removal
-  // --------------------------------------------------------
-  /// Creating New Hard Object Containers
-  // [For jet identification] filter the Jet container m_jets, placing selected jets into m_goodJet
-  xAOD::JetContainer* m_goodJet = new xAOD::JetContainer(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Jet>
-
-  bool isBadJet = false;
-
-  // iterate over our shallow copy
-  for (const auto& jets : *jetSC) { // C++11 shortcut
-
-    // Veto Jet (cleaning Jet)
-    if (IsBadJet(*jets)) isBadJet = true;
-
-    // Jet Signal Selection
-    if (IsSignalJet(*jets)) {
-      //double jetPt = (jets->pt()) * 0.001; /// GeV
-
-      m_goodJet->push_back( jets );
-    }
-  } // end for loop over shallow copied jets
-
-
-
-  //------------------------------------
-  // Event Cleaning (Jet cleaning tool)
-  //------------------------------------
-  if (isBadJet) return EL::StatusCode::SUCCESS;
-  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Jet Cleaning");
-  m_eventCutflow[4]+=1;
-
-
-
-  //-----------------
-  // Rebuild the MET
-  //-----------------
-
-  // Create a MissingETContainer with its aux store for each systematic
-  xAOD::MissingETContainer* m_met = new xAOD::MissingETContainer();
-  xAOD::MissingETAuxContainer* m_metAux = new xAOD::MissingETAuxContainer();
-  m_met->setStore(m_metAux);
-
-  //retrieve the original containers
-  const xAOD::MissingETContainer* m_metCore(0);
-  std::string coreMetKey = "MET_Core_" + jetType;
-  coreMetKey.erase(coreMetKey.length() - 4); //this removes the Jets from the end of the jetType
-  if ( !m_event->retrieve( m_metCore, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
-    Error("execute()", "Unable to retrieve MET core container: " );
-    return EL::StatusCode::FAILURE;
-  }
-
-  //retrieve the MET association map
-  const xAOD::MissingETAssociationMap* m_metMap(0);
-  std::string metAssocKey = "METAssoc_" + jetType;
-  metAssocKey.erase(metAssocKey.length() - 4 );//this removes the Jets from the end of the jetType
-  if ( !m_event->retrieve( m_metMap, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
-    Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
-    return EL::StatusCode::FAILURE;
-  }
-
-  // do CST or TST
-  //std::string softTerm = "SoftClus";
-  std::string softTerm = "PVSoftTrk";
-
-  // It is necessary to reset the selected objects before every MET calculation
-  m_metMap->resetObjSelectionFlags();
-
-
-
-  //==========================================================
-  // For rebuild the emulated MET (by marking Muon invisible)
-  //==========================================================
-
-
-  // Create a MissingETContainer with its aux store for each systematic
-  xAOD::MissingETContainer* m_emulmet_nomu = new xAOD::MissingETContainer();
-  xAOD::MissingETAuxContainer* m_emulmetAux_nomu = new xAOD::MissingETAuxContainer();
-  m_emulmet_nomu->setStore(m_emulmetAux_nomu);
-
-  //retrieve the original containers
-  const xAOD::MissingETContainer* m_emulmetCore_nomu(0);
-  if ( !m_event->retrieve( m_emulmetCore_nomu, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
-    Error("execute()", "Unable to retrieve MET core container: " );
-    return EL::StatusCode::FAILURE;
-  }
-
-  //retrieve the MET association map
-  const xAOD::MissingETAssociationMap* m_emulmetMap_nomu(0);
-  if ( !m_event->retrieve( m_emulmetMap_nomu, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
-    Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
-    return EL::StatusCode::FAILURE;
-  }
-
-  // It is necessary to reset the selected objects before every MET calculation
-  m_emulmetMap_nomu->resetObjSelectionFlags();
-
-
-  //==============================================================
-  // For rebuild the emulated MET (by marking Electron invisible)
-  //==============================================================
-
-
-  // Create a MissingETContainer with its aux store for each systematic
-  xAOD::MissingETContainer* m_emulmet_noelec = new xAOD::MissingETContainer();
-  xAOD::MissingETAuxContainer* m_emulmetAux_noelec = new xAOD::MissingETAuxContainer();
-  m_emulmet_noelec->setStore(m_emulmetAux_noelec);
-
-  //retrieve the original containers
-  const xAOD::MissingETContainer* m_emulmetCore_noelec(0);
-  if ( !m_event->retrieve( m_emulmetCore_noelec, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
-    Error("execute()", "Unable to retrieve MET core container: " );
-    return EL::StatusCode::FAILURE;
-  }
-
-  //retrieve the MET association map
-  const xAOD::MissingETAssociationMap* m_emulmetMap_noelec(0);
-  if ( !m_event->retrieve( m_emulmetMap_noelec, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
-    Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
-    return EL::StatusCode::FAILURE;
-  }
-
-  // It is necessary to reset the selected objects before every MET calculation
-  m_emulmetMap_noelec->resetObjSelectionFlags();
-
-
-
-
-
-  //here we apply some basic cuts and rebuild the met at each step
-
-  // Electron
-  //-----------------
-
-  /// Creat New Hard Object Containers
-  // [For MET building] filter the Electron container m_electrons, placing selected electrons into m_MetElectrons
-  ConstDataVector<xAOD::ElectronContainer> m_MetElectrons(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Electron>
-
-  // iterate over our shallow copy
-  for (const auto& electron : *elecSC) { // C++11 shortcut
-    // For MET rebuilding
-    if (dec_baseline(*electron)) {
-      m_MetElectrons.push_back( electron );
-    }
-  } // end for loop over shallow copied electrons
-  //const xAOD::ElectronContainer* p_MetElectrons = m_MetElectrons.asDataVector();
-  // For real MET
-  m_metMaker->rebuildMET("RefElectron",           //name of metElectrons in metContainer
-      xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
-      m_met,                                      //filling this met container
-      m_MetElectrons.asDataVector(),              //using these metElectrons that accepted our cuts
-      m_metMap);                                  //and this association map
-
-  // For emulated MET marking electrons invisible
-  m_metMaker->markInvisible(m_MetElectrons.asDataVector(), m_emulmetMap_noelec);
-
-  // For emulated MET marking muons invisible
-  m_metMaker->rebuildMET("RefElectron",           //name of metElectrons in metContainer
-      xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
-      m_emulmet_nomu,                             //filling this met container
-      m_MetElectrons.asDataVector(),              //using these metElectrons that accepted our cuts
-      m_emulmetMap_nomu);                         //and this association map
-
-
-  // Photon
-  //-----------------
-
-  /// Creat New Hard Object Containers
-  // [For MET building] filter the Photon container m_photons, placing selected photons into m_MetPhotons
-  ConstDataVector<xAOD::PhotonContainer> m_MetPhotons(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Photon>
-
-  // iterate over our shallow copy
-  for (const auto& photon : *photSC) { // C++11 shortcut
-    // For MET rebuilding
-    if (dec_baseline(*photon)) {
-      m_MetPhotons.push_back( photon );
-    }
-  } // end for loop over shallow copied photons
-  // For real MET
-  m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
-      xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
-      m_met,                                    //filling this met container
-      m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
-      m_metMap);                                //and this association map
-
-  // For emulated MET marking electrons invisible
-  m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
-      xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
-      m_emulmet_noelec,                         //filling this met container
-      m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
-      m_emulmetMap_noelec);                     //and this association map
-
-  // For emulated MET marking muons invisible
-  m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
-      xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
-      m_emulmet_nomu,                           //filling this met container
-      m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
-      m_emulmetMap_nomu);                       //and this association map
-
-
-  // TAUS
-  //-----------------
-
-  /// Creat New Hard Object Containers
-  // [For MET building] filter the TauJet container m_taus, placing selected taus into m_MetTaus
-  ConstDataVector<xAOD::TauJetContainer> m_MetTaus(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::TauJet>
-
-  // iterate over our shallow copy
-  for (const auto& taujet : *tauSC) { // C++11 shortcut
-    // For MET rebuilding
-    if (dec_baseline(*taujet)) {
-      m_MetTaus.push_back( taujet );
-    }
-  } // end for loop over shallow copied taus
-  // For real MET
-  m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
-      xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
-      m_met,                                 //filling this met container
-      m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
-      m_metMap);                             //and this association map
-
-  // For emulated MET marking electrons invisible
-  m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
-      xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
-      m_emulmet_noelec,                      //filling this met container
-      m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
-      m_emulmetMap_noelec);                  //and this association map
-
-  // For emulated MET marking muons invisible
-  m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
-      xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
-      m_emulmet_nomu,                        //filling this met container
-      m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
-      m_emulmetMap_nomu);                    //and this association map
-
-
-  // Muon
-  //-----------------
-
-  /// Creat New Hard Object Containers
-  // [For MET building] filter the Muon container m_muons, placing selected muons into m_MetMuons
-  ConstDataVector<xAOD::MuonContainer> m_MetMuons(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Muon>
-
-  // iterate over our shallow copy
-  for (const auto& muon : *muonSC) { // C++11 shortcut
-    // For MET rebuilding
-    if (dec_baseline(*muon)) {
-      m_MetMuons.push_back( muon );
-    }
-  } // end for loop over shallow copied muons
-  // For real MET
-  m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
-      xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
-      m_met,                                  //filling this met container
-      m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
-      m_metMap);                              //and this association map
-
-  // For emulated MET marking electrons invisible
-  m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
-      xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
-      m_emulmet_noelec,                       //filling this met container
-      m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
-      m_emulmetMap_noelec);                   //and this association map
-
-  // For emulated MET marking muons invisible
-  m_metMaker->markInvisible(m_MetMuons.asDataVector(), m_emulmetMap_nomu);
-
-  met::addGhostMuonsToJets(*m_muons, *jetSC);
-
-  // JET
-  //-----------------
-
-  //Now time to rebuild jetMet and get the soft term
-  //This adds the necessary soft term for both CST and TST
-  //these functions create an xAODMissingET object with the given names inside the container
-  // For real MET
-  m_metMaker->rebuildJetMET("RefJet",          //name of jet met
-      "SoftClus",        //name of soft cluster term met
-      "PVSoftTrk",       //name of soft track term met
-      m_met,             //adding to this new met container
-      jetSC,             //using this jet collection to calculate jet met
-      m_metCore,         //core met container
-      m_metMap,          //with this association map
-      true);             //apply jet jvt cut
-
-  // For emulated MET marking electrons invisible
-  m_metMaker->rebuildJetMET("RefJet",          //name of jet met
-      "SoftClus",           //name of soft cluster term met
-      "PVSoftTrk",          //name of soft track term met
-      m_emulmet_noelec,     //adding to this new met container
-      jetSC,                //using this jet collection to calculate jet met
-      m_emulmetCore_noelec, //core met container
-      m_emulmetMap_noelec,  //with this association map
-      true);                //apply jet jvt cut
-
-  // For emulated MET marking muons invisible
-  m_metMaker->rebuildJetMET("RefJet",          //name of jet met
-      "SoftClus",           //name of soft cluster term met
-      "PVSoftTrk",          //name of soft track term met
-      m_emulmet_nomu,       //adding to this new met container
-      jetSC,                //using this jet collection to calculate jet met
-      m_emulmetCore_nomu,   //core met container
-      m_emulmetMap_nomu,    //with this association map
-      true);                //apply jet jvt cut
-
-
-
-  // MET Build
-  //-----------------
-
-  //m_metMaker->rebuildTrackMET("RefJetTrk", softTerm, m_met, jetSC, m_metCore, m_metMap, true);
-
-  //this builds the final track or cluster met sums, using systematic varied container
-  //In the future, you will be able to run both of these on the same container to easily output CST and TST
-  // For real MET
-  m_metMaker->buildMETSum("Final", m_met, (*m_met)[softTerm]->source());
-
-  // For emulated MET marking electrons invisible
-  m_metMaker->buildMETSum("Final", m_emulmet_noelec, (*m_emulmet_noelec)[softTerm]->source());
-
-  // For emulated MET marking muons invisible
-  m_metMaker->buildMETSum("Final", m_emulmet_nomu, (*m_emulmet_nomu)[softTerm]->source());
-
-
-
-  // Fill real MET
-  float MET_ex = -9e9;
-  float MET_ey = -9e9;
-  float MET = -9e9;
-  float SumET = -9e9;
-  float MET_phi = -9e9;
-
-  MET_ex = ((*m_met)["Final"]->mpx()) * 0.001;
-  MET_ey = ((*m_met)["Final"]->mpy()) * 0.001;
-  //MET = sqrt(MET_ex*MET_ex+MET_ey*MET_ey);
-  MET = ((*m_met)["Final"]->met()) * 0.001;
-  SumET = ((*m_met)["Final"]->sumet()) * 0.001;
-  //MET_phi = atan2(MET_ey, MET_ex);
-  MET_phi = ((*m_met)["Final"]->phi());
-
-  h_met_ex->Fill( MET_ex ); // GeV
-  h_met_ey->Fill( MET_ey ); // GeV
-  h_met->Fill( MET ); // GeV
-  h_sumet->Fill( SumET ); // GeV
-  h_met_phi->Fill( MET_phi ); // GeV
-
-
-  // Fill emulated MET (by marking electrons invisible)
-  float emulMET_noelec_ex = -9e9;
-  float emulMET_noelec_ey = -9e9;
-  float emulMET_noelec = -9e9;
-  float emulSumET_noelec = -9e9;
-  float emulMET_noelec_phi = -9e9;
-
-  emulMET_noelec_ex = ((*m_emulmet_noelec)["Final"]->mpx()) * 0.001;
-  emulMET_noelec_ey = ((*m_emulmet_noelec)["Final"]->mpy()) * 0.001;
-  emulMET_noelec = ((*m_emulmet_noelec)["Final"]->met()) * 0.001;
-  emulSumET_noelec = ((*m_emulmet_noelec)["Final"]->sumet()) * 0.001;
-  emulMET_noelec_phi = ((*m_emulmet_noelec)["Final"]->phi());
-
-  h_emulmet_noelec_ex->Fill( emulMET_noelec_ex ); // GeV
-  h_emulmet_noelec_ey->Fill( emulMET_noelec_ey ); // GeV
-  h_emulmet_noelec->Fill( emulMET_noelec ); // GeV
-  h_emulsumet_noelec->Fill( emulSumET_noelec ); // GeV
-  h_emulmet_noelec_phi->Fill( emulMET_noelec_phi ); // GeV
-
-
-  // Fill emulated MET (by marking muons invisible)
-  float emulMET_nomu_ex = -9e9;
-  float emulMET_nomu_ey = -9e9;
-  float emulMET_nomu = -9e9;
-  float emulSumET_nomu = -9e9;
-  float emulMET_nomu_phi = -9e9;
-
-  emulMET_nomu_ex = ((*m_emulmet_nomu)["Final"]->mpx()) * 0.001;
-  emulMET_nomu_ey = ((*m_emulmet_nomu)["Final"]->mpy()) * 0.001;
-  emulMET_nomu = ((*m_emulmet_nomu)["Final"]->met()) * 0.001;
-  emulSumET_nomu = ((*m_emulmet_nomu)["Final"]->sumet()) * 0.001;
-  emulMET_nomu_phi = ((*m_emulmet_nomu)["Final"]->phi());
-
-  h_emulmet_nomu_ex->Fill( emulMET_nomu_ex ); // GeV
-  h_emulmet_nomu_ey->Fill( emulMET_nomu_ey ); // GeV
-  h_emulmet_nomu->Fill( emulMET_nomu ); // GeV
-  h_emulsumet_nomu->Fill( emulSumET_nomu ); // GeV
-  h_emulmet_nomu_phi->Fill( emulMET_nomu_phi ); // GeV
-
-
-
-
-
-
-  //-----------------------------------------------
-  // Define Good Leptons and Calculate Scale Factor
-  //-----------------------------------------------
-
-  ///////////////
-  // Good Muon //
-  ///////////////
-  xAOD::MuonContainer* m_goodMuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
-  // iterate over our shallow copy
-  for (const auto& muon : *muonSC) { // C++11 shortcut
-    // Muon Selection for VBF study
-    if (dec_baseline(*muon)) {
-    //if (dec_signal(*muon)) { // For MET Trigger study
-      if(m_doORtool){
-        if (!overlapAcc(*muon)){
-          m_goodMuon->push_back( muon );
-        }
-      }
-      else m_goodMuon->push_back( muon );
-      //Info("execute()", "  Good muon pt = %.2f GeV", (muon->pt() * 0.001));
-    }
-  } // end for loop over shallow copied muons
-
-  ///////////////////
-  // Good Electron //
-  ///////////////////
-  xAOD::ElectronContainer* m_goodElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
-  // iterate over our shallow copy
-  for (const auto& electron : *elecSC) { // C++11 shortcut
-    // Electron Selection for VBF study
-    if (dec_baseline(*electron)) {
-    //if (dec_signal(*electron)) { // MET Trigger sutdy
-      if(m_doORtool){
-        if(!overlapAcc(*electron)){
-          m_goodElectron->push_back( electron );
-        }
-      }
-      else m_goodElectron->push_back( electron );
-      //Info("execute()", "  Good electron pt = %.2f GeV", (electron->pt() * 0.001));
-    }
-  } // end for loop over shallow copied electrons
-
-  //////////////
-  // Good Tau //
-  //////////////
-  xAOD::TauJetContainer* m_goodTau = new xAOD::TauJetContainer(SG::VIEW_ELEMENTS);
-  // iterate over our shallow copy
-  for (const auto& taujet : *tauSC) { // C++11 shortcut
-    // Tau Selection for VBF study
-    if (dec_baseline(*taujet)) {
-      if(m_doORtool){
-        if(!overlapAcc(*taujet)){
-          m_goodTau->push_back( taujet );
-        }
-      }
-      else m_goodTau->push_back( taujet );
-      //Info("execute()", "  Good tau pt = %.2f GeV", (taujet->pt() * 0.001));
-    }
-  } // end for loop over shallow copied electrons
-
-
-  /////////////////////////
-  // Overlap removed Jet //
-  /////////////////////////
-  xAOD::JetContainer* m_signalJet = new xAOD::JetContainer(SG::VIEW_ELEMENTS);
-  // iterate over our shallow copy
-  for (const auto& jet : *m_goodJet) { // C++11 shortcut
-
-    if (m_doORmanual) { // If jets are selected jet for overlap removal and if you want overlap removal manually
-      bool isORjet = false;
-
-      for (const auto& muon : *m_goodMuon) {
-        if (DeltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi()) < m_ORJETdeltaR) {
-          int ntrks = 0;
-          std::vector<int> ntrks_vec = jet->auxdata<std::vector<int> >("NumTrkPt1000");          
-          if (ntrks_vec.size() > 0) ntrks = ntrks_vec[primVertex->index()];
-          if (ntrks < 5) isORjet = true;
-        }
-      }
-
-      for (const auto& electron : *m_goodElectron) {
-        if (DeltaR(jet->eta(), electron->eta(), jet->phi(), electron->phi()) < m_ORJETdeltaR) isORjet = true;
-      }
-
-      for (const auto& tau : *m_goodTau) {
-        if (DeltaR(jet->eta(), tau->eta(), jet->phi(), tau->phi()) < m_ORJETdeltaR) isORjet = true;
-      }
-
-      if ( !isORjet ) m_signalJet->push_back( jet );
-    }
-    else m_signalJet->push_back( jet );
-
-  } // end for loop over shallow copied jets
-
-
-
-  //------------------------
-  // Define DiJet Properties
-  // -----------------------
-
-  TLorentzVector jet1;
-  TLorentzVector jet2;
-  float jet1_pt = 0;
-  float jet2_pt = 0;
-  float jet3_pt = 0;
-  float jet1_phi = 0;
-  float jet2_phi = 0;
-  float jet3_phi = 0;
-  float jet1_eta = 0;
-  float jet2_eta = 0;
-  float jet3_eta = 0;
-  float jet1_rapidity = 0;
-  float jet2_rapidity = 0;
-  float jet3_rapidity = 0;
-
-  float signalJet_ht = 0;
-  float dPhiJet1Met = 0;
-  float dPhiJet2Met = 0;
-  float dPhiJet3Met = 0;
-  float dPhiJet1Met_nomu = 0;
-  float dPhiJet2Met_nomu = 0;
-  float dPhiJet3Met_nomu = 0;
-  float dPhiJet1Met_noelec = 0;
-  float dPhiJet2Met_noelec = 0;
-  float dPhiJet3Met_noelec = 0;
-
-  float mjj = 0;
-  bool pass_diJet = false; // Select DiJet
-  bool pass_CJV = true; // Central Jet Veto (CJV)
-  bool pass_dPhijetmet = true; // deltaPhi(Jet_i,MET)
-  bool pass_dPhijetmet_nomu = true; // deltaPhi(Jet_i,MET_nomu)
-  bool pass_dPhijetmet_noelec = true; // deltaPhi(Jet,MET_noelec)
-  float dPhiMinjetmet = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
-  float dPhiMinjetmet_nomu = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
-  float dPhiMinjetmet_noelec = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
-  bool pass_dPhiDijetMet = true; // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET)
-  bool pass_dPhiDijetMet_nomu = true; // deltaPhi(Jet1,MET_nomu) or deltaPhi(Jet2,MET_nomu)
-  bool pass_dPhiDijetMet_noelec = true; // deltaPhi(Jet1,MET_noelec) or deltaPhi(Jet2,MET_noelec)
-
-
-  // DiJet Selection
-  if (m_signalJet->size() > 1) {
-    std::partial_sort(m_signalJet->begin(), m_signalJet->begin()+2, m_signalJet->end(), DescendingPt());
-
-    jet1 = m_signalJet->at(0)->p4();
-    jet2 = m_signalJet->at(1)->p4();
-    jet1_pt = m_signalJet->at(0)->pt() * 0.001;
-    jet2_pt = m_signalJet->at(1)->pt() * 0.001;
-    jet1_phi = m_signalJet->at(0)->phi();
-    jet2_phi = m_signalJet->at(1)->phi();
-    jet1_eta = m_signalJet->at(0)->eta();
-    jet2_eta = m_signalJet->at(1)->eta();
-    jet1_rapidity = m_signalJet->at(0)->rapidity();
-    jet2_rapidity = m_signalJet->at(1)->rapidity();
-    auto dijet = jet1 + jet2;
-    mjj = dijet.M() * 0.001;
-
-    //Info("execute()", "  jet1 = %.2f GeV, jet2 = %.2f GeV", jet1_pt, jet2_pt);
-    //Info("execute()", "  mjj = %.2f GeV", mjj);
-
-    if ( jet1_pt >  m_diJet1PtCut && jet2_pt > m_diJet2PtCut ){
-      if ( fabs(jet1_rapidity) < m_diJetEtaCut && fabs(jet2_rapidity) < m_diJetEtaCut ){
-        if ( m_jetCleaningTight->accept( *m_signalJet->at(0) ) ){ //Tight Leading Jet 
-          pass_diJet = true;
-        }
-      }
-    }
-
-    // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET) decision
-    // For Zvv
-    if (m_isZvv){
-      dPhiJet1Met = DeltaPhi(jet1_phi, MET_phi);
-      dPhiJet2Met = DeltaPhi(jet2_phi, MET_phi);
-      if ( dPhiJet1Met < 0.4 ) pass_dPhiDijetMet = false ;
-      if ( dPhiJet2Met < 0.4 ) pass_dPhiDijetMet = false ;
-    }
-    // For Zmumu
-    if (m_isZmumu){
-      dPhiJet1Met_nomu = DeltaPhi(jet1_phi, emulMET_nomu_phi);
-      dPhiJet2Met_nomu = DeltaPhi(jet2_phi, emulMET_nomu_phi);
-      if ( dPhiJet1Met_nomu < 0.4 ) pass_dPhiDijetMet_nomu = false ;
-      if ( dPhiJet2Met_nomu < 0.4 ) pass_dPhiDijetMet_nomu = false ;
-    }
-    // For Zee
-    if (m_isZee){
-      dPhiJet1Met_noelec = DeltaPhi(jet1_phi, emulMET_noelec_phi);
-      dPhiJet2Met_noelec = DeltaPhi(jet2_phi, emulMET_noelec_phi);
-      if ( dPhiJet1Met_noelec < 0.4 ) pass_dPhiDijetMet_noelec = false ;
-      if ( dPhiJet2Met_noelec < 0.4 ) pass_dPhiDijetMet_noelec = false ;
-    }
-
-
-  } // DiJet selection loop
-
-
-  // For jet3
-  if (m_signalJet->size() > 2) {
-    jet3_pt = m_signalJet->at(2)->pt() * 0.001;
-    jet3_phi = m_signalJet->at(2)->phi();
-    jet3_eta = m_signalJet->at(2)->eta();
-    jet3_rapidity = m_signalJet->at(2)->rapidity();
-    // deltaPhi(Jet3,MET)
-    dPhiJet3Met = DeltaPhi(jet3_phi, MET_phi);
-    dPhiJet3Met_nomu = DeltaPhi(jet3_phi, emulMET_nomu_phi);
-    dPhiJet3Met_noelec = DeltaPhi(jet3_phi, emulMET_noelec_phi);
-  }
-
-
-  // N_jet >= 1
-  if (m_signalJet->size() > 0) {
-
-    // loop over the jets in the Good Jets Container
-    for (const auto& jet : *m_signalJet) {
-      float signal_jet_pt = jet->pt() * 0.001;
-      float signal_jet_rapidity = jet->rapidity();
-      float signal_jet_phi = jet->phi();
-
-      // Calculate dPhi(Jet_i,MET) and dPhi_min(Jet_i,MET)
-      // For Zvv
-      if (m_isZvv){
-        float dPhijetmet = DeltaPhi(signal_jet_phi,MET_phi);
-        //Info("execute()", " [Zvv] Event # = %llu", eventInfo->eventNumber());
-        //Info("execute()", " [Zvv] dPhi = %.2f", dPhijetmet);
-        if ( dPhijetmet < 0.4 ) pass_dPhijetmet = false;
-        dPhiMinjetmet = std::min(dPhiMinjetmet, dPhijetmet);
-        //Info("execute()", " [Zvv] dPhi_min = %.2f", dPhiMinjetmet);
-      }
-      // For Zmumu
-      if (m_isZmumu){
-        float dPhijetmet_nomu = DeltaPhi(signal_jet_phi,emulMET_nomu_phi);
-        //Info("execute()", " [Zmumu] Event # = %llu", eventInfo->eventNumber());
-        //Info("execute()", " [Zmumu] dPhi = %.2f", dPhijetmet_nomu);
-        if ( dPhijetmet_nomu < 0.4 ) pass_dPhijetmet_nomu = false;
-        dPhiMinjetmet_nomu = std::min(dPhiMinjetmet_nomu, dPhijetmet_nomu);
-        //Info("execute()", " [Zmumu] dPhi_min = %.2f", dPhiMinjetmet_nomu);
-      }
-      // For Zee
-      if (m_isZee){
-        float dPhijetmet_noelec = DeltaPhi(signal_jet_phi,emulMET_noelec_phi);
-        //Info("execute()", " [Zee] Event # = %llu", eventInfo->eventNumber());
-        //Info("execute()", " [Zee] dPhi = %.2f", dPhijetmet_noelec);
-        if ( dPhijetmet_noelec < 0.4 ) pass_dPhijetmet_noelec = false;
-        dPhiMinjetmet_noelec = std::min(dPhiMinjetmet_noelec, dPhijetmet_noelec);
-        //Info("execute()", " [Zee] dPhi_min = %.2f", dPhiMinjetmet_noelec);
-      }
-
-      // Central Jet Veto (CJV)
-      if ( m_signalJet->size() > 2 && pass_diJet ){
-        if (m_signalJet->at(0) != jet && m_signalJet->at(1) != jet){
-          //cout << "m_signalJet->at(0) = " << m_signalJet->at(0) << " jet = " << jet << endl;
-          if (signal_jet_pt > m_CJVptCut && fabs(signal_jet_rapidity) < m_diJetEtaCut) {
-            if ( (jet1_rapidity > jet2_rapidity) && (signal_jet_rapidity < jet1_rapidity && signal_jet_rapidity > jet2_rapidity)){
-              pass_CJV = false;
-            }
-            if ( (jet1_rapidity < jet2_rapidity) && (signal_jet_rapidity > jet1_rapidity && signal_jet_rapidity < jet2_rapidity)){
-              pass_CJV = false;
-            }
+      float jetPt = jets->pt() * 0.001; /// GeV
+      float jetEta = jets->eta();
+
+      // JES correction
+      if (!m_isData){
+        if (jetPt > 15. ){
+          if ( m_jetUncertaintiesTool->applyCorrection(*jets) != CP::CorrectionCode::Ok){ // apply correction and check return code
+            Error("execute()", "Failed to apply JES correction to Jet objects. Exiting." );
+            return EL::StatusCode::FAILURE;
           }
         }
       }
 
-      //Info("execute()", "  Zvv Signal Jet pt = %.2f GeV, eta = %.2f", signal_pt_jet, signal_eta_jet);
-      signalJet_ht += signal_jet_pt;
-    } // Jet loop
-
-  } //N_jet >= 1
-
-
-
-
-  //----------------------------------
-  // Define Zmumu and Wmunu Selection
-  //----------------------------------
-
-  bool pass_Zmumu = false; // Select Zmumu channel
-  bool pass_Wmunu = false; // Select Wmunu channel
-  float mll_muon = 0.; // For Zmumu channel
-  float mT_muon = 0.;// For Wmunu channel
-  // Zmumu muons
-  float muon1_pt = 0.;
-  float muon2_pt = 0.;
-  float muon1_charge = 0.;
-  float muon2_charge = 0.;
-
-  if (m_isZmumu || m_isWmunu){
-
-    // Zmumu Selection
-    if (m_goodMuon->size() > 1) {
-      std::partial_sort(m_goodMuon->begin(), m_goodMuon->begin()+2, m_goodMuon->end(), DescendingPt());
-
-      TLorentzVector muon1 = m_goodMuon->at(0)->p4();
-      TLorentzVector muon2 = m_goodMuon->at(1)->p4();
-      muon1_pt = m_goodMuon->at(0)->pt() * 0.001;
-      muon2_pt = m_goodMuon->at(1)->pt() * 0.001;
-      muon1_charge = m_goodMuon->at(0)->charge();
-      muon2_charge = m_goodMuon->at(1)->charge();
-      auto Zmass_muon = muon1 + muon2;
-      mll_muon = Zmass_muon.M() * 0.001;
-
-      //Info("execute()", "  muon1 = %.2f GeV, muon2 = %.2f GeV", muon1_pt, muon2_pt);
-      //Info("execute()", "  mll (Zmumu) = %.2f GeV", mll_muon);
-
-      if ( muon1_pt >  m_LeadLepPtCut && muon2_pt > m_SubLeadLepPtCut ){
-        if ( muon1_charge * muon2_charge < 0 ){
-          pass_Zmumu = true;
-          //Info("execute()", "  Leading muon = %.2f GeV, Subleading muon = %.2f GeV", muon1_pt, muon2_pt);
+      // JER smearing
+      if (!m_isData){
+        if ( m_jerSmearingTool->applyCorrection(*jets) != CP::CorrectionCode::Ok){ // apply correction and check return code
+          Error("execute()", "Failed to apply JER smearing. Exiting. ");
+          return EL::StatusCode::FAILURE;
         }
       }
-    } // Zmumu selection loop
 
-    // Wmunu Selection
-    if (m_goodMuon->size() == 1) {
-      float muon_pt = m_goodMuon->at(0)->pt() * 0.001;
-      float muon_phi = m_goodMuon->at(0)->phi();
-      mT_muon = TMath::Sqrt( 2. * muon_pt * MET * ( 1. - TMath::Cos(muon_phi - MET_phi) ) );
+      // JVT Tool
+      float newjvt = m_jvtagup->updateJvt(*jets);
+      acc_jvt(*jets) = newjvt;
 
-      if ( muon_pt > 25. ){
-        pass_Wmunu = true;
+      //Info("execute()", "  corrected jet pt = %.2f GeV", jets->pt() * 0.001);
+      //Info("execute()", "  updated jet jvt = %.2f ", newjvt);
+
+      dec_baseline(*jets) = false;
+      selectDec(*jets) = false; // To select objects for Overlap removal
+
+      // pT cut
+      if (jetPt > m_jetPtCut && fabs(jetEta) < m_jetEtaCut) {
+        dec_baseline(*jets) = true;
+        selectDec(*jets) = true; // To select objects for Overlap removal
       }
-    } //Wmunu Selection loop
 
-  }
+    } // end for loop over shallow copied jets
 
 
-  //-------------------------------
-  // Define Zee and Wenu Selection
-  // ------------------------------
+    //----------------
+    // Overlap Removal
+    //----------------
 
-  bool pass_Zee = false; // Select Zee channel
-  bool pass_Wenu = false; // Select Wenu channel
-  float mll_electron = 0.; // Select Zee channel
-  float mT_electron = 0.;// For Wenu channel
-  // Zee electrons
-  float electron1_pt = 0.;
-  float electron2_pt = 0.;
-  float electron1_charge = 0.;
-  float electron2_charge = 0.;
+    if (m_doORtool){
+      //auto m_orTool = m_toolBox->getMasterHandle();
+      if ( !m_orTool->removeOverlaps(elecSC, muonSC, jetSC, tauSC, photSC).isSuccess() ){
+        Error("execute()", "Failed to apply the overlap removal to all objects. Exiting." );
+        return EL::StatusCode::FAILURE;
+      }
 
-  if (m_isZee || m_isWenu){
 
-    // Zee Selection
-    if (m_goodElectron->size() > 1) {
-      std::partial_sort(m_goodElectron->begin(), m_goodElectron->begin()+2, m_goodElectron->end(), DescendingPt());
+      // Now, dump all of the results
 
-      TLorentzVector electron1 = m_goodElectron->at(0)->p4();
-      TLorentzVector electron2 = m_goodElectron->at(1)->p4();
-      electron1_pt = m_goodElectron->at(0)->pt() * 0.001;
-      electron2_pt = m_goodElectron->at(1)->pt() * 0.001;
-      electron1_charge = m_goodElectron->at(0)->charge();
-      electron2_charge = m_goodElectron->at(1)->charge();
-      auto Zmass_electron = electron1 + electron2;
-      mll_electron = Zmass_electron.M() * 0.001;
+      // electrons
+      for(auto electron : *elecSC){
+        if(overlapAcc(*electron)) {
+          nOverlapElectrons++;
+          //Info("execute()", "  EventNumber : %i |  Overlap electron pt = %.2f GeV", EventNumber, (electron->pt() * 0.001));
+        }
+        nInputElectrons++;
+      }
+      // muons
+      for(auto muon : *muonSC){
+        if(overlapAcc(*muon)) nOverlapMuons++;
+        nInputMuons++;
+      }
+      // jets
+      for (auto jet : *jetSC) {
+        if(overlapAcc(*jet)){
+          nOverlapJets++;
+          //Info("execute()", "  EventNumber : %i |  Overlap jet pt = %.2f GeV", EventNumber, (jet->pt() * 0.001));
+        }
+        nInputJets++;
+      }
+      // taus
+      for(auto tau : *tauSC){
+        if(overlapAcc(*tau)) nOverlapTaus++;
+        nInputTaus++;
+      }
+      // photons
+      for(auto photon : *photSC){
+        if(overlapAcc(*photon)) nOverlapPhotons++;
+        nInputPhotons++;
+      }
+    }
 
-      //Info("execute()", "  electron1 = %.2f GeV, electron2 = %.2f GeV", electron1_pt, electron2_pt);
-      //Info("execute()", "  mll (Zee) = %.2f GeV", mll_electron);
 
-      if ( electron1_pt >  m_LeadLepPtCut && electron2_pt > m_SubLeadLepPtCut ){
-        if ( electron1_charge * electron2_charge < 0 ){
-          pass_Zee = true;
-          //Info("execute()", "  Leading electron = %.2f GeV, Subleading electron = %.2f GeV", electron1_pt, electron2_pt);
+    // --------------------------------------------------------
+    // Select Signal Jet and Bad Jet applying overlap removal
+    // --------------------------------------------------------
+    /// Creating New Hard Object Containers
+    // [For jet identification] filter the Jet container m_jets, placing selected jets into m_goodJet
+    xAOD::JetContainer* m_goodJet = new xAOD::JetContainer(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Jet>
+
+    bool isBadJet = false;
+
+    // iterate over our shallow copy
+    for (const auto& jets : *jetSC) { // C++11 shortcut
+
+      // Veto Jet (cleaning Jet)
+      if (IsBadJet(*jets)) isBadJet = true;
+
+      // Jet Signal Selection
+      if (IsSignalJet(*jets)) {
+        //double jetPt = (jets->pt()) * 0.001; /// GeV
+
+        m_goodJet->push_back( jets );
+      }
+    } // end for loop over shallow copied jets
+
+
+
+    //------------------------------------
+    // Event Cleaning (Jet cleaning tool)
+    //------------------------------------
+    //if (isBadJet) return EL::StatusCode::SUCCESS;
+    if (isBadJet){
+
+      delete muons_shallowCopy.first;
+      delete muons_shallowCopy.second;
+
+      delete elec_shallowCopy.first;
+      delete elec_shallowCopy.second;
+
+      delete phot_shallowCopy.first;
+      delete phot_shallowCopy.second;
+
+      delete tau_shallowCopy.first;
+      delete tau_shallowCopy.second;
+
+      delete jet_shallowCopy.first;
+      delete jet_shallowCopy.second;
+
+      delete m_goodJet;
+
+      continue;
+    }
+    if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Jet Cleaning");
+    if (m_useArrayCutflow) m_eventCutflow[4]+=1;
+
+
+
+    //-----------------
+    // Rebuild the MET
+    //-----------------
+
+    // Create a MissingETContainer with its aux store for each systematic
+    xAOD::MissingETContainer* m_met = new xAOD::MissingETContainer();
+    xAOD::MissingETAuxContainer* m_metAux = new xAOD::MissingETAuxContainer();
+    m_met->setStore(m_metAux);
+
+    //retrieve the original containers
+    const xAOD::MissingETContainer* m_metCore(0);
+    std::string coreMetKey = "MET_Core_" + jetType;
+    coreMetKey.erase(coreMetKey.length() - 4); //this removes the Jets from the end of the jetType
+    if ( !m_event->retrieve( m_metCore, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
+      Error("execute()", "Unable to retrieve MET core container: " );
+      return EL::StatusCode::FAILURE;
+    }
+
+    //retrieve the MET association map
+    const xAOD::MissingETAssociationMap* m_metMap(0);
+    std::string metAssocKey = "METAssoc_" + jetType;
+    metAssocKey.erase(metAssocKey.length() - 4 );//this removes the Jets from the end of the jetType
+    if ( !m_event->retrieve( m_metMap, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
+      Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
+      return EL::StatusCode::FAILURE;
+    }
+
+    // do CST or TST
+    //std::string softTerm = "SoftClus";
+    std::string softTerm = "PVSoftTrk";
+
+    // It is necessary to reset the selected objects before every MET calculation
+    m_metMap->resetObjSelectionFlags();
+
+
+
+    //==========================================================
+    // For rebuild the emulated MET (by marking Muon invisible)
+    //==========================================================
+
+
+    // Create a MissingETContainer with its aux store for each systematic
+    xAOD::MissingETContainer* m_emulmet_nomu = new xAOD::MissingETContainer();
+    xAOD::MissingETAuxContainer* m_emulmetAux_nomu = new xAOD::MissingETAuxContainer();
+    m_emulmet_nomu->setStore(m_emulmetAux_nomu);
+
+    //retrieve the original containers
+    const xAOD::MissingETContainer* m_emulmetCore_nomu(0);
+    if ( !m_event->retrieve( m_emulmetCore_nomu, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
+      Error("execute()", "Unable to retrieve MET core container: " );
+      return EL::StatusCode::FAILURE;
+    }
+
+    //retrieve the MET association map
+    const xAOD::MissingETAssociationMap* m_emulmetMap_nomu(0);
+    if ( !m_event->retrieve( m_emulmetMap_nomu, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
+      Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
+      return EL::StatusCode::FAILURE;
+    }
+
+    // It is necessary to reset the selected objects before every MET calculation
+    m_emulmetMap_nomu->resetObjSelectionFlags();
+
+
+    //==============================================================
+    // For rebuild the emulated MET (by marking Electron invisible)
+    //==============================================================
+
+
+    // Create a MissingETContainer with its aux store for each systematic
+    xAOD::MissingETContainer* m_emulmet_noelec = new xAOD::MissingETContainer();
+    xAOD::MissingETAuxContainer* m_emulmetAux_noelec = new xAOD::MissingETAuxContainer();
+    m_emulmet_noelec->setStore(m_emulmetAux_noelec);
+
+    //retrieve the original containers
+    const xAOD::MissingETContainer* m_emulmetCore_noelec(0);
+    if ( !m_event->retrieve( m_emulmetCore_noelec, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
+      Error("execute()", "Unable to retrieve MET core container: " );
+      return EL::StatusCode::FAILURE;
+    }
+
+    //retrieve the MET association map
+    const xAOD::MissingETAssociationMap* m_emulmetMap_noelec(0);
+    if ( !m_event->retrieve( m_emulmetMap_noelec, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
+      Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
+      return EL::StatusCode::FAILURE;
+    }
+
+    // It is necessary to reset the selected objects before every MET calculation
+    m_emulmetMap_noelec->resetObjSelectionFlags();
+
+
+
+
+
+    //here we apply some basic cuts and rebuild the met at each step
+
+    // Electron
+    //-----------------
+
+    /// Creat New Hard Object Containers
+    // [For MET building] filter the Electron container m_electrons, placing selected electrons into m_MetElectrons
+    ConstDataVector<xAOD::ElectronContainer> m_MetElectrons(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Electron>
+
+    // iterate over our shallow copy
+    for (const auto& electron : *elecSC) { // C++11 shortcut
+      // For MET rebuilding
+      if (dec_baseline(*electron)) {
+        m_MetElectrons.push_back( electron );
+      }
+    } // end for loop over shallow copied electrons
+    //const xAOD::ElectronContainer* p_MetElectrons = m_MetElectrons.asDataVector();
+    // For real MET
+    m_metMaker->rebuildMET("RefElectron",           //name of metElectrons in metContainer
+        xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
+        m_met,                                      //filling this met container
+        m_MetElectrons.asDataVector(),              //using these metElectrons that accepted our cuts
+        m_metMap);                                  //and this association map
+
+    // For emulated MET marking electrons invisible
+    m_metMaker->markInvisible(m_MetElectrons.asDataVector(), m_emulmetMap_noelec);
+
+    // For emulated MET marking muons invisible
+    m_metMaker->rebuildMET("RefElectron",           //name of metElectrons in metContainer
+        xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
+        m_emulmet_nomu,                             //filling this met container
+        m_MetElectrons.asDataVector(),              //using these metElectrons that accepted our cuts
+        m_emulmetMap_nomu);                         //and this association map
+
+
+    // Photon
+    //-----------------
+
+    /// Creat New Hard Object Containers
+    // [For MET building] filter the Photon container m_photons, placing selected photons into m_MetPhotons
+    ConstDataVector<xAOD::PhotonContainer> m_MetPhotons(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Photon>
+
+    // iterate over our shallow copy
+    for (const auto& photon : *photSC) { // C++11 shortcut
+      // For MET rebuilding
+      if (dec_baseline(*photon)) {
+        m_MetPhotons.push_back( photon );
+      }
+    } // end for loop over shallow copied photons
+    // For real MET
+    m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
+        xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
+        m_met,                                    //filling this met container
+        m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
+        m_metMap);                                //and this association map
+
+    // For emulated MET marking electrons invisible
+    m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
+        xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
+        m_emulmet_noelec,                         //filling this met container
+        m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
+        m_emulmetMap_noelec);                     //and this association map
+
+    // For emulated MET marking muons invisible
+    m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
+        xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
+        m_emulmet_nomu,                           //filling this met container
+        m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
+        m_emulmetMap_nomu);                       //and this association map
+
+
+    // TAUS
+    //-----------------
+
+    /// Creat New Hard Object Containers
+    // [For MET building] filter the TauJet container m_taus, placing selected taus into m_MetTaus
+    ConstDataVector<xAOD::TauJetContainer> m_MetTaus(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::TauJet>
+
+    // iterate over our shallow copy
+    for (const auto& taujet : *tauSC) { // C++11 shortcut
+      // For MET rebuilding
+      if (dec_baseline(*taujet)) {
+        m_MetTaus.push_back( taujet );
+      }
+    } // end for loop over shallow copied taus
+    // For real MET
+    m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
+        xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
+        m_met,                                 //filling this met container
+        m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
+        m_metMap);                             //and this association map
+
+    // For emulated MET marking electrons invisible
+    m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
+        xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
+        m_emulmet_noelec,                      //filling this met container
+        m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
+        m_emulmetMap_noelec);                  //and this association map
+
+    // For emulated MET marking muons invisible
+    m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
+        xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
+        m_emulmet_nomu,                        //filling this met container
+        m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
+        m_emulmetMap_nomu);                    //and this association map
+
+
+    // Muon
+    //-----------------
+
+    /// Creat New Hard Object Containers
+    // [For MET building] filter the Muon container m_muons, placing selected muons into m_MetMuons
+    ConstDataVector<xAOD::MuonContainer> m_MetMuons(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Muon>
+
+    // iterate over our shallow copy
+    for (const auto& muon : *muonSC) { // C++11 shortcut
+      // For MET rebuilding
+      if (dec_baseline(*muon)) {
+        m_MetMuons.push_back( muon );
+      }
+    } // end for loop over shallow copied muons
+    // For real MET
+    m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
+        xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
+        m_met,                                  //filling this met container
+        m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
+        m_metMap);                              //and this association map
+
+    // For emulated MET marking electrons invisible
+    m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
+        xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
+        m_emulmet_noelec,                       //filling this met container
+        m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
+        m_emulmetMap_noelec);                   //and this association map
+
+    // For emulated MET marking muons invisible
+    m_metMaker->markInvisible(m_MetMuons.asDataVector(), m_emulmetMap_nomu);
+
+    met::addGhostMuonsToJets(*m_muons, *jetSC);
+
+    // JET
+    //-----------------
+
+    //Now time to rebuild jetMet and get the soft term
+    //This adds the necessary soft term for both CST and TST
+    //these functions create an xAODMissingET object with the given names inside the container
+    // For real MET
+    m_metMaker->rebuildJetMET("RefJet",          //name of jet met
+        "SoftClus",        //name of soft cluster term met
+        "PVSoftTrk",       //name of soft track term met
+        m_met,             //adding to this new met container
+        jetSC,             //using this jet collection to calculate jet met
+        m_metCore,         //core met container
+        m_metMap,          //with this association map
+        true);             //apply jet jvt cut
+
+    // For emulated MET marking electrons invisible
+    m_metMaker->rebuildJetMET("RefJet",          //name of jet met
+        "SoftClus",           //name of soft cluster term met
+        "PVSoftTrk",          //name of soft track term met
+        m_emulmet_noelec,     //adding to this new met container
+        jetSC,                //using this jet collection to calculate jet met
+        m_emulmetCore_noelec, //core met container
+        m_emulmetMap_noelec,  //with this association map
+        true);                //apply jet jvt cut
+
+    // For emulated MET marking muons invisible
+    m_metMaker->rebuildJetMET("RefJet",          //name of jet met
+        "SoftClus",           //name of soft cluster term met
+        "PVSoftTrk",          //name of soft track term met
+        m_emulmet_nomu,       //adding to this new met container
+        jetSC,                //using this jet collection to calculate jet met
+        m_emulmetCore_nomu,   //core met container
+        m_emulmetMap_nomu,    //with this association map
+        true);                //apply jet jvt cut
+
+
+
+    // MET Build
+    //-----------------
+
+    //m_metMaker->rebuildTrackMET("RefJetTrk", softTerm, m_met, jetSC, m_metCore, m_metMap, true);
+
+    //this builds the final track or cluster met sums, using systematic varied container
+    //In the future, you will be able to run both of these on the same container to easily output CST and TST
+    // For real MET
+    m_metMaker->buildMETSum("Final", m_met, (*m_met)[softTerm]->source());
+
+    // For emulated MET marking electrons invisible
+    m_metMaker->buildMETSum("Final", m_emulmet_noelec, (*m_emulmet_noelec)[softTerm]->source());
+
+    // For emulated MET marking muons invisible
+    m_metMaker->buildMETSum("Final", m_emulmet_nomu, (*m_emulmet_nomu)[softTerm]->source());
+
+
+
+    // Fill real MET
+    float MET_ex = -9e9;
+    float MET_ey = -9e9;
+    float MET = -9e9;
+    float SumET = -9e9;
+    float MET_phi = -9e9;
+
+    MET_ex = ((*m_met)["Final"]->mpx()) * 0.001;
+    MET_ey = ((*m_met)["Final"]->mpy()) * 0.001;
+    //MET = sqrt(MET_ex*MET_ex+MET_ey*MET_ey);
+    MET = ((*m_met)["Final"]->met()) * 0.001;
+    SumET = ((*m_met)["Final"]->sumet()) * 0.001;
+    //MET_phi = atan2(MET_ey, MET_ex);
+    MET_phi = ((*m_met)["Final"]->phi());
+
+    /*
+    h_met_ex->Fill( MET_ex ); // GeV
+    h_met_ey->Fill( MET_ey ); // GeV
+    h_met->Fill( MET ); // GeV
+    h_sumet->Fill( SumET ); // GeV
+    h_met_phi->Fill( MET_phi ); // GeV
+    */
+
+
+    // Fill emulated MET (by marking electrons invisible)
+    float emulMET_noelec_ex = -9e9;
+    float emulMET_noelec_ey = -9e9;
+    float emulMET_noelec = -9e9;
+    float emulSumET_noelec = -9e9;
+    float emulMET_noelec_phi = -9e9;
+
+    emulMET_noelec_ex = ((*m_emulmet_noelec)["Final"]->mpx()) * 0.001;
+    emulMET_noelec_ey = ((*m_emulmet_noelec)["Final"]->mpy()) * 0.001;
+    emulMET_noelec = ((*m_emulmet_noelec)["Final"]->met()) * 0.001;
+    emulSumET_noelec = ((*m_emulmet_noelec)["Final"]->sumet()) * 0.001;
+    emulMET_noelec_phi = ((*m_emulmet_noelec)["Final"]->phi());
+
+    /*
+    h_emulmet_noelec_ex->Fill( emulMET_noelec_ex ); // GeV
+    h_emulmet_noelec_ey->Fill( emulMET_noelec_ey ); // GeV
+    h_emulmet_noelec->Fill( emulMET_noelec ); // GeV
+    h_emulsumet_noelec->Fill( emulSumET_noelec ); // GeV
+    h_emulmet_noelec_phi->Fill( emulMET_noelec_phi ); // GeV
+    */
+
+
+    // Fill emulated MET (by marking muons invisible)
+    float emulMET_nomu_ex = -9e9;
+    float emulMET_nomu_ey = -9e9;
+    float emulMET_nomu = -9e9;
+    float emulSumET_nomu = -9e9;
+    float emulMET_nomu_phi = -9e9;
+
+    emulMET_nomu_ex = ((*m_emulmet_nomu)["Final"]->mpx()) * 0.001;
+    emulMET_nomu_ey = ((*m_emulmet_nomu)["Final"]->mpy()) * 0.001;
+    emulMET_nomu = ((*m_emulmet_nomu)["Final"]->met()) * 0.001;
+    emulSumET_nomu = ((*m_emulmet_nomu)["Final"]->sumet()) * 0.001;
+    emulMET_nomu_phi = ((*m_emulmet_nomu)["Final"]->phi());
+
+    /*
+    h_emulmet_nomu_ex->Fill( emulMET_nomu_ex ); // GeV
+    h_emulmet_nomu_ey->Fill( emulMET_nomu_ey ); // GeV
+    h_emulmet_nomu->Fill( emulMET_nomu ); // GeV
+    h_emulsumet_nomu->Fill( emulSumET_nomu ); // GeV
+    h_emulmet_nomu_phi->Fill( emulMET_nomu_phi ); // GeV
+    */
+
+
+    //-----------------------------------------------
+    // Define Good Leptons and Calculate Scale Factor
+    //-----------------------------------------------
+
+    ///////////////
+    // Good Muon //
+    ///////////////
+    xAOD::MuonContainer* m_goodMuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
+    // iterate over our shallow copy
+    for (const auto& muon : *muonSC) { // C++11 shortcut
+      // Muon Selection for VBF study
+      if (dec_baseline(*muon)) {
+        if(m_doORtool){
+          if (!overlapAcc(*muon)){
+            m_goodMuon->push_back( muon );
+          }
+        }
+        else m_goodMuon->push_back( muon );
+        //Info("execute()", "  Good muon pt = %.2f GeV", (muon->pt() * 0.001));
+      }
+    } // end for loop over shallow copied muons
+
+    ///////////////////
+    // Good Electron //
+    ///////////////////
+    xAOD::ElectronContainer* m_goodElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
+    // iterate over our shallow copy
+    for (const auto& electron : *elecSC) { // C++11 shortcut
+      // Electron Selection for VBF study
+      if (dec_baseline(*electron)) {
+        if(m_doORtool){
+          if(!overlapAcc(*electron)){
+            m_goodElectron->push_back( electron );
+          }
+        }
+        else m_goodElectron->push_back( electron );
+        //Info("execute()", "  Good electron pt = %.2f GeV", (electron->pt() * 0.001));
+      }
+    } // end for loop over shallow copied electrons
+
+    //////////////
+    // Good Tau //
+    //////////////
+    xAOD::TauJetContainer* m_goodTau = new xAOD::TauJetContainer(SG::VIEW_ELEMENTS);
+    // iterate over our shallow copy
+    for (const auto& taujet : *tauSC) { // C++11 shortcut
+      // Tau Selection for VBF study
+      if (dec_baseline(*taujet)) {
+        if(m_doORtool){
+          if(!overlapAcc(*taujet)){
+            m_goodTau->push_back( taujet );
+          }
+        }
+        else m_goodTau->push_back( taujet );
+        //Info("execute()", "  Good tau pt = %.2f GeV", (taujet->pt() * 0.001));
+      }
+    } // end for loop over shallow copied electrons
+
+
+    /////////////////////////
+    // Overlap removed Jet //
+    /////////////////////////
+    xAOD::JetContainer* m_signalJet = new xAOD::JetContainer(SG::VIEW_ELEMENTS);
+    // iterate over our shallow copy
+    for (const auto& jet : *m_goodJet) { // C++11 shortcut
+
+      if (m_doORmanual) { // If jets are selected jet for overlap removal and if you want overlap removal manually
+        bool isORjet = false;
+
+        for (const auto& muon : *m_goodMuon) {
+          if (DeltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi()) < m_ORJETdeltaR) {
+            int ntrks = 0;
+            std::vector<int> ntrks_vec = jet->auxdata<std::vector<int> >("NumTrkPt1000");          
+            if (ntrks_vec.size() > 0) ntrks = ntrks_vec[primVertex->index()];
+            if (ntrks < 5) isORjet = true;
+          }
+        }
+
+        for (const auto& electron : *m_goodElectron) {
+          if (DeltaR(jet->eta(), electron->eta(), jet->phi(), electron->phi()) < m_ORJETdeltaR) isORjet = true;
+        }
+
+        for (const auto& tau : *m_goodTau) {
+          if (DeltaR(jet->eta(), tau->eta(), jet->phi(), tau->phi()) < m_ORJETdeltaR) isORjet = true;
+        }
+
+        if ( !isORjet ) m_signalJet->push_back( jet );
+      }
+      else m_signalJet->push_back( jet );
+
+    } // end for loop over shallow copied jets
+
+
+
+    //------------------------
+    // Define DiJet Properties
+    // -----------------------
+
+    TLorentzVector jet1;
+    TLorentzVector jet2;
+    float jet1_pt = 0;
+    float jet2_pt = 0;
+    float jet3_pt = 0;
+    float jet1_phi = 0;
+    float jet2_phi = 0;
+    float jet3_phi = 0;
+    float jet1_eta = 0;
+    float jet2_eta = 0;
+    float jet3_eta = 0;
+    float jet1_rapidity = 0;
+    float jet2_rapidity = 0;
+    float jet3_rapidity = 0;
+
+    float signalJet_ht = 0;
+    float dPhiJet1Met = 0;
+    float dPhiJet2Met = 0;
+    float dPhiJet3Met = 0;
+    float dPhiJet1Met_nomu = 0;
+    float dPhiJet2Met_nomu = 0;
+    float dPhiJet3Met_nomu = 0;
+    float dPhiJet1Met_noelec = 0;
+    float dPhiJet2Met_noelec = 0;
+    float dPhiJet3Met_noelec = 0;
+
+    float mjj = 0;
+    bool pass_diJet = false; // Select DiJet
+    bool pass_CJV = true; // Central Jet Veto (CJV)
+    bool pass_dPhijetmet = true; // deltaPhi(Jet_i,MET)
+    bool pass_dPhijetmet_nomu = true; // deltaPhi(Jet_i,MET_nomu)
+    bool pass_dPhijetmet_noelec = true; // deltaPhi(Jet,MET_noelec)
+    float dPhiMinjetmet = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+    float dPhiMinjetmet_nomu = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+    float dPhiMinjetmet_noelec = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+    bool pass_dPhiDijetMet = true; // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET)
+    bool pass_dPhiDijetMet_nomu = true; // deltaPhi(Jet1,MET_nomu) or deltaPhi(Jet2,MET_nomu)
+    bool pass_dPhiDijetMet_noelec = true; // deltaPhi(Jet1,MET_noelec) or deltaPhi(Jet2,MET_noelec)
+
+
+    // DiJet Selection
+    if (m_signalJet->size() > 1) {
+      std::partial_sort(m_signalJet->begin(), m_signalJet->begin()+2, m_signalJet->end(), DescendingPt());
+
+      jet1 = m_signalJet->at(0)->p4();
+      jet2 = m_signalJet->at(1)->p4();
+      jet1_pt = m_signalJet->at(0)->pt() * 0.001;
+      jet2_pt = m_signalJet->at(1)->pt() * 0.001;
+      jet1_phi = m_signalJet->at(0)->phi();
+      jet2_phi = m_signalJet->at(1)->phi();
+      jet1_eta = m_signalJet->at(0)->eta();
+      jet2_eta = m_signalJet->at(1)->eta();
+      jet1_rapidity = m_signalJet->at(0)->rapidity();
+      jet2_rapidity = m_signalJet->at(1)->rapidity();
+      auto dijet = jet1 + jet2;
+      mjj = dijet.M() * 0.001;
+
+      //Info("execute()", "  jet1 = %.2f GeV, jet2 = %.2f GeV", jet1_pt, jet2_pt);
+      //Info("execute()", "  mjj = %.2f GeV", mjj);
+
+      if ( jet1_pt >  m_diJet1PtCut && jet2_pt > m_diJet2PtCut ){
+        if ( fabs(jet1_rapidity) < m_diJetEtaCut && fabs(jet2_rapidity) < m_diJetEtaCut ){
+          if ( m_jetCleaningTight->accept( *m_signalJet->at(0) ) ){ //Tight Leading Jet 
+            pass_diJet = true;
+          }
         }
       }
-    } // Zee selection loop
 
-    // Wenu Selection
-    if (m_goodElectron->size() == 1) {
-      float electron_pt = m_goodElectron->at(0)->pt() * 0.001;
-      float electron_phi = m_goodElectron->at(0)->phi();
-      mT_electron = TMath::Sqrt( 2. * electron_pt * MET * ( 1. - TMath::Cos(electron_phi - MET_phi) ) );
-
-      if ( electron_pt > 25. ){
-        pass_Wenu = true;
+      // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET) decision
+      // For Znunu
+      if (m_isZnunu){
+        dPhiJet1Met = DeltaPhi(jet1_phi, MET_phi);
+        dPhiJet2Met = DeltaPhi(jet2_phi, MET_phi);
+        if ( dPhiJet1Met < 0.4 ) pass_dPhiDijetMet = false ;
+        if ( dPhiJet2Met < 0.4 ) pass_dPhiDijetMet = false ;
       }
-    } //Wenu Selection loop
+      // For Zmumu
+      if (m_isZmumu){
+        dPhiJet1Met_nomu = DeltaPhi(jet1_phi, emulMET_nomu_phi);
+        dPhiJet2Met_nomu = DeltaPhi(jet2_phi, emulMET_nomu_phi);
+        if ( dPhiJet1Met_nomu < 0.4 ) pass_dPhiDijetMet_nomu = false ;
+        if ( dPhiJet2Met_nomu < 0.4 ) pass_dPhiDijetMet_nomu = false ;
+      }
+      // For Zee
+      if (m_isZee){
+        dPhiJet1Met_noelec = DeltaPhi(jet1_phi, emulMET_noelec_phi);
+        dPhiJet2Met_noelec = DeltaPhi(jet2_phi, emulMET_noelec_phi);
+        if ( dPhiJet1Met_noelec < 0.4 ) pass_dPhiDijetMet_noelec = false ;
+        if ( dPhiJet2Met_noelec < 0.4 ) pass_dPhiDijetMet_noelec = false ;
+      }
 
-  }
+
+    } // DiJet selection loop
+
+
+    // For jet3
+    if (m_signalJet->size() > 2) {
+      jet3_pt = m_signalJet->at(2)->pt() * 0.001;
+      jet3_phi = m_signalJet->at(2)->phi();
+      jet3_eta = m_signalJet->at(2)->eta();
+      jet3_rapidity = m_signalJet->at(2)->rapidity();
+      // deltaPhi(Jet3,MET)
+      dPhiJet3Met = DeltaPhi(jet3_phi, MET_phi);
+      dPhiJet3Met_nomu = DeltaPhi(jet3_phi, emulMET_nomu_phi);
+      dPhiJet3Met_noelec = DeltaPhi(jet3_phi, emulMET_noelec_phi);
+    }
+
+
+    // N_jet >= 1
+    if (m_signalJet->size() > 0) {
+
+      // loop over the jets in the Good Jets Container
+      for (const auto& jet : *m_signalJet) {
+        float signal_jet_pt = jet->pt() * 0.001;
+        float signal_jet_rapidity = jet->rapidity();
+        float signal_jet_phi = jet->phi();
+
+        // Calculate dPhi(Jet_i,MET) and dPhi_min(Jet_i,MET)
+        // For Znunu
+        if (m_isZnunu){
+          float dPhijetmet = DeltaPhi(signal_jet_phi,MET_phi);
+          //Info("execute()", " [Znunu] Event # = %llu", eventInfo->eventNumber());
+          //Info("execute()", " [Znunu] dPhi = %.2f", dPhijetmet);
+          if ( dPhijetmet < 0.4 ) pass_dPhijetmet = false;
+          dPhiMinjetmet = std::min(dPhiMinjetmet, dPhijetmet);
+          //Info("execute()", " [Znunu] dPhi_min = %.2f", dPhiMinjetmet);
+        }
+        // For Zmumu
+        if (m_isZmumu){
+          float dPhijetmet_nomu = DeltaPhi(signal_jet_phi,emulMET_nomu_phi);
+          //Info("execute()", " [Zmumu] Event # = %llu", eventInfo->eventNumber());
+          //Info("execute()", " [Zmumu] dPhi = %.2f", dPhijetmet_nomu);
+          if ( dPhijetmet_nomu < 0.4 ) pass_dPhijetmet_nomu = false;
+          dPhiMinjetmet_nomu = std::min(dPhiMinjetmet_nomu, dPhijetmet_nomu);
+          //Info("execute()", " [Zmumu] dPhi_min = %.2f", dPhiMinjetmet_nomu);
+        }
+        // For Zee
+        if (m_isZee){
+          float dPhijetmet_noelec = DeltaPhi(signal_jet_phi,emulMET_noelec_phi);
+          //Info("execute()", " [Zee] Event # = %llu", eventInfo->eventNumber());
+          //Info("execute()", " [Zee] dPhi = %.2f", dPhijetmet_noelec);
+          if ( dPhijetmet_noelec < 0.4 ) pass_dPhijetmet_noelec = false;
+          dPhiMinjetmet_noelec = std::min(dPhiMinjetmet_noelec, dPhijetmet_noelec);
+          //Info("execute()", " [Zee] dPhi_min = %.2f", dPhiMinjetmet_noelec);
+        }
+
+        // Central Jet Veto (CJV)
+        if ( m_signalJet->size() > 2 && pass_diJet ){
+          if (m_signalJet->at(0) != jet && m_signalJet->at(1) != jet){
+            //cout << "m_signalJet->at(0) = " << m_signalJet->at(0) << " jet = " << jet << endl;
+            if (signal_jet_pt > m_CJVptCut && fabs(signal_jet_rapidity) < m_diJetEtaCut) {
+              if ( (jet1_rapidity > jet2_rapidity) && (signal_jet_rapidity < jet1_rapidity && signal_jet_rapidity > jet2_rapidity)){
+                pass_CJV = false;
+              }
+              if ( (jet1_rapidity < jet2_rapidity) && (signal_jet_rapidity > jet1_rapidity && signal_jet_rapidity < jet2_rapidity)){
+                pass_CJV = false;
+              }
+            }
+          }
+        }
+
+        //Info("execute()", "  Znunu Signal Jet pt = %.2f GeV, eta = %.2f", signal_pt_jet, signal_eta_jet);
+        signalJet_ht += signal_jet_pt;
+      } // Jet loop
+
+    } //N_jet >= 1
 
 
 
 
-  // ------------------
-  // Get isolated track
-  // ------------------
-/*
-  // Retrieve main TrackParticle collection
-  const xAOD::TrackParticleContainer* inTracks(0);
-  if ( !m_event->retrieve( inTracks, "InDetTrackParticles" ).isSuccess() ){ // retrieve arguments: container type, container key
+    //----------------------------------
+    // Define Zmumu and Wmunu Selection
+    //----------------------------------
+
+    bool pass_Zmumu = false; // Select Zmumu channel
+    bool pass_Wmunu = false; // Select Wmunu channel
+    float mll_muon = 0.; // For Zmumu channel
+    float mT_muon = 0.;// For Wmunu channel
+    // Zmumu muons
+    float muon1_pt = 0.;
+    float muon2_pt = 0.;
+    float muon1_charge = 0.;
+    float muon2_charge = 0.;
+
+    if (m_isZmumu || m_isWmunu){
+
+      // Zmumu Selection
+      if (m_goodMuon->size() > 1) {
+        std::partial_sort(m_goodMuon->begin(), m_goodMuon->begin()+2, m_goodMuon->end(), DescendingPt());
+
+        TLorentzVector muon1 = m_goodMuon->at(0)->p4();
+        TLorentzVector muon2 = m_goodMuon->at(1)->p4();
+        muon1_pt = m_goodMuon->at(0)->pt() * 0.001;
+        muon2_pt = m_goodMuon->at(1)->pt() * 0.001;
+        muon1_charge = m_goodMuon->at(0)->charge();
+        muon2_charge = m_goodMuon->at(1)->charge();
+        auto Zmass_muon = muon1 + muon2;
+        mll_muon = Zmass_muon.M() * 0.001;
+
+        //Info("execute()", "  muon1 = %.2f GeV, muon2 = %.2f GeV", muon1_pt, muon2_pt);
+        //Info("execute()", "  mll (Zmumu) = %.2f GeV", mll_muon);
+
+        if ( muon1_pt >  m_LeadLepPtCut && muon2_pt > m_SubLeadLepPtCut ){
+          if ( muon1_charge * muon2_charge < 0 ){
+            pass_Zmumu = true;
+            //Info("execute()", "  Leading muon = %.2f GeV, Subleading muon = %.2f GeV", muon1_pt, muon2_pt);
+          }
+        }
+      } // Zmumu selection loop
+
+      // Wmunu Selection
+      if (m_goodMuon->size() == 1) {
+        float muon_pt = m_goodMuon->at(0)->pt() * 0.001;
+        float muon_phi = m_goodMuon->at(0)->phi();
+        mT_muon = TMath::Sqrt( 2. * muon_pt * MET * ( 1. - TMath::Cos(muon_phi - MET_phi) ) );
+
+        if ( muon_pt > 25. ){
+          pass_Wmunu = true;
+        }
+      } //Wmunu Selection loop
+
+    }
+
+
+    //-------------------------------
+    // Define Zee and Wenu Selection
+    // ------------------------------
+
+    bool pass_Zee = false; // Select Zee channel
+    bool pass_Wenu = false; // Select Wenu channel
+    float mll_electron = 0.; // Select Zee channel
+    float mT_electron = 0.;// For Wenu channel
+    // Zee electrons
+    float electron1_pt = 0.;
+    float electron2_pt = 0.;
+    float electron1_charge = 0.;
+    float electron2_charge = 0.;
+
+    if (m_isZee || m_isWenu){
+
+      // Zee Selection
+      if (m_goodElectron->size() > 1) {
+        std::partial_sort(m_goodElectron->begin(), m_goodElectron->begin()+2, m_goodElectron->end(), DescendingPt());
+
+        TLorentzVector electron1 = m_goodElectron->at(0)->p4();
+        TLorentzVector electron2 = m_goodElectron->at(1)->p4();
+        electron1_pt = m_goodElectron->at(0)->pt() * 0.001;
+        electron2_pt = m_goodElectron->at(1)->pt() * 0.001;
+        electron1_charge = m_goodElectron->at(0)->charge();
+        electron2_charge = m_goodElectron->at(1)->charge();
+        auto Zmass_electron = electron1 + electron2;
+        mll_electron = Zmass_electron.M() * 0.001;
+
+        //Info("execute()", "  electron1 = %.2f GeV, electron2 = %.2f GeV", electron1_pt, electron2_pt);
+        //Info("execute()", "  mll (Zee) = %.2f GeV", mll_electron);
+
+        if ( electron1_pt >  m_LeadLepPtCut && electron2_pt > m_SubLeadLepPtCut ){
+          if ( electron1_charge * electron2_charge < 0 ){
+            pass_Zee = true;
+            //Info("execute()", "  Leading electron = %.2f GeV, Subleading electron = %.2f GeV", electron1_pt, electron2_pt);
+          }
+        }
+      } // Zee selection loop
+
+      // Wenu Selection
+      if (m_goodElectron->size() == 1) {
+        float electron_pt = m_goodElectron->at(0)->pt() * 0.001;
+        float electron_phi = m_goodElectron->at(0)->phi();
+        mT_electron = TMath::Sqrt( 2. * electron_pt * MET * ( 1. - TMath::Cos(electron_phi - MET_phi) ) );
+
+        if ( electron_pt > 25. ){
+          pass_Wenu = true;
+        }
+      } //Wenu Selection loop
+
+    }
+
+
+
+
+    // ------------------
+    // Get isolated track
+    // ------------------
+    /*
+    // Retrieve main TrackParticle collection
+    const xAOD::TrackParticleContainer* inTracks(0);
+    if ( !m_event->retrieve( inTracks, "InDetTrackParticles" ).isSuccess() ){ // retrieve arguments: container type, container key
     Error("execute()", "Failed to retrieve TrackParticle container. Exiting." );
     return EL::StatusCode::FAILURE;
-  }
+    }
 
-  int Nisotrk = NumIsoTracks(inTracks, primVertex, 3., 10.) - NumMuonIsoTrack(muonSC, inTracks, primVertex, 3., 10.) - NumElecIsoTrack(elecSC, inTracks, primVertex, 3., 10.);
+    int Nisotrk = NumIsoTracks(inTracks, primVertex, 3., 10.) - NumMuonIsoTrack(muonSC, inTracks, primVertex, 3., 10.) - NumElecIsoTrack(elecSC, inTracks, primVertex, 3., 10.);
 
-  bool passIsoTrk = true;
-  if (Nisotrk > 0) {
+    bool passIsoTrk = true;
+    if (Nisotrk > 0) {
     passIsoTrk = false;
     //Info("execute()", "  The number of Isolated track counted = %i (N_SignalMuon = %lu, N_SignalElec = %lu)", Nisotrk, m_signalMuon->size(), m_signalElectron->size() );
-  }
-*/
+    }
+    */
 
 
 
-  //-----------
-  // VBF study 
-  //-----------
+    //-----------
+    // VBF study 
+    //-----------
 
-  //-------------------------------
-  // Z -> vv + JET EVENT SELECTION
-  //-------------------------------
+    //-------------------------------
+    // Z -> vv + JET EVENT SELECTION
+    //-------------------------------
 
-  if (m_isZvv){
-    if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
-      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]MET Trigger");
-      m_eventCutflow[5]+=1;
-      if ( MET > m_metCut ) {
-        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]MET cut");
-        m_eventCutflow[6]+=1;
-        /*
-           Info("execute()", "=====================================");
-           Info("execute()", " Event # = %llu", eventInfo->eventNumber());
-           Info("execute()", " Good Event number = %i", m_eventCutflow[6]);
-           Info("execute()", " MET = %.3f GeV", MET);
-           Info("execute()", " RefElectron = %.3f GeV", ((*m_met)["RefElectron"]->met()) * 0.001);
-           Info("execute()", " RefPhoton = %.3f GeV", ((*m_met)["RefPhoton"]->met()) * 0.001);
-           Info("execute()", " RefTau = %.3f GeV", ((*m_met)["RefTau"]->met()) * 0.001);
-           Info("execute()", " RefMuon = %.3f GeV", ((*m_met)["RefMuon"]->met()) * 0.001);
-           Info("execute()", " RefJet = %.3f GeV", ((*m_met)["RefJet"]->met()) * 0.001);
-           Info("execute()", " SoftClus = %.3f GeV", ((*m_met)["SoftClus"]->met()) * 0.001);
-           Info("execute()", " PVSoftTrk = %.3f GeV", ((*m_met)["PVSoftTrk"]->met()) * 0.001);
-           Info("execute()", " # of good jets = %lu", m_signalJet->size());
-           if (m_signalJet->size() > 0){
-           int jetCount = 0;
-           for (const auto& jet : *m_signalJet) {
-           jetCount++;
-           Info("execute()", " jet # : %i", jetCount);
-           Info("execute()", " jet pt = %.3f GeV", jet->pt() * 0.001);
-           Info("execute()", " jet eta = %.3f GeV", jet->eta());
-           Info("execute()", " jet phi = %.3f GeV", jet->phi());
-           }
-           }
-           if (m_goodElectron->size() > 0){
-           int eleCount = 0;
-           for (const auto& electron : *m_goodElectron) {
-           eleCount++;
-           Info("execute()", " electron # : %i", eleCount);
-           Info("execute()", " electron pt = %.3f GeV", electron->pt() * 0.001);
-           Info("execute()", " electron eta = %.3f GeV", electron->eta());
-           Info("execute()", " electron phi = %.3f GeV", electron->phi());
-           }
-           }
-           if (m_goodMuon->size() > 0){
-           int muCount = 0;
-           for (const auto& muon : *m_goodMuon) {
-           muCount++;
-           Info("execute()", " muon # : %i", muCount);
-           Info("execute()", " muon pt = %.3f GeV", muon->pt() * 0.001);
-           Info("execute()", " muon eta = %.3f GeV", muon->eta());
-           Info("execute()", " muon phi = %.3f GeV", muon->phi());
-           }
-           }
-           if (m_goodTau->size() > 0){
-           int tauCount = 0;
-           for (const auto& tau : *m_goodTau) {
-           tauCount++;
-           Info("execute()", " tau # : %i", tauCount);
-           Info("execute()", " tau pt = %.3f GeV", tau->pt() * 0.001);
-           Info("execute()", " tau eta = %.3f GeV", tau->eta());
-           Info("execute()", " tau phi = %.3f GeV", tau->phi());
-           }
-           }
-           */
-        if (m_goodElectron->size() == 0) {
-          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]Electron Veto");
-          m_eventCutflow[7]+=1;
-          if ( m_goodMuon->size() == 0) {
-            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]Muon Veto");
-            m_eventCutflow[8]+=1;
-            if (m_goodTau->size() == 0) {
-              if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]Tau Veto");
-              m_eventCutflow[9]+=1;
-              if ( m_signalJet->size() > 1 ) {
-                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]At least two Jets");
-                m_eventCutflow[10]+=1;
-                if ( pass_diJet ) {
-                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]DiJet");
-                  m_eventCutflow[11]+=1;
-                  if ( mjj > m_mjjCut ) {
-                    if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]mjj cut");
-                    m_eventCutflow[12]+=1;
-                    if ( pass_CJV ) {
-                      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]CJV");
-                      m_eventCutflow[13]+=1;
-                      if ( pass_dPhiDijetMet ) {
-                        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]dPhi(dijet,MET) cut");
-                        m_eventCutflow[14]+=1;
-                        // Fill histogram
-                        // MET
-                        h_zvv_met->Fill(MET);
-                        // Jets
-                        h_zvv_njet->Fill(m_signalJet->size());
-                        h_zvv_jet1_pt->Fill(jet1_pt);
-                        h_zvv_jet2_pt->Fill(jet2_pt);
-                        h_zvv_jet1_phi->Fill(jet1_phi);
-                        h_zvv_jet2_phi->Fill(jet2_phi);
-                        h_zvv_jet1_eta->Fill(jet1_eta);
-                        h_zvv_jet2_eta->Fill(jet2_eta);
-                        h_zvv_jet1_rap->Fill(jet1_rapidity);
-                        h_zvv_jet2_rap->Fill(jet2_rapidity);
-                        h_zvv_mjj->Fill(mjj);
-                        h_zvv_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi));
-                        h_zvv_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi));
-                        h_zvv_dPhimetj1->Fill(dPhiJet1Met);
-                        h_zvv_dPhimetj2->Fill(dPhiJet2Met);
-                        h_zvv_dPhiMinmetjet->Fill(dPhiMinjetmet);
-                        // For jet3
-                        if (m_signalJet->size() > 2){
-                          h_zvv_jet3_pt->Fill(jet3_pt);
-                          h_zvv_jet3_phi->Fill(jet3_phi);
-                          h_zvv_jet3_eta->Fill(jet3_eta);
-                          h_zvv_jet3_rap->Fill(jet3_rapidity);
-                          h_zvv_dPhimetj3->Fill(dPhiJet3Met);
-                        }
+    if (m_isZnunu){
+      if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]MET Trigger");
+        m_eventCutflow[5]+=1;
+        if ( MET > m_metCut ) {
+          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]MET cut");
+          m_eventCutflow[6]+=1;
+          /*
+             Info("execute()", "=====================================");
+             Info("execute()", " Event # = %llu", eventInfo->eventNumber());
+             Info("execute()", " Good Event number = %i", m_eventCutflow[6]);
+             Info("execute()", " MET = %.3f GeV", MET);
+             Info("execute()", " RefElectron = %.3f GeV", ((*m_met)["RefElectron"]->met()) * 0.001);
+             Info("execute()", " RefPhoton = %.3f GeV", ((*m_met)["RefPhoton"]->met()) * 0.001);
+             Info("execute()", " RefTau = %.3f GeV", ((*m_met)["RefTau"]->met()) * 0.001);
+             Info("execute()", " RefMuon = %.3f GeV", ((*m_met)["RefMuon"]->met()) * 0.001);
+             Info("execute()", " RefJet = %.3f GeV", ((*m_met)["RefJet"]->met()) * 0.001);
+             Info("execute()", " SoftClus = %.3f GeV", ((*m_met)["SoftClus"]->met()) * 0.001);
+             Info("execute()", " PVSoftTrk = %.3f GeV", ((*m_met)["PVSoftTrk"]->met()) * 0.001);
+             Info("execute()", " # of good jets = %lu", m_signalJet->size());
+             if (m_signalJet->size() > 0){
+             int jetCount = 0;
+             for (const auto& jet : *m_signalJet) {
+             jetCount++;
+             Info("execute()", " jet # : %i", jetCount);
+             Info("execute()", " jet pt = %.3f GeV", jet->pt() * 0.001);
+             Info("execute()", " jet eta = %.3f GeV", jet->eta());
+             Info("execute()", " jet phi = %.3f GeV", jet->phi());
+             }
+             }
+             if (m_goodElectron->size() > 0){
+             int eleCount = 0;
+             for (const auto& electron : *m_goodElectron) {
+             eleCount++;
+             Info("execute()", " electron # : %i", eleCount);
+             Info("execute()", " electron pt = %.3f GeV", electron->pt() * 0.001);
+             Info("execute()", " electron eta = %.3f GeV", electron->eta());
+             Info("execute()", " electron phi = %.3f GeV", electron->phi());
+             }
+             }
+             if (m_goodMuon->size() > 0){
+             int muCount = 0;
+             for (const auto& muon : *m_goodMuon) {
+             muCount++;
+             Info("execute()", " muon # : %i", muCount);
+             Info("execute()", " muon pt = %.3f GeV", muon->pt() * 0.001);
+             Info("execute()", " muon eta = %.3f GeV", muon->eta());
+             Info("execute()", " muon phi = %.3f GeV", muon->phi());
+             }
+             }
+             if (m_goodTau->size() > 0){
+             int tauCount = 0;
+             for (const auto& tau : *m_goodTau) {
+             tauCount++;
+             Info("execute()", " tau # : %i", tauCount);
+             Info("execute()", " tau pt = %.3f GeV", tau->pt() * 0.001);
+             Info("execute()", " tau eta = %.3f GeV", tau->eta());
+             Info("execute()", " tau phi = %.3f GeV", tau->phi());
+             }
+             }
+             */
+          if (m_goodElectron->size() == 0) {
+            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]Electron Veto");
+            m_eventCutflow[7]+=1;
+            if ( m_goodMuon->size() == 0) {
+              if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]Muon Veto");
+              m_eventCutflow[8]+=1;
+              if (m_goodTau->size() == 0) {
+                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]Tau Veto");
+                m_eventCutflow[9]+=1;
+                if ( m_signalJet->size() > 1 ) {
+                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]At least two Jets");
+                  m_eventCutflow[10]+=1;
+                  if ( pass_diJet ) {
+                    if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]DiJet");
+                    m_eventCutflow[11]+=1;
+                    if ( mjj > m_mjjCut ) {
+                      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]mjj cut");
+                      m_eventCutflow[12]+=1;
+                      if ( pass_CJV ) {
+                        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]CJV");
+                        m_eventCutflow[13]+=1;
+                        if ( pass_dPhiDijetMet ) {
+                          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]dPhi(dijet,MET) cut");
+                          m_eventCutflow[14]+=1;
+                          // Fill histogram
+                          // MET
+                          h_znunu_met->Fill(MET);
+                          // Jets
+                          h_znunu_njet->Fill(m_signalJet->size());
+                          h_znunu_jet1_pt->Fill(jet1_pt);
+                          h_znunu_jet2_pt->Fill(jet2_pt);
+                          h_znunu_jet1_phi->Fill(jet1_phi);
+                          h_znunu_jet2_phi->Fill(jet2_phi);
+                          h_znunu_jet1_eta->Fill(jet1_eta);
+                          h_znunu_jet2_eta->Fill(jet2_eta);
+                          h_znunu_jet1_rap->Fill(jet1_rapidity);
+                          h_znunu_jet2_rap->Fill(jet2_rapidity);
+                          h_znunu_mjj->Fill(mjj);
+                          h_znunu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi));
+                          h_znunu_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi));
+                          h_znunu_dPhimetj1->Fill(dPhiJet1Met);
+                          h_znunu_dPhimetj2->Fill(dPhiJet2Met);
+                          h_znunu_dPhiMinmetjet->Fill(dPhiMinjetmet);
+                          // For jet3
+                          if (m_signalJet->size() > 2){
+                            h_znunu_jet3_pt->Fill(jet3_pt);
+                            h_znunu_jet3_phi->Fill(jet3_phi);
+                            h_znunu_jet3_eta->Fill(jet3_eta);
+                            h_znunu_jet3_rap->Fill(jet3_rapidity);
+                            h_znunu_dPhimetj3->Fill(dPhiJet3Met);
+                          }
 
-                        if ( pass_dPhijetmet ) {
-                          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zvv]dPhi(jet_i,MET) cut");
-                          m_eventCutflow[15]+=1;
+                          if ( pass_dPhijetmet ) {
+                            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]dPhi(jet_i,MET) cut");
+                            m_eventCutflow[15]+=1;
+                          }
                         }
                       }
                     }
@@ -2446,164 +2501,166 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         }
       }
     }
-  }
 
 
-  //---------------------------------
-  // Z -> mumu + JET EVENT SELECTION
-  //---------------------------------
+    //---------------------------------
+    // Z -> mumu + JET EVENT SELECTION
+    //---------------------------------
 
-  if (m_isZmumu){
-    if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
-      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]MET Trigger");
-      m_eventCutflow[16]+=1;
-      if ( emulMET_nomu > m_metCut ) {
-        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]MET cut");
-        m_eventCutflow[17]+=1;
-        if (m_goodElectron->size() == 0) {
-          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]Electron Veto");
-          m_eventCutflow[18]+=1;
-          if ( m_goodMuon->size() > 1) {
-            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]At least Two Electrons");
-            m_eventCutflow[19]+=1;
-            if (m_goodTau->size() == 0) {
-              if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]Tau Veto");
-              m_eventCutflow[20]+=1;
-              if ( pass_Zmumu && m_goodMuon->size() == 2 && mll_muon > 66. && mll_muon < 116. ){
-                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]mll cut");
-                m_eventCutflow[21]+=1;
-                if ( m_signalJet->size() > 1 ) {
-                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]At least Two Jets");
-                  m_eventCutflow[22]+=1;
-                  if ( pass_diJet ) {
-                    if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]DiJet");
-                    m_eventCutflow[23]+=1;
-                    if ( mjj > m_mjjCut ) {
-                      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]mjj cut");
-                      m_eventCutflow[24]+=1;
-                      if ( pass_CJV ) {
-                        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]CJV cut");
-                        m_eventCutflow[25]+=1;
-                        if ( pass_dPhiDijetMet_nomu ) {
-                          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]dPhi(dijet,MET) cut");
-                          m_eventCutflow[26]+=1;
-                          // Calculate muon SF
-                          if (!m_isData) {
-                            double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
-                            //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
-                            mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
-                          }
-                          // Fill histogram
-                          // MET
-                          h_zmumu_met->Fill(MET, mcEventWeight_Zmumu);
-                          h_zmumu_emulmet_nomu->Fill(emulMET_nomu, mcEventWeight_Zmumu);
-                          // Jets
-                          h_zmumu_njet->Fill(m_signalJet->size(), mcEventWeight_Zmumu);
-                          h_zmumu_jet1_pt->Fill(jet1_pt, mcEventWeight_Zmumu);
-                          h_zmumu_jet2_pt->Fill(jet2_pt, mcEventWeight_Zmumu);
-                          h_zmumu_jet1_phi->Fill(jet1_phi, mcEventWeight_Zmumu);
-                          h_zmumu_jet2_phi->Fill(jet2_phi, mcEventWeight_Zmumu);
-                          h_zmumu_jet1_eta->Fill(jet1_eta, mcEventWeight_Zmumu);
-                          h_zmumu_jet2_eta->Fill(jet2_eta, mcEventWeight_Zmumu);
-                          h_zmumu_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Zmumu);
-                          h_zmumu_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Zmumu);
-                          h_zmumu_mjj->Fill(mjj, mcEventWeight_Zmumu);
-                          h_zmumu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
-                          h_zmumu_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Zmumu);
-                          h_zmumu_dPhimetj1->Fill(dPhiJet1Met_nomu, mcEventWeight_Zmumu);
-                          h_zmumu_dPhimetj2->Fill(dPhiJet2Met_nomu, mcEventWeight_Zmumu);
-                          h_zmumu_dPhiMinmetjet->Fill(dPhiMinjetmet_nomu, mcEventWeight_Zmumu);
-                          // For jet3
-                          if (m_signalJet->size() > 2){
-                            h_zmumu_jet3_pt->Fill(jet3_pt, mcEventWeight_Zmumu);
-                            h_zmumu_jet3_phi->Fill(jet3_phi, mcEventWeight_Zmumu);
-                            h_zmumu_jet3_eta->Fill(jet3_eta, mcEventWeight_Zmumu);
-                            h_zmumu_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Zmumu);
-                            h_zmumu_dPhimetj3->Fill(dPhiJet3Met_nomu, mcEventWeight_Zmumu);
-                          }
-                          // Leptons
-                          h_zmumu_muon1_pt->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight_Zmumu);
-                          h_zmumu_muon2_pt->Fill(m_goodMuon->at(1)->pt() * 0.001, mcEventWeight_Zmumu);
-                          h_zmumu_muon1_phi->Fill(m_goodMuon->at(0)->phi(), mcEventWeight_Zmumu);
-                          h_zmumu_muon2_phi->Fill(m_goodMuon->at(1)->phi(), mcEventWeight_Zmumu);
-                          h_zmumu_muon1_eta->Fill(m_goodMuon->at(0)->eta(), mcEventWeight_Zmumu);
-                          h_zmumu_muon2_eta->Fill(m_goodMuon->at(1)->eta(), mcEventWeight_Zmumu);
-                          h_zmumu_mll->Fill(mll_muon, mcEventWeight_Zmumu);
+    if (m_isZmumu){
+      if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+        if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]MET Trigger");
+        if (sysName == "" && m_useArrayCutflow) m_eventCutflow[16]+=1;
+        if ( emulMET_nomu > m_metCut ) {
+          if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]MET cut");
+          if (sysName == "" && m_useArrayCutflow) m_eventCutflow[17]+=1;
+          if (m_goodElectron->size() == 0) {
+            if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]Electron Veto");
+            if (sysName == "" && m_useArrayCutflow) m_eventCutflow[18]+=1;
+            if ( m_goodMuon->size() > 1) {
+              if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]At least Two Electrons");
+              if (sysName == "" && m_useArrayCutflow) m_eventCutflow[19]+=1;
+              if (m_goodTau->size() == 0) {
+                if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]Tau Veto");
+                if (sysName == "" && m_useArrayCutflow) m_eventCutflow[20]+=1;
+                if ( pass_Zmumu && m_goodMuon->size() == 2 && mll_muon > 66. && mll_muon < 116. ){
+                  if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]mll cut");
+                  if (sysName == "" && m_useArrayCutflow) m_eventCutflow[21]+=1;
+                  if ( m_signalJet->size() > 1 ) {
+                    if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]At least Two Jets");
+                    if (sysName == "" && m_useArrayCutflow) m_eventCutflow[22]+=1;
+                    if ( pass_diJet ) {
+                      if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]DiJet");
+                      if (sysName == "" && m_useArrayCutflow) m_eventCutflow[23]+=1;
+                      if ( mjj > m_mjjCut ) {
+                        if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]mjj cut");
+                        if (sysName == "" && m_useArrayCutflow) m_eventCutflow[24]+=1;
+                        if ( pass_CJV ) {
+                          if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]CJV cut");
+                          if (sysName == "" && m_useArrayCutflow) m_eventCutflow[25]+=1;
+                          if ( pass_dPhiDijetMet_nomu ) {
+                            if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]dPhi(dijet,MET) cut");
+                            if (sysName == "" && m_useArrayCutflow) m_eventCutflow[26]+=1;
+                            // Calculate muon SF
+                            if (!m_isData) {
+                              double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
+                              //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                              mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
+                            }
+                            // Fill histogram
+                            // MET
+                            hMap1D[h_channel+"vbf_met"+sysName]->Fill(MET, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_met_emulmet"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                            // Jets
+                            hMap1D[h_channel+"vbf_mjj"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_dPhijj"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_njet"+sysName]->Fill(m_signalJet->size(), mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_jet1_pt"+sysName]->Fill(jet1_pt, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_jet2_pt"+sysName]->Fill(jet2_pt, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_jet1_phi"+sysName]->Fill(jet1_phi, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_jet2_phi"+sysName]->Fill(jet2_phi, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_jet1_eta"+sysName]->Fill(jet1_eta, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_jet2_eta"+sysName]->Fill(jet2_eta, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_jet1_rap"+sysName]->Fill(jet1_rapidity, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_jet2_rap"+sysName]->Fill(jet2_rapidity, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_dRjj"+sysName]->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_dPhimetj1"+sysName]->Fill(dPhiJet1Met_nomu, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_dPhimetj2"+sysName]->Fill(dPhiJet2Met_nomu, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_dPhiMinmetjet"+sysName]->Fill(dPhiMinjetmet_nomu, mcEventWeight_Zmumu);
+                            // For jet3
+                            if (m_signalJet->size() > 2){
+                              hMap1D[h_channel+"vbf_jet3_pt"+sysName]->Fill(jet3_pt, mcEventWeight_Zmumu);
+                              hMap1D[h_channel+"vbf_jet3_phi"+sysName]->Fill(jet3_phi, mcEventWeight_Zmumu);
+                              hMap1D[h_channel+"vbf_jet3_eta"+sysName]->Fill(jet3_eta, mcEventWeight_Zmumu);
+                              hMap1D[h_channel+"vbf_jet3_rap"+sysName]->Fill(jet3_rapidity, mcEventWeight_Zmumu);
+                              hMap1D[h_channel+"vbf_dPhimetj3"+sysName]->Fill(dPhiJet3Met_nomu, mcEventWeight_Zmumu);
+                            }
+                            // Leptons
+                            hMap1D[h_channel+"vbf_muon1_pt"+sysName]->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_muon2_pt"+sysName]->Fill(m_goodMuon->at(1)->pt() * 0.001, mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_muon1_phi"+sysName]->Fill(m_goodMuon->at(0)->phi(), mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_muon2_phi"+sysName]->Fill(m_goodMuon->at(1)->phi(), mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_muon1_eta"+sysName]->Fill(m_goodMuon->at(0)->eta(), mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_muon2_eta"+sysName]->Fill(m_goodMuon->at(1)->eta(), mcEventWeight_Zmumu);
+                            hMap1D[h_channel+"vbf_mll"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
 
-                          if ( pass_dPhijetmet_nomu ) {
-                            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]dPhi(jet_i,MET) cut");
-                            m_eventCutflow[27]+=1;
-                          } // pass diPhijetMET
-                        } // pass dPhiDijetMet
-                      } // pass CJV
-                    } // mjj Cut
-                  } // pass diJet
-                } // at least 1 jet
-              } // pass Zmumu 
-            } // Tau veto
-          } // at least 1 muon
-        } // Electron veto
-      } // MET cut
-    } // HLT_xe70
-  } // m_isZmumu
+                            if ( pass_dPhijetmet_nomu ) {
+                              if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]dPhi(jet_i,MET) cut");
+                              if (sysName == "" && m_useArrayCutflow) m_eventCutflow[27]+=1;
+                            } // pass diPhijetMET
+                          } // pass dPhiDijetMet
+                        } // pass CJV
+                      } // mjj Cut
+                    } // pass diJet
+                  } // at least 1 jet
+                } // pass Zmumu 
+              } // Tau veto
+            } // at least 1 muon
+          } // Electron veto
+        } // MET cut
+      } // HLT_xe70
+    } // m_isZmumu
 
 
-  //---------------------------------
-  // W -> munu + JET EVENT SELECTION
-  //---------------------------------
+    //---------------------------------
+    // W -> munu + JET EVENT SELECTION
+    //---------------------------------
 
-  if (m_isWmunu){
-    if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
-      if ( emulMET_nomu > m_metCut ) {
-        if (m_goodElectron->size() == 0) {
-          if ( m_goodMuon->size() > 0 ) {
-            if (m_goodTau->size() == 0) {
-              if ( pass_Wmunu && m_goodMuon->size() == 1 && mT_muon > 30. && mT_muon < 100. ){
-                if ( m_signalJet->size() > 1 ) {
-                  if ( pass_diJet ) {
-                    if ( mjj > m_mjjCut ) {
-                      if ( pass_CJV ) {
-                        if ( pass_dPhiDijetMet_nomu ) {
-                          // Calculate muon SF
-                          if (!m_isData) {
-                            double totalMuonSF_Wmunu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
-                            //Info("execute()", " Wmunu Total Muon SF = %.3f ", totalMuonSF_Wmunu);
-                            mcEventWeight_Wmunu = mcEventWeight * totalMuonSF_Wmunu;
-                          }
-                          // Fill histogram
-                          // MET
-                          h_wmunu_met->Fill(MET, mcEventWeight_Wmunu);
-                          h_wmunu_emulmet_nomu->Fill(emulMET_nomu, mcEventWeight_Wmunu);
-                          // Jets
-                          h_wmunu_njet->Fill(m_signalJet->size(), mcEventWeight_Wmunu);
-                          h_wmunu_jet1_pt->Fill(jet1_pt, mcEventWeight_Wmunu);
-                          h_wmunu_jet2_pt->Fill(jet2_pt, mcEventWeight_Wmunu);
-                          h_wmunu_jet1_phi->Fill(jet1_phi, mcEventWeight_Wmunu);
-                          h_wmunu_jet2_phi->Fill(jet2_phi, mcEventWeight_Wmunu);
-                          h_wmunu_jet1_eta->Fill(jet1_eta, mcEventWeight_Wmunu);
-                          h_wmunu_jet2_eta->Fill(jet2_eta, mcEventWeight_Wmunu);
-                          h_wmunu_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Wmunu);
-                          h_wmunu_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Wmunu);
-                          h_wmunu_mjj->Fill(mjj, mcEventWeight_Wmunu);
-                          h_wmunu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Wmunu);
-                          h_wmunu_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Wmunu);
-                          h_wmunu_dPhimetj1->Fill(dPhiJet1Met_nomu, mcEventWeight_Wmunu);
-                          h_wmunu_dPhimetj2->Fill(dPhiJet2Met_nomu, mcEventWeight_Wmunu);
-                          h_wmunu_dPhiMinmetjet->Fill(dPhiMinjetmet_nomu, mcEventWeight_Wmunu);
-                          // For jet3
-                          if (m_signalJet->size() > 2){
+    if (m_isWmunu){
+      if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+        if ( emulMET_nomu > m_metCut ) {
+          if (m_goodElectron->size() == 0) {
+            if ( m_goodMuon->size() > 0 ) {
+              if (m_goodTau->size() == 0) {
+                if ( pass_Wmunu && m_goodMuon->size() == 1 && mT_muon > 30. && mT_muon < 100. ){
+                  if ( m_signalJet->size() > 1 ) {
+                    if ( pass_diJet ) {
+                      if ( mjj > m_mjjCut ) {
+                        if ( pass_CJV ) {
+                          if ( pass_dPhiDijetMet_nomu ) {
+                            // Calculate muon SF
+                            if (!m_isData) {
+                              double totalMuonSF_Wmunu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
+                              //Info("execute()", " Wmunu Total Muon SF = %.3f ", totalMuonSF_Wmunu);
+                              mcEventWeight_Wmunu = mcEventWeight * totalMuonSF_Wmunu;
+                            }
+                            /*
+                            // Fill histogram
+                            // MET
+                            h_wmunu_met->Fill(MET, mcEventWeight_Wmunu);
+                            h_wmunu_emulmet_nomu->Fill(emulMET_nomu, mcEventWeight_Wmunu);
+                            // Jets
+                            h_wmunu_njet->Fill(m_signalJet->size(), mcEventWeight_Wmunu);
+                            h_wmunu_jet1_pt->Fill(jet1_pt, mcEventWeight_Wmunu);
+                            h_wmunu_jet2_pt->Fill(jet2_pt, mcEventWeight_Wmunu);
+                            h_wmunu_jet1_phi->Fill(jet1_phi, mcEventWeight_Wmunu);
+                            h_wmunu_jet2_phi->Fill(jet2_phi, mcEventWeight_Wmunu);
+                            h_wmunu_jet1_eta->Fill(jet1_eta, mcEventWeight_Wmunu);
+                            h_wmunu_jet2_eta->Fill(jet2_eta, mcEventWeight_Wmunu);
+                            h_wmunu_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Wmunu);
+                            h_wmunu_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Wmunu);
+                            h_wmunu_mjj->Fill(mjj, mcEventWeight_Wmunu);
+                            h_wmunu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Wmunu);
+                            h_wmunu_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Wmunu);
+                            h_wmunu_dPhimetj1->Fill(dPhiJet1Met_nomu, mcEventWeight_Wmunu);
+                            h_wmunu_dPhimetj2->Fill(dPhiJet2Met_nomu, mcEventWeight_Wmunu);
+                            h_wmunu_dPhiMinmetjet->Fill(dPhiMinjetmet_nomu, mcEventWeight_Wmunu);
+                            // For jet3
+                            if (m_signalJet->size() > 2){
                             h_wmunu_jet3_pt->Fill(jet3_pt, mcEventWeight_Wmunu);
                             h_wmunu_jet3_phi->Fill(jet3_phi, mcEventWeight_Wmunu);
                             h_wmunu_jet3_eta->Fill(jet3_eta, mcEventWeight_Wmunu);
                             h_wmunu_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Wmunu);
                             h_wmunu_dPhimetj3->Fill(dPhiJet3Met_nomu, mcEventWeight_Wmunu);
-                          }
-                          // Leptons
-                          h_wmunu_muon_pt->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight_Wmunu);
-                          h_wmunu_muon_phi->Fill(m_goodMuon->at(0)->phi(), mcEventWeight_Wmunu);
-                          h_wmunu_muon_eta->Fill(m_goodMuon->at(0)->eta(), mcEventWeight_Wmunu);
-                          h_wmunu_mT->Fill(mT_muon, mcEventWeight_Wmunu);
+                            }
+                            // Leptons
+                            h_wmunu_muon_pt->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight_Wmunu);
+                            h_wmunu_muon_phi->Fill(m_goodMuon->at(0)->phi(), mcEventWeight_Wmunu);
+                            h_wmunu_muon_eta->Fill(m_goodMuon->at(0)->eta(), mcEventWeight_Wmunu);
+                            h_wmunu_mT->Fill(mT_muon, mcEventWeight_Wmunu);
+                            */
 
+                          }
                         }
                       }
                     }
@@ -2615,167 +2672,167 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         }
       }
     }
-  }
 
 
 
 
-  //-------------------------------
-  // Z -> ee + JET EVENT SELECTION
-  //-------------------------------
+    //-------------------------------
+    // Z -> ee + JET EVENT SELECTION
+    //-------------------------------
 
-  if (m_isZee){
-    if ( m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH") || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose") ) {
-      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]Electron Trigger");
-      m_eventCutflow[28]+=1;
-      if ( emulMET_noelec > m_metCut ) {
-        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]MET cut");
-        m_eventCutflow[29]+=1;
-        if (m_goodElectron->size() > 1) {
-          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]At least Two Electron");
-          m_eventCutflow[30]+=1;
-          if ( m_goodMuon->size() == 0) {
-            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]Muon Veto");
-            m_eventCutflow[31]+=1;
-            if (m_goodTau->size() == 0) {
-              if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]Tau Veto");
-              m_eventCutflow[32]+=1;
-              if ( pass_Zee && m_goodElectron->size() == 2 && mll_electron > 66. && mll_electron < 116. ) {
-                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]mll cut");
-                m_eventCutflow[33]+=1;
-                if ( m_signalJet->size() > 1 ) {
-                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]At least Two Jets");
-                  m_eventCutflow[34]+=1;
-                  if ( pass_diJet ) {
-                    if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]DiJet");
-                    m_eventCutflow[35]+=1;
-                    if ( mjj > m_mjjCut ) {
-                      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]mjj cut");
-                      m_eventCutflow[36]+=1;
-                      if ( pass_CJV ) {
-                        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]CJV cut");
-                        m_eventCutflow[37]+=1;
-                        if ( pass_dPhiDijetMet_noelec ) {
-                          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]dPhi(dijet,MET) cut");
-                          m_eventCutflow[38]+=1;
-                          // Calculate electron SF
-                          if (!m_isData) {
-                            float totalElectronSF_Zee = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoSF);
-                            //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
-                            mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
+    if (m_isZee){
+      if ( m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH") || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose") ) {
+        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]Electron Trigger");
+        m_eventCutflow[28]+=1;
+        if ( emulMET_noelec > m_metCut ) {
+          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]MET cut");
+          m_eventCutflow[29]+=1;
+          if (m_goodElectron->size() > 1) {
+            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]At least Two Electron");
+            m_eventCutflow[30]+=1;
+            if ( m_goodMuon->size() == 0) {
+              if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]Muon Veto");
+              m_eventCutflow[31]+=1;
+              if (m_goodTau->size() == 0) {
+                if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]Tau Veto");
+                m_eventCutflow[32]+=1;
+                if ( pass_Zee && m_goodElectron->size() == 2 && mll_electron > 66. && mll_electron < 116. ) {
+                  if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]mll cut");
+                  m_eventCutflow[33]+=1;
+                  if ( m_signalJet->size() > 1 ) {
+                    if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]At least Two Jets");
+                    m_eventCutflow[34]+=1;
+                    if ( pass_diJet ) {
+                      if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]DiJet");
+                      m_eventCutflow[35]+=1;
+                      if ( mjj > m_mjjCut ) {
+                        if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]mjj cut");
+                        m_eventCutflow[36]+=1;
+                        if ( pass_CJV ) {
+                          if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]CJV cut");
+                          m_eventCutflow[37]+=1;
+                          if ( pass_dPhiDijetMet_noelec ) {
+                            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]dPhi(dijet,MET) cut");
+                            m_eventCutflow[38]+=1;
+                            // Calculate electron SF
+                            if (!m_isData) {
+                              float totalElectronSF_Zee = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoSF);
+                              //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
+                              mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
+                            }
+                            // Fill histogram
+                            // MET
+                            h_zee_met->Fill(MET, mcEventWeight_Zee);
+                            h_zee_emulmet_noelec->Fill(emulMET_noelec, mcEventWeight_Zee);
+                            // Jets
+                            h_zee_njet->Fill(m_signalJet->size(), mcEventWeight_Zee);
+                            h_zee_jet1_pt->Fill(jet1_pt, mcEventWeight_Zee);
+                            h_zee_jet2_pt->Fill(jet2_pt, mcEventWeight_Zee);
+                            h_zee_jet1_phi->Fill(jet1_phi, mcEventWeight_Zee);
+                            h_zee_jet2_phi->Fill(jet2_phi, mcEventWeight_Zee);
+                            h_zee_jet1_eta->Fill(jet1_eta, mcEventWeight_Zee);
+                            h_zee_jet2_eta->Fill(jet2_eta, mcEventWeight_Zee);
+                            h_zee_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Zee);
+                            h_zee_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Zee);
+                            h_zee_mjj->Fill(mjj, mcEventWeight_Zee);
+                            h_zee_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                            h_zee_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Zee);
+                            h_zee_dPhimetj1->Fill(dPhiJet1Met_noelec, mcEventWeight_Zee);
+                            h_zee_dPhimetj2->Fill(dPhiJet2Met_noelec, mcEventWeight_Zee);
+                            h_zee_dPhiMinmetjet->Fill(dPhiMinjetmet_noelec, mcEventWeight_Zee);
+                            // For jet3
+                            if (m_signalJet->size() > 2){
+                              h_zee_jet3_pt->Fill(jet3_pt, mcEventWeight_Zee);
+                              h_zee_jet3_phi->Fill(jet3_phi, mcEventWeight_Zee);
+                              h_zee_jet3_eta->Fill(jet3_eta, mcEventWeight_Zee);
+                              h_zee_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Zee);
+                              h_zee_dPhimetj3->Fill(dPhiJet3Met_noelec, mcEventWeight_Zee);
+                            }
+                            // Leptons
+                            h_zee_electron1_pt->Fill(m_goodElectron->at(0)->pt() * 0.001, mcEventWeight_Zee);
+                            h_zee_electron2_pt->Fill(m_goodElectron->at(1)->pt() * 0.001, mcEventWeight_Zee);
+                            h_zee_electron1_phi->Fill(m_goodElectron->at(0)->phi(), mcEventWeight_Zee);
+                            h_zee_electron2_phi->Fill(m_goodElectron->at(1)->phi(), mcEventWeight_Zee);
+                            h_zee_electron1_eta->Fill(m_goodElectron->at(0)->eta(), mcEventWeight_Zee);
+                            h_zee_electron2_eta->Fill(m_goodElectron->at(1)->eta(), mcEventWeight_Zee);
+                            h_zee_mll->Fill(mll_electron, mcEventWeight_Zee);
+
+                            if ( pass_dPhijetmet_noelec ) {
+                              if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]dPhi(jet_i,MET) cut");
+                              m_eventCutflow[39]+=1;
+                            } // pass dPhijetmet_noelec
+                          } // pass dPhiDijetMet_noelec
+                        } // pass CJV
+                      } // mjj cut
+                    } // pass diJEt
+                  } // at least 1 jet
+                } // pass Zee
+              } // Tau Veto
+            } // Muon Veto
+          } // at least 1 electron
+        } // MET cut
+      } // sigle electron trigger
+    } // m_isZee
+
+
+
+    //---------------------------------
+    // W -> enu + JET EVENT SELECTION
+    //---------------------------------
+
+    if (m_isWenu){
+      if ( m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH") || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose") ) {
+        if ( emulMET_noelec > m_metCut ) {
+          if (m_goodElectron->size() > 0) {
+            if ( m_goodMuon->size() == 0 ) {
+              if (m_goodTau->size() == 0) {
+                if ( pass_Wenu && m_goodElectron->size() == 1 && mT_electron > 30. && mT_electron < 100. ){
+                  if ( m_signalJet->size() > 1 ) {
+                    if ( pass_diJet ) {
+                      if ( mjj > m_mjjCut ) {
+                        if ( pass_CJV ) {
+                          if ( pass_dPhiDijetMet_noelec ) {
+                            // Calculate electron SF
+                            if (!m_isData) {
+                              double totalElectronSF_Wenu = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoSF);
+                              //Info("execute()", " Wenu Total Electron SF = %.3f ", totalElectronSF_Wenu);
+                              mcEventWeight_Wenu = mcEventWeight * totalElectronSF_Wenu;
+                            }
+                            // Fill histogram
+                            // MET
+                            h_wenu_met->Fill(MET, mcEventWeight_Wenu);
+                            h_wenu_emulmet_noelec->Fill(emulMET_noelec, mcEventWeight_Wenu);
+                            // Jets
+                            h_wenu_njet->Fill(m_signalJet->size(), mcEventWeight_Wenu);
+                            h_wenu_jet1_pt->Fill(jet1_pt, mcEventWeight_Wenu);
+                            h_wenu_jet2_pt->Fill(jet2_pt, mcEventWeight_Wenu);
+                            h_wenu_jet1_phi->Fill(jet1_phi, mcEventWeight_Wenu);
+                            h_wenu_jet2_phi->Fill(jet2_phi, mcEventWeight_Wenu);
+                            h_wenu_jet1_eta->Fill(jet1_eta, mcEventWeight_Wenu);
+                            h_wenu_jet2_eta->Fill(jet2_eta, mcEventWeight_Wenu);
+                            h_wenu_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Wenu);
+                            h_wenu_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Wenu);
+                            h_wenu_mjj->Fill(mjj, mcEventWeight_Wenu);
+                            h_wenu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Wenu);
+                            h_wenu_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Wenu);
+                            h_wenu_dPhimetj1->Fill(dPhiJet1Met_noelec, mcEventWeight_Wenu);
+                            h_wenu_dPhimetj2->Fill(dPhiJet2Met_noelec, mcEventWeight_Wenu);
+                            h_wenu_dPhiMinmetjet->Fill(dPhiMinjetmet_noelec, mcEventWeight_Wenu);
+                            // For jet3
+                            if (m_signalJet->size() > 2){
+                              h_wenu_jet3_pt->Fill(jet3_pt, mcEventWeight_Wenu);
+                              h_wenu_jet3_phi->Fill(jet3_phi, mcEventWeight_Wenu);
+                              h_wenu_jet3_eta->Fill(jet3_eta, mcEventWeight_Wenu);
+                              h_wenu_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Wenu);
+                              h_wenu_dPhimetj3->Fill(dPhiJet3Met_noelec, mcEventWeight_Wenu);
+                            }
+                            // Leptons
+                            h_wenu_electron_pt->Fill(m_goodElectron->at(0)->pt() * 0.001, mcEventWeight_Wenu);
+                            h_wenu_electron_phi->Fill(m_goodElectron->at(0)->phi(), mcEventWeight_Wenu);
+                            h_wenu_electron_eta->Fill(m_goodElectron->at(0)->eta(), mcEventWeight_Wenu);
+                            h_wenu_mT->Fill(mT_electron, mcEventWeight_Wenu);
+
                           }
-                          // Fill histogram
-                          // MET
-                          h_zee_met->Fill(MET, mcEventWeight_Zee);
-                          h_zee_emulmet_noelec->Fill(emulMET_noelec, mcEventWeight_Zee);
-                          // Jets
-                          h_zee_njet->Fill(m_signalJet->size(), mcEventWeight_Zee);
-                          h_zee_jet1_pt->Fill(jet1_pt, mcEventWeight_Zee);
-                          h_zee_jet2_pt->Fill(jet2_pt, mcEventWeight_Zee);
-                          h_zee_jet1_phi->Fill(jet1_phi, mcEventWeight_Zee);
-                          h_zee_jet2_phi->Fill(jet2_phi, mcEventWeight_Zee);
-                          h_zee_jet1_eta->Fill(jet1_eta, mcEventWeight_Zee);
-                          h_zee_jet2_eta->Fill(jet2_eta, mcEventWeight_Zee);
-                          h_zee_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Zee);
-                          h_zee_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Zee);
-                          h_zee_mjj->Fill(mjj, mcEventWeight_Zee);
-                          h_zee_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
-                          h_zee_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Zee);
-                          h_zee_dPhimetj1->Fill(dPhiJet1Met_noelec, mcEventWeight_Zee);
-                          h_zee_dPhimetj2->Fill(dPhiJet2Met_noelec, mcEventWeight_Zee);
-                          h_zee_dPhiMinmetjet->Fill(dPhiMinjetmet_noelec, mcEventWeight_Zee);
-                          // For jet3
-                          if (m_signalJet->size() > 2){
-                            h_zee_jet3_pt->Fill(jet3_pt, mcEventWeight_Zee);
-                            h_zee_jet3_phi->Fill(jet3_phi, mcEventWeight_Zee);
-                            h_zee_jet3_eta->Fill(jet3_eta, mcEventWeight_Zee);
-                            h_zee_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Zee);
-                            h_zee_dPhimetj3->Fill(dPhiJet3Met_noelec, mcEventWeight_Zee);
-                          }
-                          // Leptons
-                          h_zee_electron1_pt->Fill(m_goodElectron->at(0)->pt() * 0.001, mcEventWeight_Zee);
-                          h_zee_electron2_pt->Fill(m_goodElectron->at(1)->pt() * 0.001, mcEventWeight_Zee);
-                          h_zee_electron1_phi->Fill(m_goodElectron->at(0)->phi(), mcEventWeight_Zee);
-                          h_zee_electron2_phi->Fill(m_goodElectron->at(1)->phi(), mcEventWeight_Zee);
-                          h_zee_electron1_eta->Fill(m_goodElectron->at(0)->eta(), mcEventWeight_Zee);
-                          h_zee_electron2_eta->Fill(m_goodElectron->at(1)->eta(), mcEventWeight_Zee);
-                          h_zee_mll->Fill(mll_electron, mcEventWeight_Zee);
-
-                          if ( pass_dPhijetmet_noelec ) {
-                            if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]dPhi(jet_i,MET) cut");
-                            m_eventCutflow[39]+=1;
-                          } // pass dPhijetmet_noelec
-                        } // pass dPhiDijetMet_noelec
-                      } // pass CJV
-                    } // mjj cut
-                  } // pass diJEt
-                } // at least 1 jet
-              } // pass Zee
-            } // Tau Veto
-          } // Muon Veto
-        } // at least 1 electron
-      } // MET cut
-    } // sigle electron trigger
-  } // m_isZee
-
-
-
-  //---------------------------------
-  // W -> enu + JET EVENT SELECTION
-  //---------------------------------
-
-  if (m_isWenu){
-    if ( m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH") || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose") ) {
-      if ( emulMET_noelec > m_metCut ) {
-        if (m_goodElectron->size() > 0) {
-          if ( m_goodMuon->size() == 0 ) {
-            if (m_goodTau->size() == 0) {
-              if ( pass_Wenu && m_goodElectron->size() == 1 && mT_electron > 30. && mT_electron < 100. ){
-                if ( m_signalJet->size() > 1 ) {
-                  if ( pass_diJet ) {
-                    if ( mjj > m_mjjCut ) {
-                      if ( pass_CJV ) {
-                        if ( pass_dPhiDijetMet_noelec ) {
-                          // Calculate electron SF
-                          if (!m_isData) {
-                            double totalElectronSF_Wenu = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoSF);
-                            //Info("execute()", " Wenu Total Electron SF = %.3f ", totalElectronSF_Wenu);
-                            mcEventWeight_Wenu = mcEventWeight * totalElectronSF_Wenu;
-                          }
-                          // Fill histogram
-                          // MET
-                          h_wenu_met->Fill(MET, mcEventWeight_Wenu);
-                          h_wenu_emulmet_noelec->Fill(emulMET_noelec, mcEventWeight_Wenu);
-                          // Jets
-                          h_wenu_njet->Fill(m_signalJet->size(), mcEventWeight_Wenu);
-                          h_wenu_jet1_pt->Fill(jet1_pt, mcEventWeight_Wenu);
-                          h_wenu_jet2_pt->Fill(jet2_pt, mcEventWeight_Wenu);
-                          h_wenu_jet1_phi->Fill(jet1_phi, mcEventWeight_Wenu);
-                          h_wenu_jet2_phi->Fill(jet2_phi, mcEventWeight_Wenu);
-                          h_wenu_jet1_eta->Fill(jet1_eta, mcEventWeight_Wenu);
-                          h_wenu_jet2_eta->Fill(jet2_eta, mcEventWeight_Wenu);
-                          h_wenu_jet1_rap->Fill(jet1_rapidity, mcEventWeight_Wenu);
-                          h_wenu_jet2_rap->Fill(jet2_rapidity, mcEventWeight_Wenu);
-                          h_wenu_mjj->Fill(mjj, mcEventWeight_Wenu);
-                          h_wenu_dPhijj->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Wenu);
-                          h_wenu_dRjj->Fill(DeltaR(jet1_eta, jet2_eta, jet1_phi, jet2_phi), mcEventWeight_Wenu);
-                          h_wenu_dPhimetj1->Fill(dPhiJet1Met_noelec, mcEventWeight_Wenu);
-                          h_wenu_dPhimetj2->Fill(dPhiJet2Met_noelec, mcEventWeight_Wenu);
-                          h_wenu_dPhiMinmetjet->Fill(dPhiMinjetmet_noelec, mcEventWeight_Wenu);
-                          // For jet3
-                          if (m_signalJet->size() > 2){
-                            h_wenu_jet3_pt->Fill(jet3_pt, mcEventWeight_Wenu);
-                            h_wenu_jet3_phi->Fill(jet3_phi, mcEventWeight_Wenu);
-                            h_wenu_jet3_eta->Fill(jet3_eta, mcEventWeight_Wenu);
-                            h_wenu_jet3_rap->Fill(jet3_rapidity, mcEventWeight_Wenu);
-                            h_wenu_dPhimetj3->Fill(dPhiJet3Met_noelec, mcEventWeight_Wenu);
-                          }
-                          // Leptons
-                          h_wenu_electron_pt->Fill(m_goodElectron->at(0)->pt() * 0.001, mcEventWeight_Wenu);
-                          h_wenu_electron_phi->Fill(m_goodElectron->at(0)->phi(), mcEventWeight_Wenu);
-                          h_wenu_electron_eta->Fill(m_goodElectron->at(0)->eta(), mcEventWeight_Wenu);
-                          h_wenu_mT->Fill(mT_electron, mcEventWeight_Wenu);
-
                         }
                       }
                     }
@@ -2787,61 +2844,61 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         }
       }
     }
-  }
 
 
 
 
-  //////////////////////////
-  // Delete copy containers
-  //////////////////////////
+    //////////////////////////
+    // Delete copy containers
+    //////////////////////////
 
-  // Deep copies. Clearing containers deletes contents including AuxStore.
-  delete m_goodJet;
+    // Deep copies. Clearing containers deletes contents including AuxStore.
+    delete m_goodJet;
 
-  // MET study
-  //delete m_signalMuon;
-  //delete m_signalElectron;
+    // MET study
+    //delete m_signalMuon;
+    //delete m_signalElectron;
 
-  // VBF study
-  delete m_goodMuon;
-  delete m_goodElectron;
-  delete m_goodTau;
-  delete m_signalJet;
+    // VBF study
+    delete m_goodMuon;
+    delete m_goodElectron;
+    delete m_goodTau;
+    delete m_signalJet;
 
 
-  //////////////////////////////////
-  // Delete shallow copy containers
-  //////////////////////////////////
+    //////////////////////////////////
+    // Delete shallow copy containers
+    //////////////////////////////////
 
-  // The containers created by the shallow copy are owned by you. Remember to delete them
-  delete m_met;
-  delete m_metAux;
+    // The containers created by the shallow copy are owned by you. Remember to delete them
+    delete m_met;
+    delete m_metAux;
 
-  delete m_emulmet_nomu;
-  delete m_emulmetAux_nomu;
+    delete m_emulmet_nomu;
+    delete m_emulmetAux_nomu;
 
-  delete m_emulmet_noelec;
-  delete m_emulmetAux_noelec;
+    delete m_emulmet_noelec;
+    delete m_emulmetAux_noelec;
 
-  delete muons_shallowCopy.first;
-  delete muons_shallowCopy.second;
+    delete muons_shallowCopy.first;
+    delete muons_shallowCopy.second;
 
-  delete elec_shallowCopy.first;
-  delete elec_shallowCopy.second;
+    delete elec_shallowCopy.first;
+    delete elec_shallowCopy.second;
 
-  delete phot_shallowCopy.first;
-  delete phot_shallowCopy.second;
+    delete phot_shallowCopy.first;
+    delete phot_shallowCopy.second;
 
-  delete tau_shallowCopy.first;
-  delete tau_shallowCopy.second;
+    delete tau_shallowCopy.first;
+    delete tau_shallowCopy.second;
 
-  delete jet_shallowCopy.first;
-  delete jet_shallowCopy.second;
+    delete jet_shallowCopy.first;
+    delete jet_shallowCopy.second;
 
+  } // end for loop over systematics
 
   return EL::StatusCode::SUCCESS;
-  }
+}
 
 
 
@@ -3148,11 +3205,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       int j = i+1;
       Info("finalize()", "Event cutflow (%i) = %i", j, m_eventCutflow[i]);
     }
-    if (m_isZvv){
-      Info("finalize()", "===============  Zvv Cutflow  ==================");
+    if (m_isZnunu){
+      Info("finalize()", "===============  Znunu Cutflow  ==================");
       for(int i=5; i<16 ; ++i) {
         int j = i+1;
-        Info("finalize()", "Zvv Event cutflow (%i) = %i", j, m_eventCutflow[i]);
+        Info("finalize()", "Znunu Event cutflow (%i) = %i", j, m_eventCutflow[i]);
       }
     }
     if (m_isZmumu){
@@ -3191,6 +3248,29 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     return EL::StatusCode::SUCCESS;
   }
 
+
+
+  EL::StatusCode ZinvxAODAnalysis :: addHist(std::map<std::string, TH1*> &hMap, std::string tag,
+      int bins, double min, double max) {
+
+    std::string label = tag;
+    TH1* h_temp = new TH1F(label.c_str(), "", bins, min, max);
+    wk()->addOutput (h_temp);
+    hMap[label] = h_temp;
+
+    return EL::StatusCode::SUCCESS;
+  }
+
+  EL::StatusCode ZinvxAODAnalysis :: addHist(std::map<std::string, TH1*> &hMap, std::string tag,
+      int bins, Float_t binArray[]) {
+
+    std::string label = tag;
+    TH1* h_temp = new TH1F(label.c_str(), "", bins, binArray);
+    wk()->addOutput (h_temp);
+    hMap[label] = h_temp;
+
+    return EL::StatusCode::SUCCESS;
+  }
 
 
   EL::StatusCode ZinvxAODAnalysis :: passMuonSelection(xAOD::Muon& mu,
