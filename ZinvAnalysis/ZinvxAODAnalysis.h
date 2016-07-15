@@ -176,9 +176,11 @@ class ZinvxAODAnalysis : public EL::Algorithm
     float m_photEtaCut; //!
     float m_jetPtCut; //!
     float m_jetEtaCut; //!
+    float m_monoJetPtCut; //!
+    float m_monoJetEtaCut; //!
     float m_diJet1PtCut; //!
     float m_diJet2PtCut; //!
-    float m_diJetEtaCut; //!
+    float m_diJetRapCut; //!
     float m_CJVptCut; //!
     float m_metCut; //!
     float m_mjjCut; //!
