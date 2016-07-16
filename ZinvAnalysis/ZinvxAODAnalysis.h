@@ -161,6 +161,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
     // Cutflow
     bool m_useBitsetCutflow; //!
     bool m_useArrayCutflow; //!
+    bool m_isEmilyCutflow; //!
     int m_eventCutflow[40]; //!
 
     // Enable Overlap Removal tool

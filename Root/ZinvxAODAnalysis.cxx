@@ -574,6 +574,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // Enable Cutflow plot
   m_useArrayCutflow = true;
   m_useBitsetCutflow = true;
+  m_isEmilyCutflow = true;
 
   // Event Channel
   m_isZnunu = false;
@@ -2302,15 +2303,18 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Define Zmumu and Wmunu Selection
     //----------------------------------
 
-    bool pass_Zmumu = false; // Select Zmumu channel
+    // Wmunu
     bool pass_Wmunu = false; // Select Wmunu channel
+    // Zmumu
     float mll_muon = 0.; // For Zmumu channel
     float mT_muon = 0.;// For Wmunu channel
-    // Zmumu muons
     float muon1_pt = 0.;
     float muon2_pt = 0.;
     float muon1_charge = 0.;
     float muon2_charge = 0.;
+    bool pass_dimuonPtCut = false; // dimuon pT cut
+    bool pass_OSmuon = false; // Opposite sign change muon
+    bool pass_SSmuon = false; // Same sign change muon
 
     if (m_isZmumu || m_isWmunu){
 
@@ -2330,12 +2334,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         //Info("execute()", "  muon1 = %.2f GeV, muon2 = %.2f GeV", muon1_pt, muon2_pt);
         //Info("execute()", "  mll (Zmumu) = %.2f GeV", mll_muon);
 
-        if ( muon1_pt >  m_LeadLepPtCut && muon2_pt > m_SubLeadLepPtCut ){
-          if ( muon1_charge * muon2_charge < 0 ){
-            pass_Zmumu = true;
-            //Info("execute()", "  Leading muon = %.2f GeV, Subleading muon = %.2f GeV", muon1_pt, muon2_pt);
-          }
-        }
+        if ( muon1_pt >  m_LeadLepPtCut && muon2_pt > m_SubLeadLepPtCut ) pass_dimuonPtCut = true;
+        if ( muon1_charge * muon2_charge < 0 ) pass_OSmuon = true;
+        if ( muon1_charge * muon2_charge > 0 ) pass_SSmuon = true;
+        //Info("execute()", "  muon1 charge = %f, muon2 charge = %f, pass_OSmuon = %d, pass_SSmuon = %d", muon1_charge, muon2_charge, pass_OSmuon, pass_SSmuon);
+
       } // Zmumu selection loop
 
       // Wmunu Selection
@@ -2356,15 +2359,18 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Define Zee and Wenu Selection
     // ------------------------------
 
-    bool pass_Zee = false; // Select Zee channel
+    // Wenu
     bool pass_Wenu = false; // Select Wenu channel
+    // Zee
     float mll_electron = 0.; // Select Zee channel
     float mT_electron = 0.;// For Wenu channel
-    // Zee electrons
     float electron1_pt = 0.;
     float electron2_pt = 0.;
     float electron1_charge = 0.;
     float electron2_charge = 0.;
+    bool pass_dielectronPtCut = false; // dielectron pT cut
+    bool pass_OSelectron = false; // Opposite sign change electron
+    bool pass_SSelectron = false; // Same sign change electron
 
     if (m_isZee || m_isWenu){
 
@@ -2384,12 +2390,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         //Info("execute()", "  electron1 = %.2f GeV, electron2 = %.2f GeV", electron1_pt, electron2_pt);
         //Info("execute()", "  mll (Zee) = %.2f GeV", mll_electron);
 
-        if ( electron1_pt >  m_LeadLepPtCut && electron2_pt > m_SubLeadLepPtCut ){
-          if ( electron1_charge * electron2_charge < 0 ){
-            pass_Zee = true;
-            //Info("execute()", "  Leading electron = %.2f GeV, Subleading electron = %.2f GeV", electron1_pt, electron2_pt);
-          }
-        }
+
+        if ( electron1_pt >  m_LeadLepPtCut && electron2_pt > m_SubLeadLepPtCut ) pass_dielectronPtCut = true;
+        if ( electron1_charge * electron2_charge < 0 ) pass_OSelectron = true;
+        if ( electron1_charge * electron2_charge > 0 ) pass_SSelectron = true;
+
       } // Zee selection loop
 
       // Wenu Selection
@@ -2585,7 +2590,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if (m_goodTau->size() == 0) {
                 if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]Tau Veto");
                 if (sysName == "" && m_useArrayCutflow) m_eventCutflow[20]+=1;
-                if ( pass_Zmumu && m_goodMuon->size() == 2 && mll_muon > 66. && mll_muon < 116. ){
+                if ( pass_dimuonPtCut && pass_OSmuon && m_goodMuon->size() == 2 && mll_muon > 66. && mll_muon < 116. ){
                   if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]mll cut");
                   if (sysName == "" && m_useArrayCutflow) m_eventCutflow[21]+=1;
                   if ( m_signalJet->size() > 0 ) {
@@ -2771,7 +2776,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if (m_goodTau->size() == 0) {
                 if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]Tau Veto");
                 if (sysName == "" && m_useArrayCutflow) m_eventCutflow[32]+=1;
-                if ( pass_Zee && m_goodElectron->size() == 2 && mll_electron > 66. && mll_electron < 116. ) {
+                if ( pass_dielectronPtCut && pass_OSelectron && m_goodElectron->size() == 2 && mll_electron > 66. && mll_electron < 116. ) {
                   if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]mll cut");
                   if (sysName == "" && m_useArrayCutflow) m_eventCutflow[33]+=1;
                   if ( m_signalJet->size() > 0 ) {
@@ -2931,6 +2936,98 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         }
       }
     }
+
+
+
+
+    //-------------------------------
+    // Z -> mumu + JET EVENT Cutflow
+    //-------------------------------
+
+    if (m_isZmumu && m_isEmilyCutflow){
+
+      if (m_goodMuon->size() > 1) {
+        if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]At least Two Muon");
+        if (pass_OSmuon) {
+          if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Opposite sign charge");
+          if (pass_dimuonPtCut) {
+            if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Dimuon pT cut");
+            if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+              if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]MET Trigger");
+              if (mll_muon > 66. && mll_muon < 116.) {
+                if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Zmass window");
+                if (emulMET_nomu > m_metCut) {
+                  if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]MET cut");
+                  if (m_goodElectron->size() == 0 && m_goodTau->size() == 0 && m_goodMuon->size() == 2) {
+                    if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Lepton Veto");
+                    ////////////////////////
+                    // MonoJet phasespace //
+                    ////////////////////////
+                    if (pass_monoJet && pass_dPhijetmet_nomu) {
+                      if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Monojet cut");
+                    }
+                    ////////////////////
+                    // VBF phasespace //
+                    ////////////////////
+                    if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_nomu) {
+                      if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]VBF cut");
+                    }
+                  } // Lepton Veto
+                } // MET cut
+              } // Zmass window
+            } // MET trigger
+          } // Dimuon pT cut
+        } // Opposite sign change cut
+      } // At least 2 muons
+
+    } // end cutflow
+
+
+
+
+
+    //-------------------------------
+    // Z -> ee + JET EVENT Cutflow
+    //-------------------------------
+
+    if (m_isZee && m_isEmilyCutflow){
+
+      if (m_goodElectron->size() > 1) {
+        if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]At least Two Electron");
+        if (pass_OSelectron) {
+          if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]Opposite sign charge");
+          if (pass_dielectronPtCut) {
+            if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]Dielectron pT cut");
+            if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")){
+              if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]Electron Trigger");
+              if (mll_electron > 66. && mll_electron < 116.) {
+                if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]Zmass window");
+                if (emulMET_noelec > m_metCut) {
+                  if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]MET cut");
+                  if (m_goodMuon->size() == 0 && m_goodTau->size() == 0 && m_goodElectron->size() == 2) {
+                    if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]Lepton Veto");
+                    ////////////////////////
+                    // MonoJet phasespace //
+                    ////////////////////////
+                    if (pass_monoJet && pass_dPhijetmet_noelec) {
+                      if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]Monojet cut");
+                    }
+                    ////////////////////
+                    // VBF phasespace //
+                    ////////////////////
+                    if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_noelec) {
+                      if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]VBF cut");
+                    }
+                  } // Lepton Veto
+                } // MET cut
+              } // Zmass window
+            } // Electron trigger
+          } // Dielectron pT cut
+        } // Opposite sign change cut
+      } // At least 2 muons
+
+    } // end Cutflow
+
 
 
 
