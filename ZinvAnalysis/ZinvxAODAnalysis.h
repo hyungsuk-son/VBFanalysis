@@ -217,6 +217,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
     std::map<std::string, TH1*> hMap1D; //!
 
+    /*
 
     // Zinv study
     // Znunu
@@ -364,6 +365,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
     TH1 *h_wenu_electron_eta; //!
     TH1 *h_wenu_mT; //!
 
+    */
 
 
 

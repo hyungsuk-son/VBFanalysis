@@ -127,6 +127,7 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
   wk()->addOutput (h_sumOfWeights);
 
 
+  /*
 
   TH1::SetDefaultSumw2(kTRUE);
 
@@ -423,6 +424,7 @@ EL::StatusCode ZinvxAODAnalysis :: histInitialize ()
   wk()->addOutput (h_wenu_electron_eta);
   wk()->addOutput (h_wenu_mT);
 
+  */
 
 
   return EL::StatusCode::SUCCESS;
@@ -1042,18 +1044,45 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
     if (m_isZmumu) {
       h_channel = "h_zmumu_";
+
+      // Publication plots
+      addHist(hMap1D, "ZmumuMET_mono"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, "ZmumuMET_search"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, "ZmumuMjj_search"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, "ZmumuDeltaPhiAll"+sysName, nbinDPhi, binsDPhi);
+
+      ////////////////////////
+      // Monojet phasespace //
+      ////////////////////////
       // MET
-      addHist(hMap1D, h_channel+"vbf_met"+sysName, nbinMET, binsMET);
-      addHist(hMap1D, h_channel+"vbf_met_emulmet"+sysName, nbinMET, binsMET);
-      //addHist(hMap1D, h_channel+"vbf_met"+sysName, 30, 0., 1500.);
-      //addHist(hMap1D, h_channel+"vbf_met_emulmet"+sysName, 30, 0., 1500.);
-
+      addHist(hMap1D, h_channel+"monojet_met"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"monojet_met_emulmet"+sysName, 30, 0., 1500.);
       // Jets
-      addHist(hMap1D, h_channel+"vbf_mjj"+sysName, nbinMjj, binsMjj);
-      addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
-      //addHist(hMap1D, h_channel+"vbf_mjj"+sysName, 80, 0., 4000.);
-      //addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, 16, 0., 3.2);
+      addHist(hMap1D, h_channel+"monojet_njet"+sysName, 40, 0., 40.);
+      addHist(hMap1D, h_channel+"monojet_jet_pt"+sysName, 60, 0., 3000.);
+      addHist(hMap1D, h_channel+"monojet_jet_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"monojet_jet_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"monojet_jet_rap"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"monojet_dPhimetjet"+sysName, 16, 0., 3.2);
+      addHist(hMap1D, h_channel+"monojet_dPhiMinmetjet"+sysName, 16, 0., 3.2);
+      // Leptons
+      addHist(hMap1D, h_channel+"monojet_lepton1_pt"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"monojet_lepton2_pt"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"monojet_lepton1_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"monojet_lepton2_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"monojet_lepton1_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"monojet_lepton2_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"monojet_mll"+sysName, 150, 0., 300.);
 
+      ////////////////////
+      // VBF phasespace //
+      ////////////////////
+      // MET
+      addHist(hMap1D, h_channel+"vbf_met"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"vbf_met_emulmet"+sysName, 30, 0., 1500.);
+      // Jets
+      addHist(hMap1D, h_channel+"vbf_mjj"+sysName, 80, 0., 4000.);
+      addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, 16, 0., 3.2);
       addHist(hMap1D, h_channel+"vbf_njet"+sysName, 40, 0., 40.);
       addHist(hMap1D, h_channel+"vbf_jet1_pt"+sysName, 60, 0., 3000.);
       addHist(hMap1D, h_channel+"vbf_jet2_pt"+sysName, 60, 0., 3000.);
@@ -1072,7 +1101,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       addHist(hMap1D, h_channel+"vbf_dPhimetj2"+sysName, 16, 0., 3.2);
       addHist(hMap1D, h_channel+"vbf_dPhimetj3"+sysName, 16, 0., 3.2);
       addHist(hMap1D, h_channel+"vbf_dPhiMinmetjet"+sysName, 16, 0., 3.2);
-
       // Leptons
       addHist(hMap1D, h_channel+"vbf_lepton1_pt"+sysName, 30, 0., 1500.);
       addHist(hMap1D, h_channel+"vbf_lepton2_pt"+sysName, 30, 0., 1500.);
@@ -1085,17 +1113,46 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
     if (m_isZee) {
       h_channel = "h_zee_";
+
+      // Publication plots
+      addHist(hMap1D, "ZeeMET_mono"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, "ZeeMET_search"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, "ZeeMjj_search"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, "ZeeDeltaPhiAll"+sysName, nbinDPhi, binsDPhi);
+
+      ////////////////////////
+      // Monojet phasespace //
+      ////////////////////////
       // MET
-      addHist(hMap1D, h_channel+"vbf_met"+sysName, nbinMET, binsMET);
-      addHist(hMap1D, h_channel+"vbf_met_emulmet"+sysName, nbinMET, binsMET);
-      //addHist(hMap1D, h_channel+"vbf_met"+sysName, 30, 0., 1500.);
-      //addHist(hMap1D, h_channel+"vbf_met_emulmet"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"monojet_met"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"monojet_met_emulmet"+sysName, 30, 0., 1500.);
+      // Jets
+      addHist(hMap1D, h_channel+"monojet_njet"+sysName, 40, 0., 40.);
+      addHist(hMap1D, h_channel+"monojet_jet_pt"+sysName, 60, 0., 3000.);
+      addHist(hMap1D, h_channel+"monojet_jet_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"monojet_jet_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"monojet_jet_rap"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"monojet_dPhimetjet"+sysName, 16, 0., 3.2);
+      addHist(hMap1D, h_channel+"monojet_dPhiMinmetjet"+sysName, 16, 0., 3.2);
+      // Leptons
+      addHist(hMap1D, h_channel+"monojet_lepton1_pt"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"monojet_lepton2_pt"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"monojet_lepton1_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"monojet_lepton2_phi"+sysName, 32, -3.2, 3.2);
+      addHist(hMap1D, h_channel+"monojet_lepton1_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"monojet_lepton2_eta"+sysName, 25, -5., 5.);
+      addHist(hMap1D, h_channel+"monojet_mll"+sysName, 150, 0., 300.);
+
+      ////////////////////
+      // VBF phasespace //
+      ////////////////////
+      // MET
+      addHist(hMap1D, h_channel+"vbf_met"+sysName, 30, 0., 1500.);
+      addHist(hMap1D, h_channel+"vbf_met_emulmet"+sysName, 30, 0., 1500.);
 
       // Jets
-      addHist(hMap1D, h_channel+"vbf_mjj"+sysName, nbinMjj, binsMjj);
-      addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
-      //addHist(hMap1D, h_channel+"vbf_mjj"+sysName, 80, 0., 4000.);
-      //addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, 16, 0., 3.2);
+      addHist(hMap1D, h_channel+"vbf_mjj"+sysName, 80, 0., 4000.);
+      addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, 16, 0., 3.2);
 
       addHist(hMap1D, h_channel+"vbf_njet"+sysName, 40, 0., 40.);
       addHist(hMap1D, h_channel+"vbf_jet1_pt"+sysName, 60, 0., 3000.);
@@ -2215,7 +2272,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //-------------------------------------
 
     float monojet_pt = 0;
+    float monojet_phi = 0;
     float monojet_eta = 0;
+    float monojet_rapidity = 0;
+    float dPhiMonojetMet = 0;
+    float dPhiMonojetMet_nomu = 0;
+    float dPhiMonojetMet_noelec = 0;
     TLorentzVector jet1;
     TLorentzVector jet2;
     float jet1_pt = 0;
@@ -2261,7 +2323,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if (m_signalJet->size() > 0) {
 
       monojet_pt = m_signalJet->at(0)->pt() * 0.001;
+      monojet_phi = m_signalJet->at(0)->phi();
       monojet_eta = m_signalJet->at(0)->eta();
+      monojet_rapidity = m_signalJet->at(0)->rapidity();
 
 
       // Define Monojet
@@ -2272,6 +2336,20 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
             //Info("execute()", "  Leading jet pt = %.2f GeV", monojet_pt);
           }
         }
+      }
+
+      // deltaPhi(monojet,MET) decision
+      // For Znunu
+      if (m_isZnunu){
+        dPhiMonojetMet = DeltaPhi(monojet_phi, MET_phi);
+      }
+      // For Muon channel
+      if (m_isZmumu || m_isWmunu){
+        dPhiMonojetMet_nomu = DeltaPhi(monojet_phi, emulMET_nomu_phi);
+      }
+      // For Electron channel
+      if (m_isZee || m_isWenu){
+        dPhiMonojetMet_noelec = DeltaPhi(monojet_phi, emulMET_noelec_phi);
       }
 
     } // MonoJet selection 
@@ -2632,6 +2710,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         if ( pass_dPhijetmet ) {
                           if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]dPhi(jet_i,MET) cut");
                           m_eventCutflow[14]+=1;
+                          /*
                           // Fill histogram
                           // MET
                           h_znunu_met->Fill(MET);
@@ -2659,6 +2738,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             h_znunu_jet3_rap->Fill(jet3_rapidity);
                             h_znunu_dPhimetj3->Fill(dPhiJet3Met);
                           }
+                          */
 
 
                         }
@@ -2701,6 +2781,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                     if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]At least One Jets");
                     if (sysName == "" && m_useArrayCutflow) m_eventCutflow[22]+=1;
 
+                    // Calculate muon SF
+                    if (!m_isData) {
+                      double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
+                      //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                      mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
+                    }
+
                     ////////////////////////
                     // MonoJet phasespace //
                     ////////////////////////
@@ -2708,6 +2795,31 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu, monojet]MonoJet");
                       if ( pass_dPhijetmet_nomu ) {
                         if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu, monojet]dPhi(jet_i,MET) cut");
+
+                        // Fill histogram
+                        h_channel = "h_zmumu_";
+                        // Publication plot
+                        hMap1D["ZmumuMET_mono"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                        // MET
+                        hMap1D[h_channel+"monojet_met"+sysName]->Fill(MET, mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_met_emulmet"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                        // Jets
+                        hMap1D[h_channel+"monojet_njet"+sysName]->Fill(m_signalJet->size(), mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_jet_pt"+sysName]->Fill(monojet_pt, mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_jet_phi"+sysName]->Fill(monojet_phi, mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_jet_eta"+sysName]->Fill(monojet_eta, mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_jet_rap"+sysName]->Fill(monojet_rapidity, mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_dPhimetjet"+sysName]->Fill(dPhiMonojetMet_nomu, mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_dPhiMinmetjet"+sysName]->Fill(dPhiMinjetmet_nomu, mcEventWeight_Zmumu);
+                        // Leptons
+                        hMap1D[h_channel+"monojet_lepton1_pt"+sysName]->Fill(m_goodMuon->at(0)->pt() * 0.001, mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_lepton2_pt"+sysName]->Fill(m_goodMuon->at(1)->pt() * 0.001, mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_lepton1_phi"+sysName]->Fill(m_goodMuon->at(0)->phi(), mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_lepton2_phi"+sysName]->Fill(m_goodMuon->at(1)->phi(), mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_lepton1_eta"+sysName]->Fill(m_goodMuon->at(0)->eta(), mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_lepton2_eta"+sysName]->Fill(m_goodMuon->at(1)->eta(), mcEventWeight_Zmumu);
+                        hMap1D[h_channel+"monojet_mll"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
+
                       } // pass dPhijetmet_noelec
                     } // pass monojet
 
@@ -2726,16 +2838,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           if ( pass_dPhijetmet_nomu ) {
                             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu, VBF]dPhi(jet_i,MET) cut");
                             if (sysName == "" && m_useArrayCutflow) m_eventCutflow[26]+=1;
-
-                            // Calculate muon SF
-                            if (!m_isData) {
-                              double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoSF, m_ttvaSF);
-                              Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
-                              mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
-                            }
-
                             // Fill histogram
                             h_channel = "h_zmumu_";
+                            // Publication plot
+                            hMap1D["ZmumuMET_search"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                            hMap1D["ZmumuMjj_search"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
+                            hMap1D["ZmumuDeltaPhiAll"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
                             // MET
                             hMap1D[h_channel+"vbf_met"+sysName]->Fill(MET, mcEventWeight_Zmumu);
                             hMap1D[h_channel+"vbf_met_emulmet"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
@@ -2887,6 +2995,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                     if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]At least One Jets");
                     if (sysName == "" && m_useArrayCutflow) m_eventCutflow[34]+=1;
 
+                    // Calculate electron SF
+                    if (!m_isData) {
+                      float totalElectronSF_Zee = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoSF, m_trigSF);
+                      //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
+                      mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
+                    }
+
                     ////////////////////////
                     // MonoJet phasespace //
                     ////////////////////////
@@ -2894,6 +3009,31 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee, monojet]MonoJet");
                       if ( pass_dPhijetmet_noelec ) {
                         if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee, monojet]dPhi(jet_i,MET) cut");
+
+                        // Fill histogram
+                        h_channel = "h_zee_";
+                        // Publication plot
+                        hMap1D["ZeeMET_mono"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                        // MET
+                        hMap1D[h_channel+"monojet_met"+sysName]->Fill(MET, mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_met_emulmet"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                        // Jets
+                        hMap1D[h_channel+"monojet_njet"+sysName]->Fill(m_signalJet->size(), mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_jet_pt"+sysName]->Fill(monojet_pt, mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_jet_phi"+sysName]->Fill(monojet_phi, mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_jet_eta"+sysName]->Fill(monojet_eta, mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_jet_rap"+sysName]->Fill(monojet_rapidity, mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_dPhimetjet"+sysName]->Fill(dPhiMonojetMet_noelec, mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_dPhiMinmetjet"+sysName]->Fill(dPhiMinjetmet_noelec, mcEventWeight_Zee);
+                        // Leptons
+                        hMap1D[h_channel+"monojet_lepton1_pt"+sysName]->Fill(m_goodElectron->at(0)->pt() * 0.001, mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_lepton2_pt"+sysName]->Fill(m_goodElectron->at(1)->pt() * 0.001, mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_lepton1_phi"+sysName]->Fill(m_goodElectron->at(0)->phi(), mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_lepton2_phi"+sysName]->Fill(m_goodElectron->at(1)->phi(), mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_lepton1_eta"+sysName]->Fill(m_goodElectron->at(0)->eta(), mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_lepton2_eta"+sysName]->Fill(m_goodElectron->at(1)->eta(), mcEventWeight_Zee);
+                        hMap1D[h_channel+"monojet_mll"+sysName]->Fill(mll_electron, mcEventWeight_Zee);
+
                       } // pass dPhijetmet_noelec
                     } // pass monojet
 
@@ -2913,15 +3053,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee, VBF]dPhi(jet_i,MET) cut");
                             if (sysName == "" && m_useArrayCutflow) m_eventCutflow[38]+=1;
 
-                            // Calculate electron SF
-                            if (!m_isData) {
-                              float totalElectronSF_Zee = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoSF, m_trigSF);
-                              //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
-                              mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
-                            }
-
                             // Fill histogram
                             h_channel = "h_zee_";
+                            // Publication plot
+                            hMap1D["ZeeMET_search"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                            hMap1D["ZeeMjj_search"+sysName]->Fill(mjj, mcEventWeight_Zee);
+                            hMap1D["ZeeDeltaPhiAll"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
                             // MET
                             hMap1D[h_channel+"vbf_met"+sysName]->Fill(MET, mcEventWeight_Zee);
                             hMap1D[h_channel+"vbf_met_emulmet"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
@@ -2995,6 +3132,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             //Info("execute()", " Wenu Total Electron SF = %.3f ", totalElectronSF_Wenu);
                             mcEventWeight_Wenu = mcEventWeight * totalElectronSF_Wenu;
                           }
+                          /*
                           // Fill histogram
                           // MET
                           h_wenu_met->Fill(MET, mcEventWeight_Wenu);
@@ -3028,6 +3166,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           h_wenu_electron_phi->Fill(m_goodElectron->at(0)->phi(), mcEventWeight_Wenu);
                           h_wenu_electron_eta->Fill(m_goodElectron->at(0)->eta(), mcEventWeight_Wenu);
                           h_wenu_mT->Fill(mT_electron, mcEventWeight_Wenu);
+                          */
 
                         }
                       }
