@@ -441,7 +441,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
     AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_iso_Medium; //!
     AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_iso_Tight; //!
     AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_trigEff; //!
-    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_trigSF; //!
+    AsgElectronEfficiencyCorrectionTool* m_elecEfficiencySFTool_trigSF_Loose; //!
     CP::JetJvtEfficiency* m_jvtefficiencyTool; //!
     TauAnalysisTools::TauEfficiencyCorrectionsTool* m_tauEffTool; //!
     met::METSystematicsTool* m_metSystTool; //!

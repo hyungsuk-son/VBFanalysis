@@ -572,9 +572,9 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_numCleanEvents = 0;
 
   // Enable Cutflow plot
-  m_useArrayCutflow = true;
+  m_useArrayCutflow = false;
   m_useBitsetCutflow = true;
-  m_isEmilyCutflow = true;
+  m_isEmilyCutflow = false;
 
   // Event Channel
   m_isZnunu = false;
@@ -584,7 +584,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_isWenu = false;
 
   // Enable Systematics
-  m_doSys = false;
+  m_doSys = true;
 
   // Enable Overlap Removal tool
   m_doORtool = false;
@@ -937,12 +937,12 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigEff->setProperty("ForceDataType", 1) );
   EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigEff->initialize() );
 
-  m_elecEfficiencySFTool_trigSF = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_trigSF");
-  std::vector< std::string > corrFileNameList_trigSF;
-  corrFileNameList_trigSF.push_back("ElectronEfficiencyCorrection/efficiencySF.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.LooseAndBLayerLLH_d0z0_v8_isolLooseTrackOnly.2015.13TeV.rel20p0.25ns.v04.root");
-  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigSF->setProperty("CorrectionFileNameList", corrFileNameList_trigSF) );
-  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigSF->setProperty("ForceDataType", 1) );
-  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigSF->initialize() );
+  m_elecEfficiencySFTool_trigSF_Loose = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool_trigSF_Loose");
+  std::vector< std::string > corrFileNameList_trigSF_Loose;
+  corrFileNameList_trigSF_Loose.push_back("ElectronEfficiencyCorrection/efficiencySF.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.LooseAndBLayerLLH_d0z0_v8_isolLooseTrackOnly.2015.13TeV.rel20p0.25ns.v04.root");
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigSF_Loose->setProperty("CorrectionFileNameList", corrFileNameList_trigSF_Loose) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigSF_Loose->setProperty("ForceDataType", 1) );
+  EL_RETURN_CHECK("initialize()",m_elecEfficiencySFTool_trigSF_Loose->initialize() );
 
   // Initialise Jet JVT Efficiency Tool
   m_jvtefficiencyTool = new CP::JetJvtEfficiency("JvtEfficiencyTool");
@@ -1355,12 +1355,82 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
     if (!m_isData) {
+
+      if (m_jerSmearingTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure JERSmearingTool for systematics");
+        return EL::StatusCode::FAILURE;
+      }
+      if (m_jetUncertaintiesTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure JetUncertaintiesTool for systematics");
+        return EL::StatusCode::FAILURE; 
+      }
+      if (m_muonEfficiencySFTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure MuonEfficiencyScaleFactorsToolSF for systematics");
+        return EL::StatusCode::FAILURE;
+      }
+      if (m_muonIsolationSFTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure MuonIsolationEfficiencyScaleFactorsToolSF for systematics");
+        return EL::StatusCode::FAILURE; 
+      } 
+      if (m_muonTTVAEfficiencySFTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure MuonTTVAEfficiencyScaleFactorsToolSF for systematics");
+        return EL::StatusCode::FAILURE; 
+      } 
+      if (m_muonCalibrationAndSmearingTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure MuonCalibrationAndSmearingTool for systematics");
+        return EL::StatusCode::FAILURE;
+      } 
+      if (m_elecEfficiencySFTool_reco->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure electronEfficiencyCorrectionToolRecoSF for systematics");
+        return EL::StatusCode::FAILURE;
+      }
+      if (m_elecEfficiencySFTool_id_Loose->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure electronEfficiencyCorrectionToolIdLooseSF for systematics");
+        return EL::StatusCode::FAILURE;
+      }
+      if (m_elecEfficiencySFTool_id_Tight->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure electronEfficiencyCorrectionToolIdTightSF for systematics");
+        return EL::StatusCode::FAILURE;
+      }
+      if (m_elecEfficiencySFTool_iso_Loose->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure electronEfficiencyCorrectionToolIsoSFlooseID for systematics");
+        return EL::StatusCode::FAILURE;
+      }
+      if (m_elecEfficiencySFTool_iso_Tight->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure electronEfficiencyCorrectionToolIsoSFtightID for systematics");
+        return EL::StatusCode::FAILURE;
+      }
+      if (m_elecEfficiencySFTool_trigSF_Loose->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure electronEfficiencyCorrectionToolTriggerSFloose for systematics");
+        return EL::StatusCode::FAILURE;
+      }
+      if (m_egammaCalibrationAndSmearingTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure EgammaCalibrationAndSmearingTool for systematics");
+        return EL::StatusCode::FAILURE;
+      } 
+      if (m_isoCorrTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure IsolationCorrectionTool for systematics");
+        return EL::StatusCode::FAILURE;
+      } 
+      if (m_tauEffTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure TauEfficiencyCorrectionsTool for systematics");
+        return EL::StatusCode::FAILURE;
+      } 
+      if (m_tauSmearingTool->applySystematicVariation(sysList) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure TauSmearingTool for systematics");
+        return EL::StatusCode::FAILURE;
+      } 
+      if (m_metSystTool->applySystematicVariation( sysList ) != CP::SystematicCode::Ok) {
+        Error("execute()", "Cannot configure METSystematicsTool for systematics");
+        return EL::StatusCode::FAILURE;
+      }   
       if (m_prwTool->applySystematicVariation( sysList ) != CP::SystematicCode::Ok) {
         Error("execute()", "Cannot configure PileupReweightingTool for systematics");
         return EL::StatusCode::FAILURE;
-      }  
+      }
 
     }
+
 
 
 
@@ -1925,6 +1995,28 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_emulmetCore_nomu,   //core met container
         m_emulmetMap_nomu,    //with this association map
         true);                //apply jet jvt cut
+
+
+
+    // Soft term uncertainties
+    //-------------------------
+    if (!m_isData) {
+      // Get the track soft term (For real MET)
+      xAOD::MissingET* softTrkmet = (*m_met)[softTerm];
+      if (m_metSystTool->applyCorrection(*softTrkmet) != CP::CorrectionCode::Ok) {
+        Error("execute()", "METSystematicsTool returns Error CorrectionCode");
+      }
+      // Get the track soft term (For emulated MET marking electrons invisible)
+      xAOD::MissingET* softTrkmet_noelec = (*m_emulmet_noelec)[softTerm];
+      if (m_metSystTool->applyCorrection(*softTrkmet_noelec) != CP::CorrectionCode::Ok) {
+        Error("execute()", "METSystematicsTool returns Error CorrectionCode");
+      }
+      // Get the track soft term (For emulated MET marking muons invisible)
+      xAOD::MissingET* softTrkmet_nomu = (*m_emulmet_nomu)[softTerm];
+      if (m_metSystTool->applyCorrection(*softTrkmet_nomu) != CP::CorrectionCode::Ok) {
+        Error("execute()", "METSystematicsTool returns Error CorrectionCode");
+      }
+    }
 
 
 
@@ -3345,9 +3437,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       m_elecEfficiencySFTool_trigEff = 0;
     }
 
-    if(m_elecEfficiencySFTool_trigSF){
-      delete m_elecEfficiencySFTool_trigSF;
-      m_elecEfficiencySFTool_trigSF = 0;
+    if(m_elecEfficiencySFTool_trigSF_Loose){
+      delete m_elecEfficiencySFTool_trigSF_Loose;
+      m_elecEfficiencySFTool_trigSF_Loose = 0;
     }
 
     /// Jet JVT Efficiency Tool
@@ -3779,6 +3871,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
     if (fabs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
 
+    // Isolation Correction Tool
+    if(m_isoCorrTool->applyCorrection(elec) == CP::CorrectionCode::Error) { 
+      Error("execute()", "IsolationCorrectionTool returns Error CorrectionCode");
+    }
+
     // Isolation requirement
     if (!m_IsoToolVBF->accept(elec)) return EL::StatusCode::SUCCESS;
 
@@ -4150,7 +4247,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     if (trigSF) {
       double sf_trig(1.);
-      if (m_elecEfficiencySFTool_trigSF->getEfficiencyScaleFactor( elec, sf_trig ) == CP::CorrectionCode::Ok) {
+      if (m_elecEfficiencySFTool_trigSF_Loose->getEfficiencyScaleFactor( elec, sf_trig ) == CP::CorrectionCode::Ok) {
         sf *= sf_trig;
         //Info("execute()", "  GetGoodElectronSF: sf_trig = %.5f ", sf_trig );
       }
