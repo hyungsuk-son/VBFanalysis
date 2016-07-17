@@ -194,6 +194,8 @@ class ZinvxAODAnalysis : public EL::Algorithm
     bool m_idSF; //!
     bool m_isoSF; //!
     bool m_ttvaSF; //!
+    bool m_trigSF; //!
+    bool m_isoPtCut; //!
 
     // Some object and event counters to help roughly
     // evaluate the effects of changes in the OR tool.
@@ -517,10 +519,10 @@ class ZinvxAODAnalysis : public EL::Algorithm
         bool recoSF, bool isoSF, bool ttvaSF);
 
     float GetGoodElectronSF(xAOD::Electron& elec,
-        const bool recoSF, const bool idSF, const bool isoSF);
+        const bool recoSF, const bool idSF, const bool isoSF, const bool trigSF);
 
     float GetTotalElectronSF(xAOD::ElectronContainer& electrons,
-        bool recoSF, bool idSF, bool isoSF);
+        bool recoSF, bool idSF, bool isoSF, bool trigSF);
 
     int NumIsoTracks(const xAOD::TrackParticleContainer* inTracks,
         xAOD::Vertex* primVertex, float Pt_Low, float Pt_High);
