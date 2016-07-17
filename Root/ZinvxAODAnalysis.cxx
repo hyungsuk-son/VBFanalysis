@@ -440,6 +440,24 @@ EL::StatusCode ZinvxAODAnalysis :: fileExecute ()
   // get TEvent and TStore - must be done here b/c we need to retrieve CutBookkeepers container from TEvent!
   m_event = wk()->xaodEvent();
 
+  //----------------------------
+  // Event information
+  //--------------------------- 
+  const xAOD::EventInfo* eventInfo = 0;
+  if( ! m_event->retrieve( eventInfo, "EventInfo").isSuccess() ){
+    Error("execute()", "Failed to retrieve event info collection in initialise. Exiting." );
+    return EL::StatusCode::FAILURE;
+  }
+
+  // check if the event is data or MC
+  // (many tools are applied either to data or MC)
+  m_isData = true;
+  // check if the event is MC
+  if(eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) ){
+    m_isData = false; // can do something with this later
+  }
+
+
   // Event Bookkeepers
   // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/AnalysisMetadata#Luminosity_Bookkeepers
 
@@ -454,7 +472,7 @@ EL::StatusCode ZinvxAODAnalysis :: fileExecute ()
   //check if file is from a DxAOD
   bool m_isDerivation = !MetaData->GetBranch("StreamAOD");
 
-  if(m_isDerivation){
+  if(!m_isData && m_isDerivation){
 
     // check for corruption
     const xAOD::CutBookkeeperContainer* incompleteCBC = nullptr;
