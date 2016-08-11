@@ -192,10 +192,14 @@ class ZinvxAODAnalysis : public EL::Algorithm
     float m_isoMuonPtMax; //!
     bool m_recoSF; //!
     bool m_idSF; //!
-    bool m_isoSF; //!
+    bool m_isoMuonSF; //!
+    bool m_isoElectronSF; //!
     bool m_ttvaSF; //!
     bool m_trigSF; //!
     bool m_isoPtCut; //!
+    // Blind cut
+    float m_METblindcut; //!
+    float m_Mjjblindcut; //!
 
     // Some object and event counters to help roughly
     // evaluate the effects of changes in the OR tool.
