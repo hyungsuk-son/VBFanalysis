@@ -297,7 +297,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // Enable Cutflow plot
   m_useArrayCutflow = false;
   m_useBitsetCutflow = true;
-  m_isEmilyCutflow = false;
+  m_isEmilyCutflow = true;
 
   // Event Channel
   m_isZnunu = true;
@@ -834,12 +834,14 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       addHist(hMap1D, h_channel+"vbf_mjj"+sysName, nbinMjj, binsMjj);
       addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
 
+      // Number of Interactions
+      addHist(hMap1D, h_channel+"monojet_avg_interaction"+sysName, 40, 0., 40.);
+      addHist(hMap1D, h_channel+"vbf_avg_interaction"+sysName, 40, 0., 40.);
+
       if (sysName == ""){
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
-        // Number of Interactions
-        addHist(hMap1D, h_channel+"monojet_avg_interaction"+sysName, 40, 0., 40.);
         // Jets
         addHist(hMap1D, h_channel+"monojet_njet"+sysName, 40, 0., 40.);
         addHist(hMap1D, h_channel+"monojet_jet_pt"+sysName, 60, 0., 3000.);
@@ -852,8 +854,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         ////////////////////
         // VBF phasespace //
         ////////////////////
-        // Number of Interactions
-        addHist(hMap1D, h_channel+"vbf_avg_interaction"+sysName, 40, 0., 40.);
         // Jets
         addHist(hMap1D, h_channel+"vbf_njet"+sysName, 40, 0., 40.);
         addHist(hMap1D, h_channel+"vbf_jet1_pt"+sysName, 60, 0., 3000.);
@@ -894,12 +894,14 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       addHist(hMap1D, h_channel+"vbf_mjj"+sysName, nbinMjj, binsMjj);
       addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
 
+      // Number of Interactions
+      addHist(hMap1D, h_channel+"monojet_avg_interaction"+sysName, 40, 0., 40.);
+      addHist(hMap1D, h_channel+"vbf_avg_interaction"+sysName, 40, 0., 40.);
+
       if (sysName == ""){
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
-        // Number of Interactions
-        addHist(hMap1D, h_channel+"monojet_avg_interaction"+sysName, 40, 0., 40.);
         // Jets
         addHist(hMap1D, h_channel+"monojet_njet"+sysName, 40, 0., 40.);
         addHist(hMap1D, h_channel+"monojet_jet_pt"+sysName, 60, 0., 3000.);
@@ -920,8 +922,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         ////////////////////
         // VBF phasespace //
         ////////////////////
-        // Number of Interactions
-        addHist(hMap1D, h_channel+"vbf_avg_interaction"+sysName, 40, 0., 40.);
         // Jets
         addHist(hMap1D, h_channel+"vbf_njet"+sysName, 40, 0., 40.);
         addHist(hMap1D, h_channel+"vbf_jet1_pt"+sysName, 60, 0., 3000.);
@@ -975,21 +975,27 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_all_muon"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_os_muon"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_ss_muon"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
         ////////////////////
         // VBF phasespace //
         ////////////////////
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_all_muon"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_all_muon"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_all_muon"+sysName, nbinDPhi, binsDPhi);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_os_muon"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_os_muon"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_os_muon"+sysName, nbinDPhi, binsDPhi);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_ss_muon"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_ss_muon"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_muon"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_all_lep"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_all_lep"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_os_lep"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_os_lep"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_ss_lep"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName, nbinDPhi, binsDPhi);
       }
 
     }
@@ -1009,12 +1015,14 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       addHist(hMap1D, h_channel+"vbf_mjj"+sysName, nbinMjj, binsMjj);
       addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
 
+      // Number of Interactions
+      addHist(hMap1D, h_channel+"monojet_avg_interaction"+sysName, 40, 0., 40.);
+      addHist(hMap1D, h_channel+"vbf_avg_interaction"+sysName, 40, 0., 40.);
+
       if (sysName == ""){
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
-        // Number of Interactions
-        addHist(hMap1D, h_channel+"monojet_avg_interaction"+sysName, 40, 0., 40.);
         // Jets
         addHist(hMap1D, h_channel+"monojet_njet"+sysName, 40, 0., 40.);
         addHist(hMap1D, h_channel+"monojet_jet_pt"+sysName, 60, 0., 3000.);
@@ -1035,8 +1043,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         ////////////////////
         // VBF phasespace //
         ////////////////////
-        // Number of Interactions
-        addHist(hMap1D, h_channel+"vbf_avg_interaction"+sysName, 40, 0., 40.);
         // Jets
         addHist(hMap1D, h_channel+"vbf_njet"+sysName, 40, 0., 40.);
         addHist(hMap1D, h_channel+"vbf_jet1_pt"+sysName, 60, 0., 3000.);
@@ -1072,21 +1078,27 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_all_electron"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_os_electron"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_ss_electron"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
         ////////////////////
         // VBF phasespace //
         ////////////////////
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_all_electron"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_all_electron"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_all_electron"+sysName, nbinDPhi, binsDPhi);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_os_electron"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_os_electron"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_os_electron"+sysName, nbinDPhi, binsDPhi);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_ss_electron"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_ss_electron"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_electron"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_all_lep"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_all_lep"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_os_lep"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_os_lep"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_ss_lep"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName, nbinDPhi, binsDPhi);
       }
 
 
@@ -1238,11 +1250,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   if (m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("Primary vertex");
   if (m_useArrayCutflow) m_eventCutflow[3]+=1;
-
-
-
-  // Number of Interactions
-  float m_AverageInteractionsPerCrossing = eventInfo->averageInteractionsPerCrossing();
 
 
 
@@ -1428,7 +1435,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
 
+
+
+
+
     // Average Interaction
+    float m_AverageInteractionsPerCrossing = 0.;
+    if (!m_isData) {
+      m_AverageInteractionsPerCrossing = eventInfo->averageInteractionsPerCrossing();
+    }
+    else {
+      m_AverageInteractionsPerCrossing = m_prwTool->getCorrectedMu(*eventInfo, true);
+    }
+
     if (sysName == ""){
       hMap1D["avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight);
     }
@@ -2629,7 +2648,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //-----------
 
     //-------------------------------
-    // Z -> vv + JET EVENT SELECTION
+    // Z -> nunu + JET EVENT SELECTION
     //-------------------------------
 
     if (m_isZnunu){
@@ -2668,9 +2687,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       }
                       // For publication
                       hMap1D[h_channel+"monojet_met"+sysName]->Fill(MET, mcEventWeight);
+                      // Average Interaction
+                      hMap1D[h_channel+"monojet_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight);
                       if (sysName == ""){
-                        // Average Interaction
-                        hMap1D[h_channel+"monojet_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight);
                         // Jets
                         hMap1D[h_channel+"monojet_njet"+sysName]->Fill(m_signalJet->size(), mcEventWeight);
                         hMap1D[h_channel+"monojet_jet_pt"+sysName]->Fill(monojet_pt, mcEventWeight);
@@ -2711,9 +2730,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           hMap1D[h_channel+"vbf_met"+sysName]->Fill(MET, mcEventWeight);
                           hMap1D[h_channel+"vbf_mjj"+sysName]->Fill(mjj, mcEventWeight);
                           hMap1D[h_channel+"vbf_dPhijj"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight);
+                          // Average Interaction
+                          hMap1D[h_channel+"vbf_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight);
                           if (sysName == ""){
-                            // Average Interaction
-                            hMap1D[h_channel+"vbf_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight);
                             // Jets
                             hMap1D[h_channel+"vbf_njet"+sysName]->Fill(m_signalJet->size(), mcEventWeight);
                             hMap1D[h_channel+"vbf_jet1_pt"+sysName]->Fill(jet1_pt, mcEventWeight);
@@ -2857,9 +2876,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         }
                         // For publication
                         hMap1D[h_channel+"monojet_met_emulmet"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                        // Average Interaction
+                        hMap1D[h_channel+"monojet_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zmumu);
                         if (sysName == ""){
-                          // Average Interaction
-                          hMap1D[h_channel+"monojet_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zmumu);
                           // Jets
                           hMap1D[h_channel+"monojet_njet"+sysName]->Fill(m_signalJet->size(), mcEventWeight_Zmumu);
                           hMap1D[h_channel+"monojet_jet_pt"+sysName]->Fill(monojet_pt, mcEventWeight_Zmumu);
@@ -2908,9 +2927,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             hMap1D[h_channel+"vbf_met_emulmet"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
                             hMap1D[h_channel+"vbf_mjj"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
                             hMap1D[h_channel+"vbf_dPhijj"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                            // Average Interaction
+                            hMap1D[h_channel+"vbf_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zmumu);
                             if (sysName == ""){
-                              // Average Interaction
-                              hMap1D[h_channel+"vbf_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zmumu);
                               // Jets
                               hMap1D[h_channel+"vbf_njet"+sysName]->Fill(m_signalJet->size(), mcEventWeight_Zmumu);
                               hMap1D[h_channel+"vbf_jet1_pt"+sysName]->Fill(jet1_pt, mcEventWeight_Zmumu);
@@ -3081,9 +3100,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         }
                         // For publication
                         hMap1D[h_channel+"monojet_met_emulmet"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                        // Average Interaction
+                        hMap1D[h_channel+"monojet_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zee);
                         if (sysName == ""){
-                          // Average Interaction
-                          hMap1D[h_channel+"monojet_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zee);
                           // Jets
                           hMap1D[h_channel+"monojet_njet"+sysName]->Fill(m_signalJet->size(), mcEventWeight_Zee);
                           hMap1D[h_channel+"monojet_jet_pt"+sysName]->Fill(monojet_pt, mcEventWeight_Zee);
@@ -3133,9 +3152,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             hMap1D[h_channel+"vbf_met_emulmet"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
                             hMap1D[h_channel+"vbf_mjj"+sysName]->Fill(mjj, mcEventWeight_Zee);
                             hMap1D[h_channel+"vbf_dPhijj"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                            // Average Interaction
+                            hMap1D[h_channel+"vbf_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zee);
                             if (sysName == ""){
-                              // Average Interaction
-                              hMap1D[h_channel+"vbf_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zee);
                               // Jets
                               hMap1D[h_channel+"vbf_njet"+sysName]->Fill(m_signalJet->size(), mcEventWeight_Zee);
                               hMap1D[h_channel+"vbf_jet1_pt"+sysName]->Fill(jet1_pt, mcEventWeight_Zee);
@@ -3328,7 +3347,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
       if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
         if ( m_goodMuonForZ->size() > 1 && m_goodElectron->size() == 0 && m_goodTau->size() == 0 ) { // Letopn veto
-          if (numExtra == 0 && pass_dimuonPtCut && mll_muon > 66. && mll_muon < 116.) {
+          if (numExtra == 0 && pass_dimuonPtCut) {
             if ( emulMET_nomu > m_metCut ) {
               if ( m_signalJet->size() > 0 ) {
 
@@ -3339,14 +3358,23 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                   // Fill histogram
                   h_channel = "h_zmumu_";
                   // All charge muon
-                  hMap1D[h_channel+"monojet_multijet_study_met_emulmet_all_muon"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                  hMap1D[h_channel+"monojet_multijet_study_mll_all_lep"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
+                  if (mll_muon > 66. && mll_muon < 116.){
+                    hMap1D[h_channel+"monojet_multijet_study_met_emulmet_all_lep"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                  }
                   // Opposite sign charge muon
                   if ( pass_OSmuon ) {
-                    hMap1D[h_channel+"monojet_multijet_study_met_emulmet_os_muon"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                    hMap1D[h_channel+"monojet_multijet_study_mll_os_lep"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
+                    if (mll_muon > 66. && mll_muon < 116.){
+                      hMap1D[h_channel+"monojet_multijet_study_met_emulmet_os_lep"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                    }
                   }
                   // Same sign charge muon
                   if ( pass_SSmuon ) {
-                    hMap1D[h_channel+"monojet_multijet_study_met_emulmet_ss_muon"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                    hMap1D[h_channel+"monojet_multijet_study_mll_ss_lep"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
+                    if (mll_muon > 66. && mll_muon < 116.){
+                      hMap1D[h_channel+"monojet_multijet_study_met_emulmet_ss_lep"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                    }
                   }
                 } // monojet cut
 
@@ -3357,20 +3385,29 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                   // Fill histogram
                   h_channel = "h_zmumu_";
                   // All charge muon
-                  hMap1D[h_channel+"vbf_multijet_study_met_emulmet_all_muon"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
-                  hMap1D[h_channel+"vbf_multijet_study_mjj_all_muon"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
-                  hMap1D[h_channel+"vbf_multijet_study_dPhijj_all_muon"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                  hMap1D[h_channel+"vbf_multijet_study_mll_all_lep"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
+                  if (mll_muon > 66. && mll_muon < 116.){
+                    hMap1D[h_channel+"vbf_multijet_study_met_emulmet_all_lep"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                    hMap1D[h_channel+"vbf_multijet_study_mjj_all_lep"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
+                    hMap1D[h_channel+"vbf_multijet_study_dPhijj_all_lep"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                  }
                   // Opposite sign charge muon
                   if ( pass_OSmuon ) {
-                    hMap1D[h_channel+"vbf_multijet_study_met_emulmet_os_muon"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
-                    hMap1D[h_channel+"vbf_multijet_study_mjj_os_muon"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
-                    hMap1D[h_channel+"vbf_multijet_study_dPhijj_os_muon"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                    hMap1D[h_channel+"vbf_multijet_study_mll_os_lep"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
+                    if (mll_muon > 66. && mll_muon < 116.){
+                      hMap1D[h_channel+"vbf_multijet_study_met_emulmet_os_lep"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                      hMap1D[h_channel+"vbf_multijet_study_mjj_os_lep"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
+                      hMap1D[h_channel+"vbf_multijet_study_dPhijj_os_lep"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                    }
                   }
                   // Same sign charge muon
                   if ( pass_SSmuon ) {
-                    hMap1D[h_channel+"vbf_multijet_study_met_emulmet_ss_muon"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
-                    hMap1D[h_channel+"vbf_multijet_study_mjj_ss_muon"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
-                    hMap1D[h_channel+"vbf_multijet_study_dPhijj_ss_muon"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                    hMap1D[h_channel+"vbf_multijet_study_mll_ss_lep"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
+                    if (mll_muon > 66. && mll_muon < 116.){
+                      hMap1D[h_channel+"vbf_multijet_study_met_emulmet_ss_lep"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                      hMap1D[h_channel+"vbf_multijet_study_mjj_ss_lep"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
+                      hMap1D[h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                    }
                   }
                 } // VBF cut
 
@@ -3393,7 +3430,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
               if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")){
         if ( m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) { // Letopn veto
-          if (m_goodElectron->size() == 2 && pass_dielectronPtCut && mll_electron > 66. && mll_electron < 116.) {
+          if (m_goodElectron->size() == 2 && pass_dielectronPtCut) {
             if ( emulMET_noelec > m_metCut ) {
               if ( m_signalJet->size() > 0 ) {
 
@@ -3404,14 +3441,23 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                   // Fill histogram
                   h_channel = "h_zee_";
                   // All charge electron
-                  hMap1D[h_channel+"monojet_multijet_study_met_emulmet_all_electron"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                  hMap1D[h_channel+"monojet_multijet_study_mll_all_lep"+sysName]->Fill(mll_electron, mcEventWeight_Zee);
+                  if (mll_electron > 66. && mll_electron < 116.) {
+                    hMap1D[h_channel+"monojet_multijet_study_met_emulmet_all_lep"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                  }
                   // Opposite sign charge electron
                   if ( pass_OSelectron ) {
-                    hMap1D[h_channel+"monojet_multijet_study_met_emulmet_os_electron"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                    hMap1D[h_channel+"monojet_multijet_study_mll_os_lep"+sysName]->Fill(mll_electron, mcEventWeight_Zee);
+                    if (mll_electron > 66. && mll_electron < 116.) {
+                      hMap1D[h_channel+"monojet_multijet_study_met_emulmet_os_lep"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                    }
                   }
                   // Same sign charge electron
                   if ( pass_SSelectron ) {
-                    hMap1D[h_channel+"monojet_multijet_study_met_emulmet_ss_electron"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                    hMap1D[h_channel+"monojet_multijet_study_mll_ss_lep"+sysName]->Fill(mll_electron, mcEventWeight_Zee);
+                    if (mll_electron > 66. && mll_electron < 116.) {
+                      hMap1D[h_channel+"monojet_multijet_study_met_emulmet_ss_lep"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                    }
                   }
                 } // monojet cut
 
@@ -3422,20 +3468,29 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                   // Fill histogram
                   h_channel = "h_zee_";
                   // All charge electron
-                  hMap1D[h_channel+"vbf_multijet_study_met_emulmet_all_electron"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
-                  hMap1D[h_channel+"vbf_multijet_study_mjj_all_electron"+sysName]->Fill(mjj, mcEventWeight_Zee);
-                  hMap1D[h_channel+"vbf_multijet_study_dPhijj_all_electron"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                  hMap1D[h_channel+"vbf_multijet_study_mll_all_lep"+sysName]->Fill(mll_electron, mcEventWeight_Zee);
+                  if (mll_electron > 66. && mll_electron < 116.) {
+                    hMap1D[h_channel+"vbf_multijet_study_met_emulmet_all_lep"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                    hMap1D[h_channel+"vbf_multijet_study_mjj_all_lep"+sysName]->Fill(mjj, mcEventWeight_Zee);
+                    hMap1D[h_channel+"vbf_multijet_study_dPhijj_all_lep"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                  }
                   // Opposite sign charge electron
                   if ( pass_OSelectron ) {
-                    hMap1D[h_channel+"vbf_multijet_study_met_emulmet_os_electron"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
-                    hMap1D[h_channel+"vbf_multijet_study_mjj_os_electron"+sysName]->Fill(mjj, mcEventWeight_Zee);
-                    hMap1D[h_channel+"vbf_multijet_study_dPhijj_os_electron"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                    hMap1D[h_channel+"vbf_multijet_study_mll_os_lep"+sysName]->Fill(mll_electron, mcEventWeight_Zee);
+                    if (mll_electron > 66. && mll_electron < 116.) {
+                      hMap1D[h_channel+"vbf_multijet_study_met_emulmet_os_lep"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                      hMap1D[h_channel+"vbf_multijet_study_mjj_os_lep"+sysName]->Fill(mjj, mcEventWeight_Zee);
+                      hMap1D[h_channel+"vbf_multijet_study_dPhijj_os_lep"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                    }
                   }
                   // Same sign charge electron
                   if ( pass_SSelectron ) {
-                    hMap1D[h_channel+"vbf_multijet_study_met_emulmet_ss_electron"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
-                    hMap1D[h_channel+"vbf_multijet_study_mjj_ss_electron"+sysName]->Fill(mjj, mcEventWeight_Zee);
-                    hMap1D[h_channel+"vbf_multijet_study_dPhijj_ss_electron"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                    hMap1D[h_channel+"vbf_multijet_study_mll_ss_lep"+sysName]->Fill(mll_electron, mcEventWeight_Zee);
+                    if (mll_electron > 66. && mll_electron < 116.) {
+                      hMap1D[h_channel+"vbf_multijet_study_met_emulmet_ss_lep"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                      hMap1D[h_channel+"vbf_multijet_study_mjj_ss_lep"+sysName]->Fill(mjj, mcEventWeight_Zee);
+                      hMap1D[h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName]->Fill(DeltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                    }
                   }
                 } // VBF cut
 
