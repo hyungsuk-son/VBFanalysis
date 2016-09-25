@@ -164,10 +164,6 @@ class ZinvxAODAnalysis : public EL::Algorithm
     bool m_isEmilyCutflow; //!
     int m_eventCutflow[40]; //!
 
-    // Enable Overlap Removal tool
-    bool m_doORtool; //!
-    bool m_doORmanual; //!
-
     // Cut values
     float m_muonPtCut; //!
     float m_muonEtaCut; //!
@@ -337,19 +333,19 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
     virtual EL::StatusCode passMuonSelection(xAOD::Muon& mu,
         const xAOD::EventInfo* eventInfo,
-        xAOD::Vertex* primVertex);
+        const xAOD::Vertex* primVertex);
 
     virtual EL::StatusCode passMuonVBF(xAOD::Muon& mu,
         const xAOD::EventInfo* eventInfo,
-        xAOD::Vertex* primVertex);
+        const xAOD::Vertex* primVertex);
 
     virtual EL::StatusCode passElectronSelection(xAOD::Electron& elec,
         const xAOD::EventInfo* eventInfo,
-        xAOD::Vertex* primVertex);
+        const xAOD::Vertex* primVertex);
 
     virtual EL::StatusCode passElectronVBF(xAOD::Electron& elec,
         const xAOD::EventInfo* eventInfo,
-        xAOD::Vertex* primVertex);
+        const xAOD::Vertex* primVertex);
 
     virtual EL::StatusCode passPhotonSelection(xAOD::Photon& phot,
         const xAOD::EventInfo* eventInfo);
@@ -380,17 +376,17 @@ class ZinvxAODAnalysis : public EL::Algorithm
         bool recoSF, bool idSF, bool isoSF, bool trigSF);
 
     int NumIsoTracks(const xAOD::TrackParticleContainer* inTracks,
-        xAOD::Vertex* primVertex, float Pt_Low, float Pt_High);
+        const xAOD::Vertex* primVertex, float Pt_Low, float Pt_High);
 
     int NumMuonIsoTrack(xAOD::MuonContainer* muons, const xAOD::TrackParticleContainer* inTracks,
-        xAOD::Vertex* primVertex, float Pt_Low, float Pt_High);
+        const xAOD::Vertex* primVertex, float Pt_Low, float Pt_High);
 
     int NumElecIsoTrack(xAOD::ElectronContainer* electrons, const xAOD::TrackParticleContainer* inTracks,
-        xAOD::Vertex* primVertex, float Pt_Low, float Pt_High);
+        const xAOD::Vertex* primVertex, float Pt_Low, float Pt_High);
 
-    float DeltaPhi(float phi1, float phi2);
+    float deltaPhi(float phi1, float phi2);
 
-    float DeltaR(float eta1, float eta2, float phi1, float phi2);
+    float deltaR(float eta1, float eta2, float phi1, float phi2);
 
 
     // this is needed to distribute the algorithm to the workers
