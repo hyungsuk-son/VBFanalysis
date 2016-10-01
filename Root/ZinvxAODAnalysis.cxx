@@ -31,8 +31,8 @@ static std::string jetType = "AntiKt4EMTopoJets";
 
 // Global accessors and decorators
 static SG::AuxElement::Decorator<char> dec_baseline("baseline");
-static SG::AuxElement::Decorator<char> dec_baseline_forZ("baseline_forZ");
 static SG::AuxElement::Decorator<char> dec_signal("signal");
+static SG::AuxElement::Decorator<char> dec_signal_forZ("signal_forZ");
 static SG::AuxElement::Decorator<char> dec_bad("bad");
 static SG::AuxElement::Accessor<float>  acc_jvt("Jvt");
 static SG::AuxElement::ConstAccessor<float> cacc_jvt("Jvt");
@@ -970,53 +970,31 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       }
 
       // Multijet Background study
-      if (sysName == ""){
-        ////////////////////////
-        // Monojet phasespace //
-        ////////////////////////
-        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
-        ////////////////////
-        // VBF phasespace //
-        ////////////////////
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_all_lep"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_all_lep"+sysName, nbinDPhi, binsDPhi);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_os_lep"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_os_lep"+sysName, nbinDPhi, binsDPhi);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_ss_lep"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName, nbinDPhi, binsDPhi);
-      }
-
-      // Cutflow comparison with Emily
-      if (m_isEmilyCutflow && sysName == ""){
-        ////////////////////////////
-        // Before Overlap Removal //
-        ////////////////////////////
-        addHist(hMap1D, h_channel+"NTauBefore"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NEleBefore"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NMuBefore"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NJetBefore"+sysName, 20, 0., 20.);
-        ////////////////////////////
-        // After Overlap Removal //
-        ////////////////////////////
-        addHist(hMap1D, h_channel+"NTauAfter"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NEleAfter"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NMuAfter"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NJetAfter"+sysName, 20, 0., 20.);
-      }
-
-
-
+      //
+      ////////////////////////
+      // Monojet phasespace //
+      ////////////////////////
+      addHist(hMap1D, h_channel+"monojet_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
+      ////////////////////
+      // VBF phasespace //
+      ////////////////////
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_all_lep"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_all_lep"+sysName, nbinDPhi, binsDPhi);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_os_lep"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_os_lep"+sysName, nbinDPhi, binsDPhi);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_ss_lep"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName, nbinDPhi, binsDPhi);
 
     }
 
@@ -1094,56 +1072,72 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
 
       // Multijet Background study
-      if (sysName == ""){
-        ////////////////////////
-        // Monojet phasespace //
-        ////////////////////////
-        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
-        ////////////////////
-        // VBF phasespace //
-        ////////////////////
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_all_lep"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_all_lep"+sysName, nbinDPhi, binsDPhi);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_os_lep"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_os_lep"+sysName, nbinDPhi, binsDPhi);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_ss_lep"+sysName, nbinMjj, binsMjj);
-        addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName, nbinDPhi, binsDPhi);
-      }
-
-
-      // Cutflow comparison with Emily
-      if (m_isEmilyCutflow && sysName == ""){
-        ////////////////////////////
-        // Before Overlap Removal //
-        ////////////////////////////
-        addHist(hMap1D, h_channel+"NTauBefore"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NEleBefore"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NMuBefore"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NJetBefore"+sysName, 20, 0., 20.);
-        ////////////////////////////
-        // After Overlap Removal //
-        ////////////////////////////
-        addHist(hMap1D, h_channel+"NTauAfter"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NEleAfter"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NMuAfter"+sysName, 20, 0., 20.);
-        addHist(hMap1D, h_channel+"NJetAfter"+sysName, 20, 0., 20.);
-      }
-
+      //
+      ////////////////////////
+      // Monojet phasespace //
+      ////////////////////////
+      addHist(hMap1D, h_channel+"monojet_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"monojet_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
+      ////////////////////
+      // VBF phasespace //
+      ////////////////////
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mll_all_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_all_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_all_lep"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_all_lep"+sysName, nbinDPhi, binsDPhi);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mll_os_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_os_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_os_lep"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_os_lep"+sysName, nbinDPhi, binsDPhi);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mll_ss_lep"+sysName, 150, 0., 300.);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_met_emulmet_ss_lep"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_ss_lep"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName, nbinDPhi, binsDPhi);
 
 
     }
 
+
+
+    // For cutflow comparison with Emily
+    if (m_isZee || m_isZmumu) {
+      if (m_isEmilyCutflow && sysName == ""){
+        ////////////////////////////
+        // Before Overlap Removal //
+        ////////////////////////////
+        addHist(hMap1D, "NTauBefore"+sysName, 20, 0., 20.);
+        addHist(hMap1D, "NEleBefore"+sysName, 20, 0., 20.);
+        addHist(hMap1D, "NMuBefore"+sysName, 20, 0., 20.);
+        addHist(hMap1D, "NMuZBefore"+sysName, 20, 0., 20.);
+        addHist(hMap1D, "NJetBefore"+sysName, 20, 0., 20.);
+        ////////////////////////////
+        // After Overlap Removal //
+        ////////////////////////////
+        addHist(hMap1D, "NTauAfter"+sysName, 20, 0., 20.);
+        addHist(hMap1D, "NEleAfter"+sysName, 20, 0., 20.);
+        addHist(hMap1D, "NMuAfter"+sysName, 20, 0., 20.);
+        addHist(hMap1D, "NMuZAfter"+sysName, 20, 0., 20.);
+        addHist(hMap1D, "NJetAfter"+sysName, 20, 0., 20.);
+
+        ///////////////////////////////////
+        // Basic distribution comparison //
+        ///////////////////////////////////
+        addHist(hMap1D, "Emily_Zee_MET_mono"+sysName, 150,   0.,  1500.);
+        addHist(hMap1D, "Emily_Zee_MET_search"+sysName, 30,    0.0,  1500.);
+        addHist(hMap1D, "Emily_Zee_Mjj_search"+sysName, 80,    0.0,  4000.);
+        addHist(hMap1D, "Emily_Zee_DeltaPhiAll"+sysName, 100, 0, TMath::Pi());
+        addHist(hMap1D, "Emily_Zmumu_MET_mono"+sysName, 150,   0.,  1500.);
+        addHist(hMap1D, "Emily_Zmumu_MET_search"+sysName, 30,    0.0,  1500.);
+        addHist(hMap1D, "Emily_Zmumu_Mjj_search"+sysName, 80,    0.0,  4000.);
+        addHist(hMap1D, "Emily_Zmumu_DeltaPhiAll"+sysName, 100, 0, TMath::Pi());
+      }
+
+
+    }
 
 
 
@@ -1512,6 +1506,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     } // end for loop over shallow copied muons
 
 
+
     //------------
     // ELECTRONS
     //------------
@@ -1534,8 +1529,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       passElectronVBF(*electron, eventInfo, primVertex);
       //Info("execute()", "  VBF electron pt = %.2f GeV", (electron->pt() * 0.001));
     } // end for loop over shallow copied electrons
-
-
 
 
 
@@ -1644,7 +1637,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       //Info("execute()", "  corrected jet pt = %.2f GeV", jets->pt() * 0.001);
       //Info("execute()", "  updated jet jvt = %.2f ", newjvt);
 
-      dec_baseline(*jets) = false;
+      dec_signal(*jets) = false;
       selectDec(*jets) = false; // To select objects for Overlap removal
 
     } // end for loop over shallow copied jets
@@ -1684,11 +1677,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // iterate over our shallow copy
     for (const auto& muon : *muonSC) { // C++11 shortcut
       // Muon Selection for VBF study
-      if (dec_baseline(*muon)) {
+      if (dec_signal(*muon)) {
         m_goodMuon->push_back( muon );
         //Info("execute()", "  Good muon pt = %.2f GeV", (muon->pt() * 0.001));
       }
-      if (dec_baseline_forZ(*muon)) {
+      if (dec_signal_forZ(*muon)) {
         muon->auxdata<bool>("brem") = false; // For overlap removal with electron
         m_goodMuonForZ->push_back( muon );
       }
@@ -1698,11 +1691,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Good Electron //
     ///////////////////
     xAOD::ElectronContainer* m_goodElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
+    xAOD::ElectronContainer* m_baselineElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
     // iterate over our shallow copy
     for (const auto& electron : *elecSC) { // C++11 shortcut
       // Electron Selection for VBF study
-      if (dec_baseline(*electron)) {
+      if (dec_signal(*electron)) {
           m_goodElectron->push_back( electron );
+      }
+      if (dec_baseline(*electron)) {
+        m_baselineElectron->push_back( electron ); // For QCD multijet study
       }
     } // end for loop over shallow copied electrons
 
@@ -1713,7 +1710,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // iterate over our shallow copy
     for (const auto& taujet : *tauSC) { // C++11 shortcut
       // Tau Selection for VBF study
-      if (dec_baseline(*taujet)) {
+      if (dec_signal(*taujet)) {
         m_goodTau->push_back( taujet );
         //Info("execute()", "  Good tau pt = %.2f GeV", (taujet->pt() * 0.001));
       }
@@ -1726,7 +1723,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // iterate over our shallow copy
     for (const auto& photon : *photSC) { // C++11 shortcut
       // Photon Selection for VBF study
-      if (dec_baseline(*photon)) {
+      if (dec_signal(*photon)) {
         m_goodPhoton->push_back( photon );
       }
     } // end for loop over shallow copied photons
@@ -1738,17 +1735,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     /////////////////////////////////
     // Sort Good Muon and Electron //
     /////////////////////////////////
+    /*
     // Muon
     if (m_goodMuon->size() > 1) std::sort(m_goodMuon->begin(), m_goodMuon->end(), DescendingPt());
     if (m_goodMuonForZ->size() > 1) std::sort(m_goodMuonForZ->begin(), m_goodMuonForZ->end(), DescendingPt());
     // Electron
     if (m_goodElectron->size() > 1) std::sort(m_goodElectron->begin(), m_goodElectron->end(), DescendingPt());
+    if (m_baselineElectron->size() > 1) std::sort(m_baselineElectron->begin(), m_baselineElectron->end(), DescendingPt());
+    */
 
-    /*
     if (m_goodMuonForZ->size() > 1) std::partial_sort(m_goodMuonForZ->begin(), m_goodMuonForZ->begin()+2, m_goodMuonForZ->end(), DescendingPt());
     if (m_goodMuon->size() > 1) std::partial_sort(m_goodMuon->begin(), m_goodMuon->begin()+2, m_goodMuon->end(), DescendingPt());
     if (m_goodElectron->size() > 1) std::partial_sort(m_goodElectron->begin(), m_goodElectron->begin()+2, m_goodElectron->end(), DescendingPt());
-    */
+    if (m_baselineElectron->size() > 1) std::partial_sort(m_baselineElectron->begin(), m_baselineElectron->begin()+2, m_baselineElectron->end(), DescendingPt());
 
 
 
@@ -1757,12 +1756,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Decorate overlapped objects using official OR Tool
     //----------------------------------------------------
 
-    //auto m_orTool = m_toolBox->getMasterHandle();
-    if ( !m_orTool->removeOverlaps(elecSC, muonSC, jetSC, tauSC, photSC).isSuccess() ){
+    if ( !m_orTool->removeOverlaps(m_goodElectron, m_goodMuon, m_goodJet, m_goodTau, m_goodPhoton).isSuccess() ){
       Error("execute()", "Failed to apply the overlap removal to all objects. Exiting." );
       return EL::StatusCode::FAILURE;
     }
-
+/*
     // Now, dump all of the results
     if (sysName == "") {
 
@@ -1799,6 +1797,76 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       }
 
     }
+*/
+
+
+
+    // Cutflow comparison with Emily
+    ////////////////////////////
+    // Before Overlap Removal //
+    ////////////////////////////
+    if (m_isEmilyCutflow) {
+      if ( (m_isZee || m_isZmumu) && sysName == ""){
+        hMap1D["NTauBefore"+sysName]->Fill(m_goodTau->size(),1.0);
+        hMap1D["NEleBefore"+sysName]->Fill(m_goodElectron->size(),1.0);
+        hMap1D["NMuBefore"+sysName]->Fill(m_goodMuon->size(),1.0);
+        hMap1D["NMuZBefore"+sysName]->Fill(m_goodMuonForZ->size(),1.0);
+        hMap1D["NJetBefore"+sysName]->Fill(m_goodJet->size(),1.0);
+        /*
+        if (m_goodMuonForZ->size() != m_goodMuon->size()){
+          Info("execute()", "============================");
+          Info("execute()", " Event # = %llu", eventInfo->eventNumber());
+          Info("execute()", "======= goodMuonForZ =======");
+          //int muonZCount = 0;
+          for (const auto& muon : *m_goodMuonForZ) {
+            //muonZCount++;
+            //Info("execute()", " muonZ # : %i", muonCount);
+            Info("execute()", " muonZ pt = %.4f GeV", muon->pt() * 0.001);
+            //Info("execute()", " muonZ eta = %.3f", muon->eta());
+            //Info("execute()", " muonZi phi = %.3f", muon->phi());
+          }
+          Info("execute()", "========= goodMuon =========");
+          //int muonCount = 0;
+          for (const auto& muon : *m_goodMuon) {
+            //muonCount++;
+            //Info("execute()", " muon # : %i", muonCount);
+            Info("execute()", " muon pt = %.4f GeV", muon->pt() * 0.001);
+            //Info("execute()", " muon eta = %.3f", muon->eta());
+            //Info("execute()", " muon phi = %.3f", muon->phi());
+          }
+        }
+        if (eventInfo->eventNumber() == 52 || eventInfo->eventNumber() == 798 || eventInfo->eventNumber() == 1300){
+          Info("execute()", "============================");
+          Info("execute()", " Event # = %llu", eventInfo->eventNumber());
+          Info("execute()", "======= goodMuonForZ =======");
+          //int muonZCount = 0;
+          for (const auto& muon : *m_goodMuonForZ) {
+            Info("execute()", " muonZ pt = %f GeV", muon->pt() * 0.001);
+          }
+          Info("execute()", "========= goodMuon =========");
+          for (const auto& muon : *m_goodMuon) {
+            Info("execute()", " muon pt = %f GeV", muon->pt() * 0.001);
+          }
+        }
+
+        / Tau Study
+        if (m_goodTau->size() > 0){
+          Info("execute()", "=====================================");
+          Info("execute()", " Event # = %llu", eventInfo->eventNumber());
+          int tauCount = 0;
+          for (const auto& tau : *m_goodTau) {
+            tauCount++;
+            Info("execute()", " tau # : %i", tauCount);
+            Info("execute()", " tau pt = %.3f GeV", tau->pt() * 0.001);
+            //Info("execute()", " tau charge = %.1f", tau->charge());
+            Info("execute()", " tau eta = %.3f", tau->eta());
+            Info("execute()", " tau phi = %.3f", tau->phi());
+          }
+        }
+        */
+      }
+    }
+
 
 
 
@@ -1835,29 +1903,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-    // Cutflow comparison with Emily
-    ////////////////////////////
-    // Before Overlap Removal //
-    ////////////////////////////
-    if (m_isEmilyCutflow) {
-      if ( m_isZee && sysName == ""){
-        h_channel = "h_zee_";
-        hMap1D[h_channel+"NTauBefore"+sysName]->Fill(m_goodTau->size(),1.0);
-        hMap1D[h_channel+"NEleBefore"+sysName]->Fill(m_goodElectron->size(),1.0);
-        hMap1D[h_channel+"NMuBefore"+sysName]->Fill(m_goodMuon->size(),1.0);
-        hMap1D[h_channel+"NJetBefore"+sysName]->Fill(m_goodJet->size(),1.0);
-      }
-      if ( m_isZmumu && sysName == ""){
-        h_channel = "h_zmumu_";
-        hMap1D[h_channel+"NTauBefore"+sysName]->Fill(m_goodTau->size(),1.0);
-        hMap1D[h_channel+"NEleBefore"+sysName]->Fill(m_goodElectron->size(),1.0);
-        hMap1D[h_channel+"NMuBefore"+sysName]->Fill(m_goodMuon->size(),1.0);
-        hMap1D[h_channel+"NJetBefore"+sysName]->Fill(m_goodJet->size(),1.0);
-      }
-    }
-
-
-
 
 
 
@@ -1870,30 +1915,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     m_goodJet->erase(std::remove_if(std::begin(*m_goodJet), std::end(*m_goodJet), [](xAOD::Jet* jet) {return overlapAcc(*jet);}), std::end(*m_goodJet));
     m_goodTau->erase(std::remove_if(std::begin(*m_goodTau), std::end(*m_goodTau), [](xAOD::TauJet* tau) {return overlapAcc(*tau);}), std::end(*m_goodTau));
     m_goodPhoton->erase(std::remove_if(std::begin(*m_goodPhoton), std::end(*m_goodPhoton), [](xAOD::Photon* phot) {return overlapAcc(*phot);}), std::end(*m_goodPhoton));
-
-
-
-    // Cutflow comparison with Emily
-    ////////////////////////////
-    // After Overlap Removal //
-    ////////////////////////////
-    if (m_isEmilyCutflow) {
-      if ( m_isZee && sysName == ""){
-        h_channel = "h_zee_";
-        hMap1D[h_channel+"NTauAfter"+sysName]->Fill(m_goodTau->size(),1.0);
-        hMap1D[h_channel+"NEleAfter"+sysName]->Fill(m_goodElectron->size(),1.0);
-        hMap1D[h_channel+"NMuAfter"+sysName]->Fill(m_goodMuon->size(),1.0);
-        hMap1D[h_channel+"NJetAfter"+sysName]->Fill(m_goodJet->size(),1.0);
-      }
-      if ( m_isZmumu && sysName == ""){
-        h_channel = "h_zmumu_";
-        hMap1D[h_channel+"NTauAfter"+sysName]->Fill(m_goodTau->size(),1.0);
-        hMap1D[h_channel+"NEleAfter"+sysName]->Fill(m_goodElectron->size(),1.0);
-        hMap1D[h_channel+"NMuAfter"+sysName]->Fill(m_goodMuon->size(),1.0);
-        hMap1D[h_channel+"NJetAfter"+sysName]->Fill(m_goodJet->size(),1.0);
-      }
-    }
-
 
 
 
@@ -1925,6 +1946,36 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       jj++;
     }
 
+    // Cutflow comparison with Emily
+    ////////////////////////////
+    // After Overlap Removal //
+    ////////////////////////////
+    if (m_isEmilyCutflow) {
+      if ( (m_isZee || m_isZmumu) && sysName == ""){
+        hMap1D["NTauAfter"+sysName]->Fill(m_goodTau->size(),1.0);
+        hMap1D["NEleAfter"+sysName]->Fill(m_goodElectron->size(),1.0);
+        hMap1D["NMuAfter"+sysName]->Fill(m_goodMuon->size(),1.0);
+        hMap1D["NMuZAfter"+sysName]->Fill(m_goodMuonForZ->size(),1.0);
+        hMap1D["NJetAfter"+sysName]->Fill(m_goodJet->size(),1.0);
+        /*
+        if (m_goodTau->size() > 0){
+          Info("execute()", "=====================================");
+          Info("execute()", " Event # = %llu", eventInfo->eventNumber());
+          int tauCount = 0;
+          for (const auto& tau : *m_goodTau) {
+            tauCount++;
+            Info("execute()", " tau # : %i", tauCount);
+            Info("execute()", " tau pt = %.3f GeV", tau->pt() * 0.001);
+            //Info("execute()", " tau charge = %.1f", tau->charge());
+            Info("execute()", " tau eta = %.3f", tau->eta());
+            Info("execute()", " tau phi = %.3f", tau->phi());
+          }
+        }
+        */
+      }
+    }
+
+
 
 
 
@@ -1952,6 +2003,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       delete m_goodMuonForZ;
       delete m_goodMuon;
       delete m_goodElectron;
+      delete m_baselineElectron;
       delete m_goodTau;
       delete m_goodPhoton;
 
@@ -2129,12 +2181,14 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Mark electrons invisible (No electrons)
     m_metMaker->markInvisible(m_invisibleElectrons.asDataVector(), m_emulmetMap_noelec);
 
+    /*
     // For emulated MET (No muons)
     m_metMaker->rebuildMET("RefElectron",           //name of metElectrons in metContainer
         xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
         m_emulmet_nomu,                             //filling this met container
         m_MetElectrons.asDataVector(),              //using these metElectrons that accepted our cuts
         m_emulmetMap_nomu);                         //and this association map
+    */
 
 
     // Photon
@@ -2149,6 +2203,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       // For MET rebuilding
       m_MetPhotons.push_back( photon );
     } // end for loop over shallow copied photons
+
     // For real MET
     m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
         xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
@@ -2156,6 +2211,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
         m_metMap);                                //and this association map
 
+    /*
     // For emulated MET marking electrons invisible
     m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
         xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
@@ -2169,6 +2225,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_emulmet_nomu,                           //filling this met container
         m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
         m_emulmetMap_nomu);                       //and this association map
+    */
 
 
     // TAUS
@@ -2183,6 +2240,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       // For MET rebuilding
       m_MetTaus.push_back( taujet );
     } // end for loop over shallow copied taus
+
     // For real MET
     m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
         xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
@@ -2190,6 +2248,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
         m_metMap);                             //and this association map
 
+    /*
     // For emulated MET marking electrons invisible
     m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
         xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
@@ -2203,6 +2262,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_emulmet_nomu,                        //filling this met container
         m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
         m_emulmetMap_nomu);                    //and this association map
+    */
 
 
     // Muon
@@ -2224,12 +2284,14 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
         m_metMap);                              //and this association map
 
+    /*
     // For emulated MET (No electrons)
     m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
         xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
         m_emulmet_noelec,                       //filling this met container
         m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
         m_emulmetMap_noelec);                   //and this association map
+    */
 
     // For emulated MET (No muons)
     // Make a empty container for invisible electrons
@@ -2767,6 +2829,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //-------------------------------
 
     if (m_isZnunu){
+      h_channel = "h_znunu_";
       if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
         if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu]MET Trigger");
         if (sysName == "" && m_useArrayCutflow) m_eventCutflow[5]+=1;
@@ -2795,7 +2858,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu, monojet]dPhi(jet_i,MET) cut");
 
                       // Fill histogram
-                      h_channel = "h_znunu_";
                       // For Ratio plot (Blind MET and Mjj for Ratio)
                       if (MET < m_METblindcut) {
                         hMap1D["Znunu_MET_mono"+sysName]->Fill(MET, mcEventWeight);
@@ -2834,7 +2896,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Znunu, VBF]dPhi(jet_i,MET) cut");
                           if (sysName == "" && m_useArrayCutflow) m_eventCutflow[14]+=1;
                           // Fill histogram
-                          h_channel = "h_znunu_";
                           // For Ratio plot (Blind MET and Mjj for Ratio)
                           if (MET < m_METblindcut && mjj < m_Mjjblindcut) {
                             hMap1D["Znunu_MET_search"+sysName]->Fill(MET, mcEventWeight);
@@ -2946,6 +3007,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //---------------------------------
 
     if (m_isZmumu){
+      h_channel = "h_zmumu_";
       if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
         if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu]MET Trigger");
         if (sysName == "" && m_useArrayCutflow) m_eventCutflow[16]+=1;
@@ -2985,7 +3047,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu, monojet]dPhi(jet_i,MET) cut");
 
                         // Fill histogram
-                        h_channel = "h_zmumu_";
                         // For Ratio plot (Blind MET and Mjj for Ratio)
                         if (emulMET_nomu < m_METblindcut) {
                           hMap1D["Zmumu_MET_mono"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
@@ -3032,7 +3093,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu, VBF]dPhi(jet_i,MET) cut");
                             if (sysName == "" && m_useArrayCutflow) m_eventCutflow[26]+=1;
                             // Fill histogram
-                            h_channel = "h_zmumu_";
                             // For Ratio plot (Blind MET and Mjj for Ratio)
                             if (emulMET_nomu < m_METblindcut && mjj < m_Mjjblindcut) {
                               hMap1D["Zmumu_MET_search"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
@@ -3172,6 +3232,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //-------------------------------
 
     if (m_isZee){
+      h_channel = "h_zee_";
       if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")){
         if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee]Electron Trigger");
         if (sysName == "" && m_useArrayCutflow) m_eventCutflow[28]+=1;
@@ -3210,7 +3271,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zee, monojet]dPhi(jet_i,MET) cut");
 
                         // Fill histogram
-                        h_channel = "h_zee_";
                         // For Ratio plot (Blind MET and Mjj)
                         if (emulMET_noelec < m_METblindcut) {
                           hMap1D["Zee_MET_mono"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
@@ -3258,7 +3318,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             if (sysName == "" && m_useArrayCutflow) m_eventCutflow[38]+=1;
 
                             // Fill histogram
-                            h_channel = "h_zee_";
                             // For Ratio plot (Blind MET and Mjj)
                             if (emulMET_noelec < m_METblindcut && mjj < m_Mjjblindcut) {
                               hMap1D["Zee_MET_search"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
@@ -3401,6 +3460,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     ////////////////////
 
     if (m_isZmumu && m_isData){
+      h_channel = "h_zmumu_";
 
       if ( m_trigDecisionTool->isPassed("HLT_mu20_iloose_L1MU15") || m_trigDecisionTool->isPassed("HLT_mu50") ) { // pass muon trigger to avoid bias
         if ( m_goodMuonForZ->size() > 1 && m_goodElectron->size() == 0 && m_goodTau->size() == 0 ) { // Letopn veto
@@ -3409,7 +3469,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_nomu) {
 
                 // Fill histogram
-                h_channel = "h_zmumu_";
                 // MET Trigger efficiency (for turn-on curve)
                 hMap1D[h_channel+"vbf_eff_study_met_emulmet"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
                 if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
@@ -3460,7 +3519,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Z -> mumu + JET Multijet Background study
     //------------------------------------------
 
-    if (m_isZmumu && sysName == "" ) {
+    if (m_isZmumu) {
+      h_channel = "h_zmumu_";
 
       if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
         if ( m_goodMuonForZ->size() > 1 && m_goodElectron->size() == 0 && m_goodTau->size() == 0 ) { // Letopn veto
@@ -3473,7 +3533,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 ////////////////////////
                 if ( pass_monoJet && pass_dPhijetmet_nomu ) {
                   // Fill histogram
-                  h_channel = "h_zmumu_";
                   // All charge muon
                   hMap1D[h_channel+"monojet_multijet_study_mll_all_lep"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
                   if (mll_muon > 66. && mll_muon < 116.){
@@ -3500,7 +3559,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 ////////////////////
                 if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_nomu) {
                   // Fill histogram
-                  h_channel = "h_zmumu_";
                   // All charge muon
                   hMap1D[h_channel+"vbf_multijet_study_mll_all_lep"+sysName]->Fill(mll_muon, mcEventWeight_Zmumu);
                   if (mll_muon > 66. && mll_muon < 116.){
@@ -3543,20 +3601,25 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Z -> ee + JET Multijet Background study
     //----------------------------------------
 
-    if (m_isZee && sysName == "" ) {
+    if (m_isZee) {
+      h_channel = "h_zee_";
 
-              if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")){
-        if ( m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) { // Letopn veto
-          if (m_goodElectron->size() == 2 && pass_dielectronPtCut) {
-            if ( emulMET_noelec > m_metCut ) {
-              if ( m_goodJet->size() > 0 ) {
+      if ( m_goodJet->size() > 0 ) {
+        if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")){
+          if ( m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) { // Letopn veto
+
+            //-------------------------------------------------
+            // OS and SS charge for multijet background study
+            //-------------------------------------------------
+
+            if (m_goodElectron->size() == 2 && pass_dielectronPtCut) {
+              if ( emulMET_noelec > m_metCut ) {
 
                 ////////////////////////
                 // MonoJet phasespace //
                 ////////////////////////
                 if ( pass_monoJet && pass_dPhijetmet_noelec ) {
                   // Fill histogram
-                  h_channel = "h_zee_";
                   // All charge electron
                   hMap1D[h_channel+"monojet_multijet_study_mll_all_lep"+sysName]->Fill(mll_electron, mcEventWeight_Zee);
                   if (mll_electron > 66. && mll_electron < 116.) {
@@ -3583,7 +3646,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 ////////////////////
                 if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_noelec) {
                   // Fill histogram
-                  h_channel = "h_zee_";
                   // All charge electron
                   hMap1D[h_channel+"vbf_multijet_study_mll_all_lep"+sysName]->Fill(mll_electron, mcEventWeight_Zee);
                   if (mll_electron > 66. && mll_electron < 116.) {
@@ -3611,14 +3673,58 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                   }
                 } // VBF cut
 
+                /*
+                //------------------------------------
+                // Mll fit study for QCD background
+                //------------------------------------
 
-              } // At least 1 jet
-            } // MET cut
-          } // Dielectron cut
-        } // Lepton veto
-      } // Electron Trigger
+                // Method 1 (Fail LH Loose ID && Loose Iso)
+
+                //-----------------------
+                // Define Zee Selection
+                //-----------------------
+
+                float mll_electron_ = 0.; // Select Zee channel
+                float mT_electron = 0.;// For Wenu channel
+                float electron1_pt = 0.;
+                float electron2_pt = 0.;
+                float electron1_charge = 0.;
+                float electron2_charge = 0.;
+                bool pass_dielectronPtCut = false; // dielectron pT cut
+                bool pass_OSelectron = false; // Opposite sign change electron
+                bool pass_SSelectron = false; // Same sign change electron
+
+
+                if (m_baselineElectron->size() > 1) {
+
+                  TLorentzVector electron1 = m_baselineElectron->at(0)->p4();
+                  TLorentzVector electron2 = m_baselineElectron->at(1)->p4();
+                  electron1_pt = m_baselineElectron->at(0)->pt() * 0.001;
+                  electron2_pt = m_baselineElectron->at(1)->pt() * 0.001;
+                  electron1_charge = m_baselineElectron->at(0)->charge();
+                  electron2_charge = m_baselineElectron->at(1)->charge();
+                  auto Zmass_electron = electron1 + electron2;
+                  mll_electron = Zmass_electron.M() * 0.001;
+
+
+                  if ( electron1_pt >  m_LeadLepPtCut && electron2_pt > m_SubLeadLepPtCut ) pass_dielectronPtCut = true;
+                  if ( electron1_charge * electron2_charge < 0 ) pass_OSelectron = true;
+                  if ( electron1_charge * electron2_charge > 0 ) pass_SSelectron = true;
+
+                }
+*/
+
+
+
+
+              } // MET cut
+            } // Dielectron cut
+          } // Lepton veto
+        } // Electron Trigger
+      } // At least 1 jet
 
     } // end multijet study
+
 
 
 
@@ -3644,7 +3750,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Opposite sign charge");
             if (pass_dimuonPtCut) {
               if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Dimuon pT cut");
-              if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+              //if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
                 if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]MET Trigger");
                 if (mll_muon > 66. && mll_muon < 116.) {
                   if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Zmass window");
@@ -3676,19 +3782,23 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           ////////////////////////
                           if (pass_monoJet && pass_dPhijetmet_nomu) {
                             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Monojet cut");
+                            hMap1D["Emily_Zmumu_MET_mono"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
                           }
                           ////////////////////
                           // VBF phasespace //
                           ////////////////////
                           if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_nomu) {
                             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]VBF cut");
+                            hMap1D["Emily_Zmumu_MET_search"+sysName]->Fill(emulMET_nomu, mcEventWeight_Zmumu);
+                            hMap1D["Emily_Zmumu_Mjj_search"+sysName]->Fill(mjj, mcEventWeight_Zmumu);
+                            hMap1D["Emily_Zmumu_DeltaPhiAll"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
                           }
                         } // Tau veto
                       } // Electron veto
                     } // Exact two muon
                   } // MET cut
                 } // Zmass window
-              } // MET trigger
+              //} // MET trigger
             } // Dimuon pT cut
           } // Opposite sign change cut
         } // At least 2 muons
@@ -3744,12 +3854,16 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                           ////////////////////////
                           if (pass_monoJet && pass_dPhijetmet_noelec) {
                             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]Monojet cut");
+                            hMap1D["Emily_Zee_MET_mono"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
                           }
                           ////////////////////
                           // VBF phasespace //
                           ////////////////////
                           if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_noelec) {
                             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zee]VBF cut");
+                            hMap1D["Emily_Zee_MET_search"+sysName]->Fill(emulMET_noelec, mcEventWeight_Zee);
+                            hMap1D["Emily_Zee_Mjj_search"+sysName]->Fill(mjj, mcEventWeight_Zee);
+                            hMap1D["Emily_Zee_DeltaPhiAll"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
                           }
                         } // Tau veto
                       } // Exact two electrons
@@ -3779,6 +3893,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     delete m_goodMuonForZ;
     delete m_goodMuon;
     delete m_goodElectron;
+    delete m_baselineElectron;
     delete m_goodTau;
     delete m_goodPhoton;
 
@@ -4102,7 +4217,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
 
-
+/*
     // print out the number of Overlap removal
     Info("finalize()", "======================================================");
     Info("finalize()", "Number overlap electrons:    %i / %i", nOverlapElectrons, nInputElectrons);
@@ -4111,7 +4226,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     Info("finalize()", "Number overlap taus:    %i / %i", nOverlapTaus, nInputTaus);
     Info("finalize()", "Number overlap photons:    %i / %i", nOverlapPhotons, nInputPhotons);
     Info("finalize()", "======================================================");
-
+*/
     // print out the final number of clean events
     Info("finalize()", "Number of clean events = %i", m_numCleanEvents);
 
@@ -4275,7 +4390,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       const xAOD::EventInfo* eventInfo, const xAOD::Vertex* primVertex){
 
     dec_baseline(mu) = false;
-    dec_baseline_forZ(mu) = false; // For m_goodMuonForZ container where muons are the non-isolated
+    dec_signal(mu) = false; // For m_goodMuon container
+    dec_signal_forZ(mu) = false; // For m_goodMuonForZ container where muons are the non-isolated
     selectDec(mu) = false; // To select objects for Overlap removal
 
     // Event information
@@ -4285,8 +4401,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
     // don't bother calibrating or computing WP
-    double muPt = (mu.pt()) * 0.001; /// GeV
+    float muPt = mu.pt() * 0.001; /// GeV
     //if ( muPt < 4. ) return EL::StatusCode::SUCCESS;
+
+    // Combined (CB) or Segment-tagged (ST) muons (excluding Stand-alone (SA), Calorimeter-tagged (CaloTag) muons etc..)
+    //if (!(mu.muonType() == xAOD::Muon::Combined || mu.muonType() == xAOD::Muon::SegmentTagged)) return EL::StatusCode::SUCCESS;
+    if (mu.muonType() != xAOD::Muon_v1::Combined && mu.muonType() != xAOD::Muon_v1::SegmentTagged) return EL::StatusCode::SUCCESS;
 
     // Muon Calibration
     if (!m_isData){
@@ -4297,21 +4417,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       }
     }
 
-    // MuonSelectionTool (Loose)
-    if(!m_loosemuonSelection->accept(mu)) return EL::StatusCode::SUCCESS;
-
     // Muon tranverse momentum
-    if (muPt < m_muonPtCut ) return EL::StatusCode::SUCCESS;
+    //if (muPt < m_muonPtCut ) return EL::StatusCode::SUCCESS;
+    if (mu.pt() < 7000. ) return EL::StatusCode::SUCCESS;
 
     /* // eta cut is included in MuonSelectionTool
     // Muon eta cut
     double muEta = mu.eta();
     if (std::abs(muEta) > m_muonEtaCut) return EL::StatusCode::SUCCESS;
     */
-
-    // Combined (CB) or Segment-tagged (ST) muons (excluding Stand-alone (SA), Calorimeter-tagged (CaloTag) muons etc..)
-    //if (!(mu.muonType() == xAOD::Muon::Combined || mu.muonType() == xAOD::Muon::SegmentTagged)) return EL::StatusCode::SUCCESS;
-    if (mu.muonType() != xAOD::Muon_v1::Combined && mu.muonType() != xAOD::Muon_v1::SegmentTagged) return EL::StatusCode::SUCCESS;
 
     // d0 / z0 cuts applied
     // d0 significance (Transverse impact parameter)
@@ -4323,12 +4437,17 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     double d0sig = xAOD::TrackingHelpers::d0significance( tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
     if (std::abs(d0sig) > 3.0) return EL::StatusCode::SUCCESS;
     // zo cut
-    float z0sintheta = 1e8;
+    //float z0sintheta = 1e8;
     //if (primVertex) z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( mu.p4().Theta() );
-    z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
-    if (std::abs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
+    float z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
+    if (std::fabs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
 
-    dec_baseline_forZ(mu) = true; // For m_goodMuonForZ container where muons are the non-isolated
+    dec_baseline(mu) = true;
+
+    // MuonSelectionTool (Loose)
+    if(!m_loosemuonSelection->accept(mu)) return EL::StatusCode::SUCCESS;
+
+    dec_signal_forZ(mu) = true; // For m_goodMuonForZ container where muons are the non-isolated
 
     // Isolation requirement
     if (!m_IsoToolVBF->accept(mu)) return EL::StatusCode::SUCCESS;
@@ -4336,7 +4455,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //m_isoPtCut = true; if (muPt > m_isoMuonPtMin && muPt < m_isoMuonPtMax && !m_IsoToolVBF->accept(mu)) return EL::StatusCode::SUCCESS;
 
 
-    dec_baseline(mu) = true;
+    dec_signal(mu) = true; // For m_goodMuon container
     selectDec(mu) = true; // To select objects for Overlap removal
 
     return EL::StatusCode::SUCCESS;
@@ -4435,7 +4554,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       const xAOD::Vertex* primVertex){
 
     dec_baseline(elec) = false;
+    dec_signal(elec) = false; // For m_goodElectron container
     selectDec(elec) = false; // To select objects for Overlap removal
+
 
     // Event information
     if( ! m_event->retrieve( eventInfo, "EventInfo").isSuccess() ){
@@ -4446,29 +4567,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // don't bother calibrating or computing WP
     double elecPt = (elec.pt()) * 0.001; /// GeV
     //if ( elecPt < 4. ) return EL::StatusCode::SUCCESS;
-
-    // goodOQ(object quality cut) : Bad Electron Cluster
-    // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/EGammaIdentificationRun2#Object_quality_cut
-    if( !elec.isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) return EL::StatusCode::SUCCESS;
-
-    // "Please apply the identification to uncalibrated electron object. ID scale factors are to be applied to calibrated objects."
-    // LH Electron identification
-    //
-    // LH Electron (Loose)
-    bool LHlooseSel = false;
-    LHlooseSel = m_LHToolLoose2015->accept(elec);
-    if (!LHlooseSel) return EL::StatusCode::SUCCESS;
-    /*
-    // LH Electron (Medium)
-    bool LHmediumSel = false;
-    LHmediumSel = m_LHToolMedium2015->accept(elec);
-    if (!LHmediumSel) return EL::StatusCode::SUCCESS;
-    // LH Electron (Tight)
-    bool LHtightSel = false;
-    LHtightSel = m_LHToolTight2015->accept(elec);
-    if (!LHtightSel) return EL::StatusCode::SUCCESS;
-    */
-
     //Info("execute()", "  Selected electron pt from new Electron Container = %.2f GeV", (elec.pt() * 0.001));
 
     // Calibration
@@ -4485,7 +4583,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //if ( std::abs(Eta) > m_elecEtaCut ) return EL::StatusCode::SUCCESS;
 
     /// pT cut
-    if (elecPt < m_elecPtCut ) return EL::StatusCode::SUCCESS; /// veto electron
+    //if (elecPt < m_elecPtCut ) return EL::StatusCode::SUCCESS; /// veto electron
+    if (elec.pt() < 7000. ) return EL::StatusCode::SUCCESS; /// veto electron
+
+    // goodOQ(object quality cut) : Bad Electron Cluster
+    // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/EGammaIdentificationRun2#Object_quality_cut
+    if( !elec.isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ) return EL::StatusCode::SUCCESS;
 
     // d0 / z0 cuts applied
     // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2#Electron_d0_and_z0_cut_definitio
@@ -4494,10 +4597,25 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     double d0sig = xAOD::TrackingHelpers::d0significance( tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
     if (std::abs(d0sig) > 5.0) return EL::StatusCode::SUCCESS;
     // zo cut
-    float z0sintheta = 1e8;
-    //if (primVertex) z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( elec.p4().Theta() );
-    z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
-    if (std::abs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
+    float z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
+    if (std::fabs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
+
+    dec_baseline(elec) = true;
+
+    // LH Electron identification
+    //
+    // LH Electron (Loose)
+    if (!m_LHToolLoose2015->accept(elec)) return EL::StatusCode::SUCCESS;
+    /*
+    // LH Electron (Medium)
+    bool LHmediumSel = false;
+    LHmediumSel = m_LHToolMedium2015->accept(elec);
+    if (!LHmediumSel) return EL::StatusCode::SUCCESS;
+    // LH Electron (Tight)
+    bool LHtightSel = false;
+    LHtightSel = m_LHToolTight2015->accept(elec);
+    if (!LHtightSel) return EL::StatusCode::SUCCESS;
+    */
 
     // Isolation Correction Tool
     if(m_isoCorrTool->applyCorrection(elec) == CP::CorrectionCode::Error) { 
@@ -4507,7 +4625,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Isolation requirement
     if (!m_IsoToolVBF->accept(elec)) return EL::StatusCode::SUCCESS;
 
-    dec_baseline(elec) = true;
+    dec_signal(elec) = true; // For m_goodElectron container
     selectDec(elec) = true; // To select objects for Overlap removal
 
     return EL::StatusCode::SUCCESS;
@@ -4588,7 +4706,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       const xAOD::EventInfo* eventInfo){
 
     dec_baseline(phot) = false;
+    dec_signal(phot) = false; // For m_goodPhoton container
     selectDec(phot) = false; // To select objects for Overlap removal
+
 
     // According to https://twiki.cern.ch/twiki/bin/view/AtlasProtected/EGammaIdentificationRun2
 
@@ -4618,10 +4738,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       Error("execute()", "EgammaCalibrationAndSmearingTool returns Error CorrectionCode");
     }
 
-    // Recomputing the photon ID flags
-    if (!m_photonTightIsEMSelector->accept(phot)) return EL::StatusCode::SUCCESS;
-    //if (!m_photonLooseIsEMSelector->accept(phot)) return EL::StatusCode::SUCCESS;
-
     // Eta cut
     //double Eta = phot.caloCluster()->eta();
     double Eta = phot.caloCluster()->etaBE(2);
@@ -4637,11 +4753,17 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/EGammaIdentificationRun2#Object_quality_cut
     if( !phot.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON) ) return EL::StatusCode::SUCCESS;
 
+    dec_baseline(phot) = true;
+
+    // Recomputing the photon ID flags
+    if (!m_photonTightIsEMSelector->accept(phot)) return EL::StatusCode::SUCCESS;
+    //if (!m_photonLooseIsEMSelector->accept(phot)) return EL::StatusCode::SUCCESS;
+
     // Isolation requirement
     if (!m_IsoToolVBF->accept(phot)) return EL::StatusCode::SUCCESS;
 
 
-    dec_baseline(phot) = true;
+    dec_signal(phot) = true; // For m_goodPhoton container
     selectDec(phot) = true; // To select objects for Overlap removal
 
     return EL::StatusCode::SUCCESS;
@@ -4694,6 +4816,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       const xAOD::EventInfo* eventInfo){
 
     dec_baseline(tau) = false;
+    dec_signal(tau) = false; // For m_goodTau container
     selectDec(tau) = false; // To select objects for Overlap removal
 
     // According to https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/TauID/TauAnalysisTools/trunk/README.rst
@@ -4722,6 +4845,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //Info("execute()", "  Selected tau pt from new Tau Container = %.2f GeV", (tau.pt() * 0.001));
 
     dec_baseline(tau) = true;
+    dec_signal(tau) = true; // For m_goodTau container
     selectDec(tau) = true; // To select objects for Overlap removal
 
     return EL::StatusCode::SUCCESS;
@@ -4742,7 +4866,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if ( cacc_jvt(jet) < 0.64 && std::abs(jet.eta()) < 2.4 && jetPt < 50.0 ) return false;
 
     // pT cut
-    if ( jetPt < m_jetPtCut || std::abs(jet.eta()) > m_jetEtaCut) return false;
+    //if ( jetPt < m_jetPtCut || std::abs(jet.eta()) > m_jetEtaCut) return false;
+    if ( jet.pt() < 20000. || std::abs(jet.eta()) > m_jetEtaCut) return false;
 
     // Jet Cleaning Tool
     dec_bad(jet) = !m_jetCleaningLoose->accept( jet );
@@ -4754,18 +4879,16 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   bool ZinvxAODAnalysis :: IsSignalJet(xAOD::Jet& jet) {
 
-    //if (!dec_baseline(jet)) return false;
-
     double jetPt = (jet.pt()) * 0.001; /// GeV
 
     // pT, eta cut
-    if ( jetPt < m_jetPtCut || std::abs(jet.eta()) > m_jetEtaCut ) return false;
+    //if ( jetPt < m_jetPtCut || std::abs(jet.eta()) > m_jetEtaCut ) return false;
+    if ( jet.pt() < 20000. || std::abs(jet.eta()) > m_jetEtaCut ) return false;
 
     //bool isgoodjet = !dec_bad(jet) && (cacc_jvt(jet) > 0.64 || std::abs(jet.eta()) > 2.4 || jetPt > 50.0);
     bool isgoodjet = cacc_jvt(jet) >= 0.64 || std::abs(jet.eta()) >= 2.4 || jetPt >= 50.0;
 
-    dec_baseline(jet) = isgoodjet;
-    //dec_signal(jet) = isgoodjet;
+    dec_signal(jet) = isgoodjet; // For m_goodJet container
     selectDec(jet) = isgoodjet; // To select objects for Overlap removal
 
     return isgoodjet;
