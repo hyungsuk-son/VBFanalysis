@@ -138,10 +138,6 @@ class ZinvxAODAnalysis : public EL::Algorithm
     int m_eventCounter; //!
     int m_numCleanEvents; //!
     float mcEventWeight; //!
-    float mcEventWeight_Zmumu; //!
-    float mcEventWeight_Wmunu; //!
-    float mcEventWeight_Zee; //!
-    float mcEventWeight_Wenu; //!
     int mcChannelNumber; //!
 
     bool m_isData; //!
@@ -186,6 +182,8 @@ class ZinvxAODAnalysis : public EL::Algorithm
     float m_ORJETdeltaR; //!
     float m_isoMuonPtMin; //!
     float m_isoMuonPtMax; //!
+    float m_mllMin; //!
+    float m_mllMax; //!
     bool m_recoSF; //!
     bool m_idSF; //!
     bool m_isoMuonSF; //!

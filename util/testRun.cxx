@@ -31,16 +31,16 @@ int main( int argc, char* argv[] ) {
   // Data
   //const char* inputFilePath = gSystem->ExpandPathName ("/cluster/tufts/atlas08/DATA");
   //SH::ScanDir().filePattern("DAOD_EXOT5.07502101._000026.pool.root.1").scan(sh,inputFilePath); // Data
-  ///SH::ScanDir().filePattern("DAOD_EXOT5.07502101*").scan(sh,inputFilePath); // Run 284154
+  //SH::ScanDir().filePattern("DAOD_EXOT5.07502101*").scan(sh,inputFilePath); // Run 284154
 
   // MC
   const char* inputFilePath = gSystem->ExpandPathName ("/cluster/tufts/atlas08/MCSamples");
-  //SH::ScanDir().filePattern("DAOD_EXOT5.07992543._000007.pool.root.1").scan(sh,inputFilePath); // MC Znunu
+  SH::ScanDir().filePattern("DAOD_EXOT5.07992543._000007.pool.root.1").scan(sh,inputFilePath); // MC Znunu
   //SH::ScanDir().filePattern("DAOD_EXOT5.07992459._000012.pool.root.1").scan(sh,inputFilePath); // MC Zmumu
   //SH::ScanDir().filePattern("DAOD_EXOT5.07992561._000006.pool.root.1").scan(sh,inputFilePath); // MC Zee
   //SH::ScanDir().filePattern("DAOD_EXOT5.07992407._000001.pool.root.1").scan(sh,inputFilePath); // MC Pile-up reweighting tool problem sample
   //SH::ScanDir().filePattern("DAOD_EXOT5.07992770._000001.pool.root.1").scan(sh,inputFilePath); // MC Zmumu
-  SH::ScanDir().filePattern("DAOD_EXOT5.07992785._000001.pool.root.1").scan(sh,inputFilePath); // MC Zee
+  //SH::ScanDir().filePattern("DAOD_EXOT5.07992785._000001.pool.root.1").scan(sh,inputFilePath); // MC Zee
   //SH::ScanDir().filePattern("DAOD_EXOT5.07311123._000033.pool.root.1").scan(sh,inputFilePath); // MC Multijet sample
   //SH::ScanDir().filePattern("DAOD_EXOT5.07311213._000003.pool.root.1").scan(sh,inputFilePath); // MC Diboson sample
   //SH::ScanDir().filePattern("DAOD_EXOT5.07992821._00000*").scan(sh,inputFilePath);

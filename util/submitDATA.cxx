@@ -41,6 +41,9 @@ int main( int argc, char* argv[] ) {
   // If you know the name of all your grid datasets you can also skip the dq2-ls step and add the datasets directly
 //  SH::addGrid (sh, "data15_13TeV.00281411.physics_Main.merge.AOD.f629_m1504");
 //  SH::addGrid (sh, "data15_13TeV.00282784.physics_Main.merge.AOD.f640_m1511");
+
+
+
 //period D
   //SH::addGrid (sh, "data15_13TeV.00276262.physics_Main.merge.DAOD_EXOT5.f620_m1480_p2524");
   //SH::addGrid (sh, "data15_13TeV.00276329.physics_Main.merge.DAOD_EXOT5.f620_m1480_p2524");
@@ -55,7 +58,7 @@ int main( int argc, char* argv[] ) {
    
 //period E
   //SH::addGrid (sh, "data15_13TeV.00278880.physics_Main.merge.DAOD_EXOT5.f628_m1497_p2524");
-  //SH::addGrid (sh, "data15_13TeV.00278912.physics_Main.merge.DAOD_EXOT5.f628_m1497_p2524");
+  SH::addGrid (sh, "data15_13TeV.00278912.physics_Main.merge.DAOD_EXOT5.f628_m1497_p2524");
   //SH::addGrid (sh, "data15_13TeV.00278968.physics_Main.merge.DAOD_EXOT5.f628_m1497_p2524");
   //SH::addGrid (sh, "data15_13TeV.00279169.physics_Main.merge.DAOD_EXOT5.f628_m1497_p2524");
   //SH::addGrid (sh, "data15_13TeV.00279259.physics_Main.merge.DAOD_EXOT5.f628_m1497_p2524");
@@ -96,7 +99,7 @@ int main( int argc, char* argv[] ) {
 //period H
   //SH::addGrid (sh, "data15_13TeV.00281317.physics_Main.merge.DAOD_EXOT5.f629_m1504_p2524");
   //SH::addGrid (sh, "data15_13TeV.00281385.physics_Main.merge.DAOD_EXOT5.f629_m1504_p2524");
-  //SH::addGrid (sh, "data15_13TeV.00281411.physics_Main.merge.DAOD_EXOT5.f629_m1504_p2524");
+  SH::addGrid (sh, "data15_13TeV.00281411.physics_Main.merge.DAOD_EXOT5.f629_m1504_p2524");
    
 //period J
   //SH::addGrid (sh, "data15_13TeV.00282625.physics_Main.merge.DAOD_EXOT5.f640_m1511_p2524");
@@ -115,7 +118,7 @@ int main( int argc, char* argv[] ) {
   //SH::addGrid (sh, "data15_13TeV.00284213.physics_Main.merge.DAOD_EXOT5.f643_m1518_p2524");
   //SH::addGrid (sh, "data15_13TeV.00284285.physics_Main.merge.DAOD_EXOT5.f643_m1518_p2524");
   //SH::addGrid (sh, "data15_13TeV.00284420.physics_Main.merge.DAOD_EXOT5.f643_m1518_p2524");
-  SH::addGrid (sh, "data15_13TeV.00284427.physics_Main.merge.DAOD_EXOT5.f643_m1518_p2524");
+  //SH::addGrid (sh, "data15_13TeV.00284427.physics_Main.merge.DAOD_EXOT5.f643_m1518_p2524");
   //SH::addGrid (sh, "data15_13TeV.00284484.physics_Main.merge.DAOD_EXOT5.f644_m1518_p2524");
 
 
@@ -162,7 +165,7 @@ int main( int argc, char* argv[] ) {
   EL::PrunDriver driver;  //grid
 //  EL::GridDriver driver; //grid in the background
 
-  driver.options()->setString("nc_outputSampleName", "user.hson.data15_13TeV.DAOD.08032016rere.%in:name[2]%.%in:name[6]%"); //For PrunDriver
+  driver.options()->setString("nc_outputSampleName", "user.hson.data15_13TeV.DAOD.10042016re.%in:name[2]%.%in:name[6]%"); //For PrunDriver
 //  driver.outputSampleName = "user.hson.gridtest1.11142015.%in:name[2]%.%in:name[6]%"; //For GridDriver
 //  driver.options()->setDouble("nc_nFiles", 1); // FOR TESTING!
 //  driver.options()->setDouble("nc_nFilesPerJob", 1);
@@ -170,7 +173,9 @@ int main( int argc, char* argv[] ) {
 //  driver.options()->setString("nc_excludedSite", "ANALY_INFN-NAPOLI-RECAS,ANALY_INFN-NAPOLI,ANALY_DESY-HH,ANALY_GRIF-IRFU,ANALY_AUSTRALIA,ANALY_SFU,ANALY_SCINET,ANALY_CPPM,ANALY_SiGNET,ANALY_LPC,ANALY_NSC,ANALY_CONNECT,ANALY_MWT2_SL6,ANALY_BU_ATLAS_Tier2_SL6,ANALY_wuppertalprod,ANALY_ARNES,ANALY_SLAC_SHORT_1HR,ANALY_SLAC,ANALY_RAL_SL6,ANALY_INFN-MILANO-ATLASC");
 //  driver.options()->setString("nc_excludedSite", "ANALY_SCINET,ANALY_VICTORIA,ANALY_CERN_CLOUD,ANALY_IN2P3-CC,ANALY_LAPP,ANALY_CONNECT_SHORT,ANALY_SFU,ANALY_CONNECT,ANALY_RAL_SL6,ANALY_GRIF-LPNHE,ANALY_HU_ATLAS_Tier2,ANALY_OU_OCHEP_SWT2,ANALY_IFIC,ANALY_ECDF_SL6");
 //  driver.options()->setString("nc_excludedSite", "ANALY_INFN-NAPOLI-RECAS,ANALY_INFN-NAPOLI,ANALY_DESY-HH,ANALY_GRIF-IRFU,ANALY_AUSTRALIA,ANALY_SFU,ANALY_SCINET,ANALY_CPPM,ANALY_SiGNET,ANALY_LPC,ANALY_NSC,ANALY_CONNECT,ANALY_MWT2_SL6,ANALY_BU_ATLAS_Tier2_SL6,ANALY_wuppertalprod,ANALY_ARNES,ANALY_SLAC_SHORT_1HR,ANALY_SLAC,ANALY_RAL_SL6,ANALY_INFN-MILANO-ATLASC");
-  driver.options()->setString("nc_excludedSite", "ANALY_LRZ,ANALY_CPPM,ANALY_SiGNET,ANALY_FREIBURG,ANALY_RRC-KI-T1,ANALY_MCGILL,ANALY_LPC,ANALY_RHUL_SL6,ANALY_CSCS,ANALY_BNL_SHORT,ANALY_FZK_SHORT,ANALY_BU_ATLAS_Tier2_SL6,ANALY_GLASGOW_SL6");
+//
+  driver.options()->setString("nc_excludedSite", "ANALY_LRZ,ANALY_CPPM,ANALY_SiGNET,ANALY_FREIBURG,ANALY_RRC-KI-T1,ANALY_MCGILL,ANALY_LPC,ANALY_RHUL_SL6,ANALY_CSCS,ANALY_BNL_SHORT,ANALY_FZK_SHORT,ANALY_BU_ATLAS_Tier2_SL6,ANALY_GLASGOW_SL6,ANALY_GOEGRID,ANALY_INFN-NAPOLI-RECAS,ANALY_RAL_SL6");
+
 //  driver.options()->setString("nc_site", "ANALY_CERN_SHORT,ANALY_CERN_SLC6,ANALY_PIC_SL6,ANALY_SARA"); // The Reflex dictionary build only works on a few sites
 //  driver.options()->setString("nc_site", "ANALY_CERN_SLC6"); // The Reflex dictionary build only works on a few sites
 //  driver.options()->setDouble(EL::Job::optGridMemory,10240); // 10 GB
