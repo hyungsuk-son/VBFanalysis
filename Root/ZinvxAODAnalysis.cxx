@@ -303,12 +303,12 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // Event Channel
   m_isZnunu = true;
   m_isZmumu = true;
-  m_isWmunu = false;
+  m_isWmunu = true;
   m_isZee = true;
   m_isWenu = false;
 
   // Enable Systematics
-  m_doSys = true;
+  m_doSys = false;
 
   // Cut values
   m_muonPtCut = 7000.; /// MeV
@@ -1175,8 +1175,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, "Emily_Zmumu_Mjj_search"+sysName, 80,    0.0,  4000.);
         addHist(hMap1D, "Emily_Zmumu_DeltaPhiAll"+sysName, 100, 0, TMath::Pi());
       }
-
-
     }
 
 
@@ -1383,6 +1381,34 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   }
 
 
+
+
+  ////////////////////////////
+  // Create copy containers //
+  ////////////////////////////
+
+  xAOD::JetContainer* m_goodJet = new xAOD::JetContainer(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Jet>
+
+  xAOD::MuonContainer* m_goodMuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
+  xAOD::MuonContainer* m_goodMuonForZ = new xAOD::MuonContainer(SG::VIEW_ELEMENTS); // only For Z->mumu selections (goodMuonForZ are the non-isolated muons)
+
+  xAOD::ElectronContainer* m_goodElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
+  xAOD::ElectronContainer* m_baselineElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
+
+  xAOD::TauJetContainer* m_goodTau = new xAOD::TauJetContainer(SG::VIEW_ELEMENTS);
+
+  xAOD::PhotonContainer* m_goodPhoton = new xAOD::PhotonContainer(SG::VIEW_ELEMENTS);
+
+  // Create a MissingETContainer with its aux store for each systematic
+  xAOD::MissingETContainer* m_met = new xAOD::MissingETContainer();
+  xAOD::MissingETAuxContainer* m_metAux = new xAOD::MissingETAuxContainer();
+  m_met->setStore(m_metAux);
+
+
+
+
+
+
   //-----------------------
   // Systematics Start
   //-----------------------
@@ -1506,6 +1532,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     }
 
 
+
+    ///////////////////////////
+    // Clear copy containers //
+    ///////////////////////////
+
+    m_goodJet->clear();
+    m_goodMuon->clear();
+    m_goodMuonForZ->clear();
+    m_goodElectron->clear();
+    m_baselineElectron->clear();
+    m_goodTau->clear();
+    m_goodPhoton->clear();
+    m_met->clear();
 
 
 
@@ -1636,15 +1675,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jet_shallowCopy = xAOD::shallowCopyContainer( *m_jets );
     xAOD::JetContainer* jetSC = jet_shallowCopy.first;
 
-    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
-    // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
-    // The method is defined in the header file xAODBase/IParticleHelpers.h
-    bool setLinksJet = xAOD::setOriginalObjectLink(*m_jets,*jetSC);
-    if(!setLinksJet) {
-      Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
-      return StatusCode::FAILURE;
-    }
-
     // iterate over our shallow copy
     for (const auto& jets : *jetSC) { // C++11 shortcut
       //Info("execute()", "  original jet pt = %.2f GeV", jets->pt() * 0.001);
@@ -1685,13 +1715,22 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     } // end for loop over shallow copied jets
 
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    // You should make sure that you use the tag xAODBase-00-00-22, which is available from AnalysisBase-2.0.11.
+    // The method is defined in the header file xAODBase/IParticleHelpers.h
+    bool setLinksJet = xAOD::setOriginalObjectLink(*m_jets,*jetSC);
+    if(!setLinksJet) {
+      Error("execute()", "Failed to set original object links -- MET rebuilding cannot proceed.");
+      return StatusCode::FAILURE;
+    }
+
+
 
     // -----------------
     // Select Good Jet
     // -----------------
     /// Creating New Hard Object Containers
     // [For jet identification] filter the Jet container m_jets, placing selected jets into m_goodJet
-    xAOD::JetContainer* m_goodJet = new xAOD::JetContainer(SG::VIEW_ELEMENTS); // This is really a DataVector<xAOD::Jet>
 
     bool isBadJet = false;
 
@@ -1714,8 +1753,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     ///////////////
     // Good Muon //
     ///////////////
-    xAOD::MuonContainer* m_goodMuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
-    xAOD::MuonContainer* m_goodMuonForZ = new xAOD::MuonContainer(SG::VIEW_ELEMENTS); // only For Z->mumu selections (goodMuonsForZ are the non-isolated muons)
     // iterate over our shallow copy
     for (const auto& muon : *muonSC) { // C++11 shortcut
       // Muon Selection for VBF study
@@ -1732,8 +1769,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     ///////////////////
     // Good Electron //
     ///////////////////
-    xAOD::ElectronContainer* m_goodElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
-    xAOD::ElectronContainer* m_baselineElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
     // iterate over our shallow copy
     for (const auto& electron : *elecSC) { // C++11 shortcut
       // Electron Selection for VBF study
@@ -1748,7 +1783,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //////////////
     // Good Tau //
     //////////////
-    xAOD::TauJetContainer* m_goodTau = new xAOD::TauJetContainer(SG::VIEW_ELEMENTS);
     // iterate over our shallow copy
     for (const auto& taujet : *tauSC) { // C++11 shortcut
       // Tau Selection for VBF study
@@ -1761,7 +1795,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     /////////////////
     // Good Photon //
     /////////////////
-    xAOD::PhotonContainer* m_goodPhoton = new xAOD::PhotonContainer(SG::VIEW_ELEMENTS);
     // iterate over our shallow copy
     for (const auto& photon : *photSC) { // C++11 shortcut
       // Photon Selection for VBF study
@@ -1992,8 +2025,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     ////////////////////////////
     // After Overlap Removal //
     ////////////////////////////
-    if (m_isEmilyCutflow) {
-      if ( (m_isZee || m_isZmumu) && sysName == ""){
+    if (m_isEmilyCutflow && sysName == "") {
+      if ( (m_isZee || m_isZmumu) ){
         hMap1D["NTauAfter"+sysName]->Fill(m_goodTau->size(),1.0);
         hMap1D["NEleAfter"+sysName]->Fill(m_goodElectron->size(),1.0);
         hMap1D["NMuAfter"+sysName]->Fill(m_goodMuon->size(),1.0);
@@ -2039,16 +2072,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //------------------------------------
     //if (isBadJet) return EL::StatusCode::SUCCESS;
     if (isBadJet){
-
-      // Deep copies. Clearing containers deletes contents including AuxStore.
-      delete m_goodJet;
-      delete m_goodMuonForZ;
-      delete m_goodMuon;
-      delete m_goodElectron;
-      delete m_baselineElectron;
-      delete m_goodTau;
-      delete m_goodPhoton;
-
 
       //////////////////////////////////
       // Delete shallow copy containers
@@ -2100,17 +2123,27 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     std::string softTerm = "PVSoftTrk";
 
 
-    //=====================================================
-    // Create MissingETContainers for all SR and CR regions
-    //=====================================================
+    // Real MET
+    float MET = -9e9;
+    float MET_phi = -9e9;
+    // Wenu MET
+    float emulMET_Wenu = -9e9;
+    float emulMET_Wenu_phi = -9e9;
+    // Zee MET
+    float emulMET_Zee = -9e9;
+    float emulMET_Zee_phi = -9e9;
+    // Wmunu MET
+    float emulMET_Wmunu = -9e9;
+    float emulMET_Wmunu_phi = -9e9;
+    // Zmumu MET
+    float emulMET_Zmumu = -9e9;
+    float emulMET_Zmumu_phi = -9e9;
 
 
-    // For real MET
+    //=============================
+    // Create MissingETContainers 
+    //=============================
 
-    // Create a MissingETContainer with its aux store for each systematic
-    xAOD::MissingETContainer* m_met = new xAOD::MissingETContainer();
-    xAOD::MissingETAuxContainer* m_metAux = new xAOD::MissingETAuxContainer();
-    m_met->setStore(m_metAux);
 
     //retrieve the original containers
     const xAOD::MissingETContainer* m_metCore(0);
@@ -2130,123 +2163,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       return EL::StatusCode::FAILURE;
     }
 
+
+
     // It is necessary to reset the selected objects before every MET calculation
+    m_met->clear();
     m_metMap->resetObjSelectionFlags();
-
-
-
-
-    // For emulated MET (Zmumu)
-
-    // Create a MissingETContainer with its aux store for each systematic
-    xAOD::MissingETContainer* m_emulmet_Zmumu = new xAOD::MissingETContainer();
-    xAOD::MissingETAuxContainer* m_emulmetAux_Zmumu = new xAOD::MissingETAuxContainer();
-    m_emulmet_Zmumu->setStore(m_emulmetAux_Zmumu);
-
-    //retrieve the original containers
-    const xAOD::MissingETContainer* m_emulmetCore_Zmumu(0);
-    if ( !m_event->retrieve( m_emulmetCore_Zmumu, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
-      Error("execute()", "Unable to retrieve MET core container: " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    //retrieve the MET association map
-    const xAOD::MissingETAssociationMap* m_emulmetMap_Zmumu(0);
-    if ( !m_event->retrieve( m_emulmetMap_Zmumu, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
-      Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    // It is necessary to reset the selected objects before every MET calculation
-    m_emulmetMap_Zmumu->resetObjSelectionFlags();
-
-
-
-    // For emulated MET (Wmunu)
-
-    // Create a MissingETContainer with its aux store for each systematic
-    xAOD::MissingETContainer* m_emulmet_Wmunu = new xAOD::MissingETContainer();
-    xAOD::MissingETAuxContainer* m_emulmetAux_Wmunu = new xAOD::MissingETAuxContainer();
-    m_emulmet_Wmunu->setStore(m_emulmetAux_Wmunu);
-
-    //retrieve the original containers
-    const xAOD::MissingETContainer* m_emulmetCore_Wmunu(0);
-    if ( !m_event->retrieve( m_emulmetCore_Wmunu, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
-      Error("execute()", "Unable to retrieve MET core container: " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    //retrieve the MET association map
-    const xAOD::MissingETAssociationMap* m_emulmetMap_Wmunu(0);
-    if ( !m_event->retrieve( m_emulmetMap_Wmunu, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
-      Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    // It is necessary to reset the selected objects before every MET calculation
-    m_emulmetMap_Wmunu->resetObjSelectionFlags();
-
-
-
-
-
-    // For emulated MET (Zee)
-
-    // Create a MissingETContainer with its aux store for each systematic
-    xAOD::MissingETContainer* m_emulmet_Zee = new xAOD::MissingETContainer();
-    xAOD::MissingETAuxContainer* m_emulmetAux_Zee = new xAOD::MissingETAuxContainer();
-    m_emulmet_Zee->setStore(m_emulmetAux_Zee);
-
-    //retrieve the original containers
-    const xAOD::MissingETContainer* m_emulmetCore_Zee(0);
-    if ( !m_event->retrieve( m_emulmetCore_Zee, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
-      Error("execute()", "Unable to retrieve MET core container: " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    //retrieve the MET association map
-    const xAOD::MissingETAssociationMap* m_emulmetMap_Zee(0);
-    if ( !m_event->retrieve( m_emulmetMap_Zee, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
-      Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    // It is necessary to reset the selected objects before every MET calculation
-    m_emulmetMap_Zee->resetObjSelectionFlags();
-
-
-
-
-    // For emulated MET (Wenu)
-
-    // Create a MissingETContainer with its aux store for each systematic
-    xAOD::MissingETContainer* m_emulmet_Wenu = new xAOD::MissingETContainer();
-    xAOD::MissingETAuxContainer* m_emulmetAux_Wenu = new xAOD::MissingETAuxContainer();
-    m_emulmet_Wenu->setStore(m_emulmetAux_Wenu);
-
-    //retrieve the original containers
-    const xAOD::MissingETContainer* m_emulmetCore_Wenu(0);
-    if ( !m_event->retrieve( m_emulmetCore_Wenu, coreMetKey ).isSuccess() ){ // retrieve arguments: container type, container key
-      Error("execute()", "Unable to retrieve MET core container: " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    //retrieve the MET association map
-    const xAOD::MissingETAssociationMap* m_emulmetMap_Wenu(0);
-    if ( !m_event->retrieve( m_emulmetMap_Wenu, metAssocKey ).isSuccess() ){ // retrieve arguments: container type, container key
-      Error("execute()", "Unable to retrieve MissingETAssociationMap: " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    // It is necessary to reset the selected objects before every MET calculation
-    m_emulmetMap_Wenu->resetObjSelectionFlags();
-
-
-
-
-
-
-
 
 
 
@@ -2275,6 +2196,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_metMap);                                  //and this association map
 
 
+    /*
     // Photon
     //-----------------
     /// Creat New Hard Object Containers
@@ -2294,6 +2216,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
         m_metMap);                                //and this association map
 
+    */
 
     // TAUS
     //-----------------
@@ -2352,104 +2275,100 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-
-
-    //===================================================================
-    // For rebuild the emulated MET for Zmumu (by marking Muon invisible)
-    //===================================================================
-
-    if (m_isZmumu) {
-
-      // Not adding Electron, Photon, Tau objects as we veto on additional leptons and photons might be an issue for muon FSR
-
-      // Muon
-      //-----------------
-      /// Creat New Hard Object Containers
-      // [For MET building] filter the Muon container m_muons, placing selected muons into m_MetMuons
-      //
-      // For emulated MET (No muons)
-      // Make a empty container for invisible electrons
-      ConstDataVector<xAOD::MuonContainer> m_EmptyMuons_Zmumu(SG::VIEW_ELEMENTS);
-      m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
-          xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
-          m_emulmet_Zmumu,                         //filling this met container
-          m_EmptyMuons_Zmumu.asDataVector(),            //using these metMuons that accepted our cuts
-          m_emulmetMap_Zmumu);                     //and this association map
-      // Make a container for invisible muons
-      ConstDataVector<xAOD::MuonContainer> m_invisibleMuons(SG::VIEW_ELEMENTS);
-      for (const auto& muon : *m_goodMuonForZ) { // C++11 shortcut
-        m_invisibleMuons.push_back( muon );
+    /////////////////////////////
+    // Soft term uncertainties //
+    /////////////////////////////
+    if (!m_isData) {
+      // Get the track soft term (For real MET)
+      xAOD::MissingET* softTrkmet = (*m_met)[softTerm];
+      if (m_metSystTool->applyCorrection(*softTrkmet) != CP::CorrectionCode::Ok) {
+        Error("execute()", "METSystematicsTool returns Error CorrectionCode");
       }
-      // Mark muons invisible
-      m_metMaker->markInvisible(m_invisibleMuons.asDataVector(), m_emulmetMap_Zmumu);
-
-      met::addGhostMuonsToJets(*m_muons, *jetSC);
+    }
 
 
-      // JET
-      //-----------------
-      //Now time to rebuild jetMet and get the soft term
-      //This adds the necessary soft term for both CST and TST
-      //these functions create an xAODMissingET object with the given names inside the container
+    ///////////////
+    // MET Build //
+    ///////////////
+    //m_metMaker->rebuildTrackMET("RefJetTrk", softTerm, m_met, jetSC, m_metCore, m_metMap, true);
 
-      // For emulated MET marking muons invisible
-      m_metMaker->rebuildJetMET("RefJet",          //name of jet met
-          "SoftClus",           //name of soft cluster term met
-          "PVSoftTrk",          //name of soft track term met
-          m_emulmet_Zmumu,       //adding to this new met container
-          jetSC,                //using this jet collection to calculate jet met
-          m_emulmetCore_Zmumu,   //core met container
-          m_emulmetMap_Zmumu,    //with this association map
-          true);                //apply jet jvt cut
+    //this builds the final track or cluster met sums, using systematic varied container
+    //In the future, you will be able to run both of these on the same container to easily output CST and TST
 
-    } // isZmumu
+    // For real MET
+    m_metMaker->buildMETSum("Final", m_met, (*m_met)[softTerm]->source());
 
 
 
 
+    ///////////////////
+    // Fill real MET //
+    ///////////////////
 
-    //===================================================================
-    // For rebuild the emulated MET for Wmunu (by marking Muon invisible)
-    //===================================================================
+    //MET_ex = ((*m_met)["Final"]->mpx());
+    //MET_ey = ((*m_met)["Final"]->mpy());
+    MET = ((*m_met)["Final"]->met());
+    //SumET = ((*m_met)["Final"]->sumet());
+    MET_phi = ((*m_met)["Final"]->phi());
 
-    if (m_isWmunu) {
+
+
+
+
+
+
+
+    //======================================================================
+    // For rebuild the emulated MET for Wenu (by marking Electron invisible)
+    //======================================================================
+
+    if (m_isWenu) {
+
+      // It is necessary to reset the selected objects before every MET calculation
+      m_met->clear();
+      m_metMap->resetObjSelectionFlags();
+
 
       // Electron
       //-----------------
       /// Creat New Hard Object Containers
       // [For MET building] filter the Electron container m_electrons, placing selected electrons into m_MetElectrons
-      // For emulated MET (No muons)
+      //
+      // For emulated MET (No electrons)
+      // Make a empty container for invisible electrons
+      ConstDataVector<xAOD::ElectronContainer> m_EmptyElectrons(SG::VIEW_ELEMENTS);
+      m_EmptyElectrons.clear();
       m_metMaker->rebuildMET("RefElectron",           //name of metElectrons in metContainer
-      xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
-      m_emulmet_Wmunu,                             //filling this met container
-      m_MetElectrons.asDataVector(),              //using these metElectrons that accepted our cuts
-      m_emulmetMap_Wmunu);                         //and this association map
+          xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
+          m_met,                           //filling this met container
+          m_EmptyElectrons.asDataVector(),            //using these metElectrons that accepted our cuts
+          m_metMap);                       //and this association map
 
 
+      /*
       // Photon
       //-----------------
       /// Creat New Hard Object Containers
       // [For MET building] filter the Photon container m_photons, placing selected photons into m_MetPhotons
-      // For emulated MET marking muons invisible
+      // For emulated MET marking electrons invisible
       m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
-      xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
-      m_emulmet_Wmunu,                           //filling this met container
-      m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
-      m_emulmetMap_Wmunu);                       //and this association map
+          xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
+          m_met,                         //filling this met container
+          m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
+          m_metMap);                     //and this association map
+      */
 
 
       // TAUS
       //-----------------
-      //
       /// Creat New Hard Object Containers
       // [For MET building] filter the TauJet container m_taus, placing selected taus into m_MetTaus
-      // For emulated MET marking muons invisible
+      // For emulated MET marking electrons invisible
       m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
-      xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
-      m_emulmet_Wmunu,                        //filling this met container
-      m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
-      m_emulmetMap_Wmunu);                    //and this association map
-
+          xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
+          m_met,                      //filling this met container
+          m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
+          m_metMap);                  //and this association map
 
 
       // Muon
@@ -2457,14 +2376,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       /// Creat New Hard Object Containers
       // [For MET building] filter the Muon container m_muons, placing selected muons into m_MetMuons
       //
-      // For emulated MET (No muons)
-      // Make a empty container for invisible electrons
-      ConstDataVector<xAOD::MuonContainer> m_EmptyMuons_Wmunu(SG::VIEW_ELEMENTS);
+      // For emulated MET (No electrons)
       m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
-      xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
-      m_emulmet_Wmunu,                         //filling this met container
-      m_EmptyMuons_Wmunu.asDataVector(),            //using these metMuons that accepted our cuts
-      m_emulmetMap_Wmunu);                     //and this association map
+          xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
+          m_met,                       //filling this met container
+          m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
+          m_metMap);                   //and this association map
+
 
 
       // JET
@@ -2473,17 +2391,54 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       //This adds the necessary soft term for both CST and TST
       //these functions create an xAODMissingET object with the given names inside the container
 
-      // For emulated MET marking muons invisible
+      // For emulated MET marking electrons invisible
       m_metMaker->rebuildJetMET("RefJet",          //name of jet met
           "SoftClus",           //name of soft cluster term met
           "PVSoftTrk",          //name of soft track term met
-          m_emulmet_Wmunu,       //adding to this new met container
+          m_met,     //adding to this new met container
           jetSC,                //using this jet collection to calculate jet met
-          m_emulmetCore_Wmunu,   //core met container
-          m_emulmetMap_Wmunu,    //with this association map
+          m_metCore, //core met container
+          m_metMap,  //with this association map
           true);                //apply jet jvt cut
 
-    } // isWmunu
+
+
+
+      /////////////////////////////
+      // Soft term uncertainties //
+      /////////////////////////////
+      if (!m_isData) {
+        // Get the track soft term for Wenu (For emulated MET marking electrons invisible)
+        xAOD::MissingET* softTrkmet = (*m_met)[softTerm];
+        if (m_metSystTool->applyCorrection(*softTrkmet) != CP::CorrectionCode::Ok) {
+          Error("execute()", "METSystematicsTool returns Error CorrectionCode");
+        }
+      }
+
+
+
+      ///////////////
+      // MET Build //
+      ///////////////
+      // For emulated MET for Wenu marking electrons invisible
+      m_metMaker->buildMETSum("Final", m_met, (*m_met)[softTerm]->source());
+
+
+
+      /////////////////////////////////////////////////////////////////
+      // Fill emulated MET for Wenu (by marking electrons invisible) //
+      /////////////////////////////////////////////////////////////////
+      //emulMET_Wenu_ex = ((*m_met)["Final"]->mpx());
+      //emulMET_Wenu_ey = ((*m_met)["Final"]->mpy());
+      emulMET_Wenu = ((*m_met)["Final"]->met());
+      //emulSumET_Wenu = ((*m_met)["Final"]->sumet());
+      emulMET_Wenu_phi = ((*m_met)["Final"]->phi());
+
+
+
+    } // m_isWenu
+
+
 
 
 
@@ -2496,6 +2451,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     if (m_isZee) {
 
+      // It is necessary to reset the selected objects before every MET calculation
+      m_met->clear();
+      m_metMap->resetObjSelectionFlags();
+
+
       // Electron
       //-----------------
       /// Creat New Hard Object Containers
@@ -2504,12 +2464,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       // For emulated MET (No electrons)
       // Make a empty container for invisible electrons
       /*
-         ConstDataVector<xAOD::ElectronContainer> m_EmptyElectrons_Zee(SG::VIEW_ELEMENTS);
+         ConstDataVector<xAOD::ElectronContainer> m_EmptyElectrons(SG::VIEW_ELEMENTS);
+         m_EmptyElectrons.clear();
          m_metMaker->rebuildMET("RefElectron",           //name of metElectrons in metContainer
          xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
-         m_emulmet_Zee,                           //filling this met container
-         m_EmptyElectrons_Zee.asDataVector(),            //using these metElectrons that accepted our cuts
-         m_emulmetMap_Zee);                       //and this association map
+         m_met,                           //filling this met container
+         m_EmptyElectrons.asDataVector(),            //using these metElectrons that accepted our cuts
+         m_metMap);                       //and this association map
          */
       // Make a container for invisible electrons
       ConstDataVector<xAOD::ElectronContainer> m_invisibleElectrons(SG::VIEW_ELEMENTS);
@@ -2517,7 +2478,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         m_invisibleElectrons.push_back( electron );
       }
       // Mark electrons invisible (No electrons)
-      m_metMaker->markInvisible(m_invisibleElectrons.asDataVector(), m_emulmetMap_Zee);
+      m_metMaker->markInvisible(m_invisibleElectrons.asDataVector(), m_metMap);
 
       // Not adding Photon, Tau, Muon objects as we veto on additional leptons and photons might be an issue for muon FSR
 
@@ -2532,74 +2493,122 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       m_metMaker->rebuildJetMET("RefJet",          //name of jet met
           "SoftClus",           //name of soft cluster term met
           "PVSoftTrk",          //name of soft track term met
-          m_emulmet_Zee,     //adding to this new met container
+          m_met,     //adding to this new met container
           jetSC,                //using this jet collection to calculate jet met
-          m_emulmetCore_Zee, //core met container
-          m_emulmetMap_Zee,  //with this association map
+          m_metCore, //core met container
+          m_metMap,  //with this association map
           true);                //apply jet jvt cut
 
 
-    } // isZee
+
+      /////////////////////////////
+      // Soft term uncertainties //
+      /////////////////////////////
+      if (!m_isData) {
+        // Get the track soft term for Zee (For emulated MET marking electrons invisible)
+        xAOD::MissingET* softTrkmet = (*m_met)[softTerm];
+        if (m_metSystTool->applyCorrection(*softTrkmet) != CP::CorrectionCode::Ok) {
+          Error("execute()", "METSystematicsTool returns Error CorrectionCode");
+        }
+      }
+
+
+      ///////////////
+      // MET Build //
+      ///////////////
+      // For emulated MET for Zee marking electrons invisible
+      m_metMaker->buildMETSum("Final", m_met, (*m_met)[softTerm]->source());
+
+
+      ////////////////////////////////////////////////////////////////
+      // Fill emulated MET for Zee (by marking electrons invisible) //
+      ////////////////////////////////////////////////////////////////
+      //emulMET_Zee_ex = ((*m_met)["Final"]->mpx());
+      //emulMET_Zee_ey = ((*m_met)["Final"]->mpy());
+      emulMET_Zee = ((*m_met)["Final"]->met());
+      //emulSumET_Zee = ((*m_met)["Final"]->sumet());
+      emulMET_Zee_phi = ((*m_met)["Final"]->phi());
+
+
+    } // m_isZee
 
 
 
-    //======================================================================
-    // For rebuild the emulated MET for Wenu (by marking Electron invisible)
-    //======================================================================
 
-    if (m_isWenu) {
+
+    //===================================================================
+    // For rebuild the emulated MET for Wmunu (by marking Muon invisible)
+    //===================================================================
+
+    if (m_isWmunu) {
+
+      // It is necessary to reset the selected objects before every MET calculation
+      m_met->clear();
+      m_metMap->resetObjSelectionFlags();
 
       // Electron
       //-----------------
       /// Creat New Hard Object Containers
       // [For MET building] filter the Electron container m_electrons, placing selected electrons into m_MetElectrons
-      //
-      // For emulated MET (No electrons)
-      // Make a empty container for invisible electrons
-      ConstDataVector<xAOD::ElectronContainer> m_EmptyElectrons_Wenu(SG::VIEW_ELEMENTS);
+      // For emulated MET (No muons)
       m_metMaker->rebuildMET("RefElectron",           //name of metElectrons in metContainer
-      xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
-      m_emulmet_Wenu,                           //filling this met container
-      m_EmptyElectrons_Wenu.asDataVector(),            //using these metElectrons that accepted our cuts
-      m_emulmetMap_Wenu);                       //and this association map
+          xAOD::Type::Electron,                       //telling the rebuilder that this is electron met
+          m_met,                             //filling this met container
+          m_MetElectrons.asDataVector(),              //using these metElectrons that accepted our cuts
+          m_metMap);                         //and this association map
 
 
+      /*
       // Photon
       //-----------------
       /// Creat New Hard Object Containers
       // [For MET building] filter the Photon container m_photons, placing selected photons into m_MetPhotons
-      // For emulated MET marking electrons invisible
+      // For emulated MET marking muons invisible
       m_metMaker->rebuildMET("RefPhoton",           //name of metPhotons in metContainer
-      xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
-      m_emulmet_Wenu,                         //filling this met container
-      m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
-      m_emulmetMap_Wenu);                     //and this association map
+          xAOD::Type::Photon,                       //telling the rebuilder that this is photon met
+          m_met,                           //filling this met container
+          m_MetPhotons.asDataVector(),              //using these metPhotons that accepted our cuts
+          m_metMap);                       //and this association map
+      */
 
 
       // TAUS
       //-----------------
+      //
       /// Creat New Hard Object Containers
       // [For MET building] filter the TauJet container m_taus, placing selected taus into m_MetTaus
-      // For emulated MET marking electrons invisible
+      // For emulated MET marking muons invisible
       m_metMaker->rebuildMET("RefTau",           //name of metTaus in metContainer
-      xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
-      m_emulmet_Wenu,                      //filling this met container
-      m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
-      m_emulmetMap_Wenu);                  //and this association map
+          xAOD::Type::Tau,                       //telling the rebuilder that this is tau met
+          m_met,                        //filling this met container
+          m_MetTaus.asDataVector(),              //using these metTaus that accepted our cuts
+          m_metMap);                    //and this association map
 
 
+
+      /*
       // Muon
       //-----------------
       /// Creat New Hard Object Containers
       // [For MET building] filter the Muon container m_muons, placing selected muons into m_MetMuons
       //
-      // For emulated MET (No electrons)
+      // For emulated MET (No muons)
+      // Make a empty container for invisible electrons
+      ConstDataVector<xAOD::MuonContainer> m_EmptyMuons(SG::VIEW_ELEMENTS);
+      m_EmptyMuons.clear();
       m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
-      xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
-      m_emulmet_Wenu,                       //filling this met container
-      m_MetMuons.asDataVector(),              //using these metMuons that accepted our cuts
-      m_emulmetMap_Wenu);                   //and this association map
-
+          xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
+          m_met,                         //filling this met container
+          m_EmptyMuons.asDataVector(),            //using these metMuons that accepted our cuts
+          m_metMap);                     //and this association map
+      */
+      // Make a container for invisible muons
+      ConstDataVector<xAOD::MuonContainer> m_invisibleMuons(SG::VIEW_ELEMENTS);
+      for (const auto& muon : *m_goodMuon) { // C++11 shortcut
+        m_invisibleMuons.push_back( muon );
+      }
+      // Mark muons invisible
+      m_metMaker->markInvisible(m_invisibleMuons.asDataVector(), m_metMap);
 
 
       // JET
@@ -2608,179 +2617,148 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       //This adds the necessary soft term for both CST and TST
       //these functions create an xAODMissingET object with the given names inside the container
 
-      // For emulated MET marking electrons invisible
+      // For emulated MET marking muons invisible
       m_metMaker->rebuildJetMET("RefJet",          //name of jet met
           "SoftClus",           //name of soft cluster term met
           "PVSoftTrk",          //name of soft track term met
-          m_emulmet_Wenu,     //adding to this new met container
+          m_met,       //adding to this new met container
           jetSC,                //using this jet collection to calculate jet met
-          m_emulmetCore_Wenu, //core met container
-          m_emulmetMap_Wenu,  //with this association map
+          m_metCore,   //core met container
+          m_metMap,    //with this association map
           true);                //apply jet jvt cut
 
 
-    } // isWenu
 
 
-
-
-
-
-
-
-
-
-
-
-    /////////////////////////////
-    // Soft term uncertainties //
-    /////////////////////////////
-    if (!m_isData) {
-      // Get the track soft term (For real MET)
-      xAOD::MissingET* softTrkmet = (*m_met)[softTerm];
-      if (m_metSystTool->applyCorrection(*softTrkmet) != CP::CorrectionCode::Ok) {
-        Error("execute()", "METSystematicsTool returns Error CorrectionCode");
-      }
-      if (m_isZmumu) {
-        // Get the track soft term for Zmumu (For emulated MET marking muons invisible)
-        xAOD::MissingET* softTrkmet_Zmumu = (*m_emulmet_Zmumu)[softTerm];
-        if (m_metSystTool->applyCorrection(*softTrkmet_Zmumu) != CP::CorrectionCode::Ok) {
-          Error("execute()", "METSystematicsTool returns Error CorrectionCode");
-        }
-      }
-      if (m_isWmunu) {
+      /////////////////////////////
+      // Soft term uncertainties //
+      /////////////////////////////
+      if (!m_isData) {
         // Get the track soft term for Wmunu (For emulated MET marking muons invisible)
-        xAOD::MissingET* softTrkmet_Wmunu = (*m_emulmet_Wmunu)[softTerm];
-        if (m_metSystTool->applyCorrection(*softTrkmet_Wmunu) != CP::CorrectionCode::Ok) {
+        xAOD::MissingET* softTrkmet = (*m_met)[softTerm];
+        if (m_metSystTool->applyCorrection(*softTrkmet) != CP::CorrectionCode::Ok) {
           Error("execute()", "METSystematicsTool returns Error CorrectionCode");
         }
       }
-      if (m_isZee) {
-        // Get the track soft term for Zee (For emulated MET marking electrons invisible)
-        xAOD::MissingET* softTrkmet_Zee = (*m_emulmet_Zee)[softTerm];
-        if (m_metSystTool->applyCorrection(*softTrkmet_Zee) != CP::CorrectionCode::Ok) {
-          Error("execute()", "METSystematicsTool returns Error CorrectionCode");
-        }
-      }
-      if (m_isWenu) {
-        // Get the track soft term for Wenu (For emulated MET marking electrons invisible)
-        xAOD::MissingET* softTrkmet_Wenu = (*m_emulmet_Wenu)[softTerm];
-        if (m_metSystTool->applyCorrection(*softTrkmet_Wenu) != CP::CorrectionCode::Ok) {
-          Error("execute()", "METSystematicsTool returns Error CorrectionCode");
-        }
-      }
-    }
 
 
 
-    ///////////////
-    // MET Build //
-    ///////////////
-    //m_metMaker->rebuildTrackMET("RefJetTrk", softTerm, m_met, jetSC, m_metCore, m_metMap, true);
-
-    //this builds the final track or cluster met sums, using systematic varied container
-    //In the future, you will be able to run both of these on the same container to easily output CST and TST
-
-    // For real MET
-    m_metMaker->buildMETSum("Final", m_met, (*m_met)[softTerm]->source());
-
-    if (m_isZmumu) {
-      // For emulated MET for Zmumu marking muons invisible
-      m_metMaker->buildMETSum("Final", m_emulmet_Zmumu, (*m_emulmet_Zmumu)[softTerm]->source());
-    }
-
-    if (m_isWmunu) {
+      ///////////////
+      // MET Build //
+      ///////////////
       // For emulated MET for Wmunu marking muons invisible
-      m_metMaker->buildMETSum("Final", m_emulmet_Wmunu, (*m_emulmet_Wmunu)[softTerm]->source());
-    }
-
-    if (m_isZee) {
-      // For emulated MET for Zee marking electrons invisible
-      m_metMaker->buildMETSum("Final", m_emulmet_Zee, (*m_emulmet_Zee)[softTerm]->source());
-    }
-
-    if (m_isWenu) {
-      // For emulated MET for Wenu marking electrons invisible
-      m_metMaker->buildMETSum("Final", m_emulmet_Wenu, (*m_emulmet_Wenu)[softTerm]->source());
-    }
+      m_metMaker->buildMETSum("Final", m_met, (*m_met)[softTerm]->source());
 
 
+      //////////////////////////////////////////////////////////////
+      // Fill emulated MET for Wmunu (by marking muons invisible) //
+      //////////////////////////////////////////////////////////////
+      //emulMET_Wmunu_ex = ((*m_met)["Final"]->mpx());
+      //emulMET_Wmunu_ey = ((*m_met)["Final"]->mpy());
+      emulMET_Wmunu = ((*m_met)["Final"]->met());
+      //emulSumET_Wmunu = ((*m_met)["Final"]->sumet());
+      emulMET_Wmunu_phi = ((*m_met)["Final"]->phi());
 
 
-
-    // Fill real MET
-    //float MET_ex = -9e9;
-    //float MET_ey = -9e9;
-    float MET = -9e9;
-    //float SumET = -9e9;
-    float MET_phi = -9e9;
-
-    //MET_ex = ((*m_met)["Final"]->mpx());
-    //MET_ey = ((*m_met)["Final"]->mpy());
-    MET = ((*m_met)["Final"]->met());
-    //SumET = ((*m_met)["Final"]->sumet());
-    MET_phi = ((*m_met)["Final"]->phi());
+    } // m_isWmunu
 
 
 
-    // Fill emulated MET for Zmumu (by marking muons invisible)
-    //float emulMET_Zmumu_ex = -9e9;
-    //float emulMET_Zmumu_ey = -9e9;
-    float emulMET_Zmumu = -9e9;
-    //float emulSumET_Zmumu = -9e9;
-    float emulMET_Zmumu_phi = -9e9;
+
+
+
+
+
+    //===================================================================
+    // For rebuild the emulated MET for Zmumu (by marking Muon invisible)
+    //===================================================================
+
     if (m_isZmumu) {
-      //emulMET_Zmumu_ex = ((*m_emulmet_Zmumu)["Final"]->mpx());
-      //emulMET_Zmumu_ey = ((*m_emulmet_Zmumu)["Final"]->mpy());
-      emulMET_Zmumu = ((*m_emulmet_Zmumu)["Final"]->met());
-      //emulSumET_Zmumu = ((*m_emulmet_Zmumu)["Final"]->sumet());
-      emulMET_Zmumu_phi = ((*m_emulmet_Zmumu)["Final"]->phi());
-    }
+
+      // It is necessary to reset the selected objects before every MET calculation
+      m_met->clear();
+      m_metMap->resetObjSelectionFlags();
 
 
-    // Fill emulated MET for Wmunu (by marking muons invisible)
-    //float emulMET_Wmunu_ex = -9e9;
-    //float emulMET_Wmunu_ey = -9e9;
-    float emulMET_Wmunu = -9e9;
-    //float emulSumET_Wmunu = -9e9;
-    float emulMET_Wmunu_phi = -9e9;
-    if (m_isWmunu) {
-      //emulMET_Wmunu_ex = ((*m_emulmet_Wmunu)["Final"]->mpx());
-      //emulMET_Wmunu_ey = ((*m_emulmet_Wmunu)["Final"]->mpy());
-      emulMET_Wmunu = ((*m_emulmet_Wmunu)["Final"]->met());
-      //emulSumET_Wmunu = ((*m_emulmet_Wmunu)["Final"]->sumet());
-      emulMET_Wmunu_phi = ((*m_emulmet_Wmunu)["Final"]->phi());
-    }
+      // Not adding Electron, Photon, Tau objects as we veto on additional leptons and photons might be an issue for muon FSR
+
+      // Muon
+      //-----------------
+      /// Creat New Hard Object Containers
+      // [For MET building] filter the Muon container m_muons, placing selected muons into m_MetMuons
+      //
+      // For emulated MET (No muons)
+      // Make a empty container for invisible electrons
+      ConstDataVector<xAOD::MuonContainer> m_EmptyMuons(SG::VIEW_ELEMENTS);
+      m_EmptyMuons.clear();
+      m_metMaker->rebuildMET("RefMuon",           //name of metMuons in metContainer
+          xAOD::Type::Muon,                       //telling the rebuilder that this is muon met
+          m_met,                         //filling this met container
+          m_EmptyMuons.asDataVector(),            //using these metMuons that accepted our cuts
+          m_metMap);                     //and this association map
+      // Make a container for invisible muons
+      ConstDataVector<xAOD::MuonContainer> m_invisibleMuonsForZ(SG::VIEW_ELEMENTS);
+      for (const auto& muon : *m_goodMuonForZ) { // C++11 shortcut
+        m_invisibleMuonsForZ.push_back( muon );
+      }
+      // Mark muons invisible
+      m_metMaker->markInvisible(m_invisibleMuonsForZ.asDataVector(), m_metMap);
+
+      met::addGhostMuonsToJets(*m_muons, *jetSC);
 
 
-    // Fill emulated MET for Zee (by marking electrons invisible)
-    //float emulMET_Zee_ex = -9e9;
-    //float emulMET_Zee_ey = -9e9;
-    float emulMET_Zee = -9e9;
-    //float emulSumET_Zee = -9e9;
-    float emulMET_Zee_phi = -9e9;
-    if (m_isZee) {
-      //emulMET_Zee_ex = ((*m_emulmet_Zee)["Final"]->mpx());
-      //emulMET_Zee_ey = ((*m_emulmet_Zee)["Final"]->mpy());
-      emulMET_Zee = ((*m_emulmet_Zee)["Final"]->met());
-      //emulSumET_Zee = ((*m_emulmet_Zee)["Final"]->sumet());
-      emulMET_Zee_phi = ((*m_emulmet_Zee)["Final"]->phi());
-    }
+      // JET
+      //-----------------
+      //Now time to rebuild jetMet and get the soft term
+      //This adds the necessary soft term for both CST and TST
+      //these functions create an xAODMissingET object with the given names inside the container
+
+      // For emulated MET marking muons invisible
+      m_metMaker->rebuildJetMET("RefJet",          //name of jet met
+          "SoftClus",           //name of soft cluster term met
+          "PVSoftTrk",          //name of soft track term met
+          m_met,       //adding to this new met container
+          jetSC,                //using this jet collection to calculate jet met
+          m_metCore,   //core met container
+          m_metMap,    //with this association map
+          true);                //apply jet jvt cut
 
 
-    // Fill emulated MET for Wenu (by marking electrons invisible)
-    //float emulMET_Wenu_ex = -9e9;
-    //float emulMET_Wenu_ey = -9e9;
-    float emulMET_Wenu = -9e9;
-    //float emulSumET_Wenu = -9e9;
-    float emulMET_Wenu_phi = -9e9;
-    if (m_isWenu) {
-      //emulMET_Wenu_ex = ((*m_emulmet_Wenu)["Final"]->mpx());
-      //emulMET_Wenu_ey = ((*m_emulmet_Wenu)["Final"]->mpy());
-      emulMET_Wenu = ((*m_emulmet_Wenu)["Final"]->met());
-      //emulSumET_Wenu = ((*m_emulmet_Wenu)["Final"]->sumet());
-      emulMET_Wenu_phi = ((*m_emulmet_Wenu)["Final"]->phi());
-    }
+
+
+      /////////////////////////////
+      // Soft term uncertainties //
+      /////////////////////////////
+      if (!m_isData) {
+        // Get the track soft term for Zmumu (For emulated MET marking muons invisible)
+        xAOD::MissingET* softTrkmet = (*m_met)[softTerm];
+        if (m_metSystTool->applyCorrection(*softTrkmet) != CP::CorrectionCode::Ok) {
+          Error("execute()", "METSystematicsTool returns Error CorrectionCode");
+        }
+      }
+
+
+
+      ///////////////
+      // MET Build //
+      ///////////////
+      // For emulated MET for Zmumu marking muons invisible
+      m_metMaker->buildMETSum("Final", m_met, (*m_met)[softTerm]->source());
+
+
+
+      //////////////////////////////////////////////////////////////
+      // Fill emulated MET for Zmumu (by marking muons invisible) //
+      //////////////////////////////////////////////////////////////
+      //emulMET_Zmumu_ex = ((*m_met)["Final"]->mpx());
+      //emulMET_Zmumu_ey = ((*m_met)["Final"]->mpy());
+      emulMET_Zmumu = ((*m_met)["Final"]->met());
+      //emulSumET_Zmumu = ((*m_met)["Final"]->sumet());
+      emulMET_Zmumu_phi = ((*m_met)["Final"]->phi());
+
+
+    } // m_isZmumu
+
 
 
 
@@ -3061,7 +3039,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //----------------------------------
 
     // Zmumu
-    float mll_muon = 0.; // For Zmumu channel
+    float mll_muon = 0.;
     float muon1_pt = 0.;
     float muon2_pt = 0.;
     float muon1_charge = 0.;
@@ -3106,8 +3084,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
     // Wmunu
-    bool pass_Wmunu = false; // Select Wmunu channel
-    float mT_muon = 0.;// For Wmunu channel
+    bool pass_Wmunu = false;
+    float mT_muon = 0.;
 
     if (m_isWmunu) {
       // Wmunu Selection
@@ -3130,7 +3108,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // ------------------------------
 
     // Zee
-    float mll_electron = 0.; // Select Zee channel
+    float mll_electron = 0.;
     float electron1_pt = 0.;
     float electron2_pt = 0.;
     float electron1_charge = 0.;
@@ -3167,8 +3145,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
     // Wenu
-    bool pass_Wenu = false; // Select Wenu channel
-    float mT_electron = 0.;// For Wenu channel
+    bool pass_Wenu = false;
+    float mT_electron = 0.;
 
     if (m_isWenu){
 
@@ -4254,7 +4232,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Skim cuts");
         if (m_goodMuonForZ->size() > 1) {
           if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]At least Two Muon");
-          if (pass_OSmuon) { 
+          if (pass_OSmuon) {
             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Opposite sign charge");
             if (pass_dimuonPtCut) {
               if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Dimuon pT cut");
@@ -4262,7 +4240,21 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]MET Trigger");
                 if (mll_muon > m_mllMin && mll_muon < m_mllMax) {
                   if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]Zmass window");
-                  //if (emulMET_Zmumu > m_metCut) {
+                  /*
+                  // MET test
+                  if (emulMET_Zmumu < m_metCut) {
+                    Info("execute()", "  emulMET_Zmumu = %.2f GeV", emulMET_Zmumu * 0.001);
+                    int jetCount = 0;
+                    for (const auto& jet : *m_goodJet) {
+                      jetCount++;
+                      Info("execute()", " jet # : %i", jetCount);
+                      Info("execute()", " jet pt = %.3f GeV", jet->pt() * 0.001);
+                      Info("execute()", " jet eta = %.3f GeV", jet->eta());
+                      Info("execute()", " jet phi = %.3f GeV", jet->phi());
+                    }
+                  }
+                  */
+                  if (emulMET_Zmumu > m_metCut) {
                     if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Emily, Zmumu]MET cut");
                     /*
                        if (m_goodTau->size() > 0){
@@ -4346,7 +4338,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         } // Tau veto
                       } // Electron veto
                     } // Exact two muon
-                  //} // MET cut
+                  } // MET cut
                 } // Zmass window
               //} // MET trigger
             } // Dimuon pT cut
@@ -4470,51 +4462,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-
-
-    //////////////////////////
-    // Delete copy containers
-    //////////////////////////
-
-    // Deep copies. Clearing containers deletes contents including AuxStore.
-    delete m_goodJet;
-
-    // VBF study
-    delete m_goodMuonForZ;
-    delete m_goodMuon;
-    delete m_goodElectron;
-    delete m_baselineElectron;
-    delete m_goodTau;
-    delete m_goodPhoton;
-
-
     //////////////////////////////////
     // Delete shallow copy containers
     //////////////////////////////////
 
     // The containers created by the shallow copy are owned by you. Remember to delete them
-    delete m_met;
-    delete m_metAux;
-
-    if (m_isZmumu){
-      delete m_emulmet_Zmumu;
-      delete m_emulmetAux_Zmumu;
-    }
-
-    if (m_isWmunu){
-      delete m_emulmet_Wmunu;
-      delete m_emulmetAux_Wmunu;
-    }
-
-    if (m_isZee){
-      delete m_emulmet_Zee;
-      delete m_emulmetAux_Zee;
-    }
-
-    if (m_isWenu){
-      delete m_emulmet_Wenu;
-      delete m_emulmetAux_Wenu;
-    }
 
     delete muons_shallowCopy.first;
     delete muons_shallowCopy.second;
@@ -4531,7 +4483,30 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     delete jet_shallowCopy.first;
     delete jet_shallowCopy.second;
 
+
+
   } // end for loop over systematics
+
+
+
+  //////////////////////////
+  // Delete copy containers
+  //////////////////////////
+
+  // Deep copies. Clearing containers deletes contents including AuxStore.
+  delete m_goodJet;
+
+  // VBF study
+  delete m_goodMuonForZ;
+  delete m_goodMuon;
+  delete m_goodElectron;
+  delete m_baselineElectron;
+  delete m_goodTau;
+  delete m_goodPhoton;
+
+  delete m_met;
+  delete m_metAux;
+
 
   return EL::StatusCode::SUCCESS;
 }
@@ -4862,7 +4837,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         Info("finalize()", "Zee Event cutflow (%i) = %i", j, m_eventCutflow[i]);
       }
     }
-
 
     return EL::StatusCode::SUCCESS;
   }
