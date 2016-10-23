@@ -1044,8 +1044,10 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
       // Multijet Background study (Method 2)
       //
-      // Nominal cut
       if (sysName == "") { // for Data and MC without systematics
+        //-------------//
+        // Nominal cut //
+        //-------------//
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
@@ -1058,10 +1060,9 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
-      }
-      //
-      // Reverse cut
-      if (m_isData) { // only for Data
+        //-------------//
+        // Reverse cut //
+        //-------------//
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
@@ -1222,24 +1223,30 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
 
       // Multijet Background study (Method 2)
       //
-      // Nominal cut
       if (sysName == "") { // for Data and MC without systematics
+        //-------------//
+        // Nominal cut //
+        //-------------//
+        Float_t binsMET_method2[] = {150.,200.,300.,500.,1000.,1400.};
+        Int_t nbinMET_method2 = sizeof(binsMET_method2)/sizeof(Float_t) - 1;
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met"+sysName, nbinMET_method2, binsMET_method2);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+
         ////////////////////
         // VBF phasespace //
         ////////////////////
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met"+sysName, nbinMET_method2, binsMET_method2);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
-      }
-      //
-      // Reverse cut
-      if (m_isData) { // only for Data
+        //-------------//
+        // Reverse cut //
+        //-------------//
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
@@ -4427,13 +4434,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Z -> mumu + JET Multijet Background study (Method 2)
     //-----------------------------------------------------
 
-    ///////////////////////////////////////
-    // Nominal Muon cut with MC and Data //
-    ///////////////////////////////////////
-
     if (m_isZmumu && sysName == "") {
       h_channel = "h_zmumu_";
 
+      //////////////////////
+      // Nominal Muon cut //
+      //////////////////////
       if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
 
         if ( m_goodJet->size() > 0 && m_goodElectron->size() == 0 && m_goodTau->size() == 0 && m_goodMuonForZ->size() > 1 ) {
@@ -4469,7 +4475,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
             } // Monojet
 
-
             ////////////////////
             // VBF phasespace //
             ////////////////////
@@ -4504,21 +4509,25 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
         } // At least 1 jet && electron and tau veto
       } // MET Trigger
-    } // m_isZmumu with MC and Data
 
 
-    ////////////////////////////////
-    // Reverse Muon cut with Data //
-    ////////////////////////////////
-
-    if (m_isZmumu && m_isData) {
-      h_channel = "h_zmumu_";
-
+      //////////////////////
+      // Reverse Muon cut //
+      //////////////////////
       if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
 
         if ( m_goodJet->size() > 0 && m_goodElectron->size() == 0 && m_goodTau->size() == 0 ) {
 
           if ( pass_dimuonPtCut && m_baselineMuon->size() == 2 ) {
+
+            // d0 decision
+            const xAOD::TrackParticle* baseline_muon1_tp;
+            const xAOD::TrackParticle* baseline_muon2_tp;
+            baseline_muon1_tp = m_baselineMuon->at(0)->primaryTrackParticle();
+            baseline_muon2_tp = m_baselineMuon->at(1)->primaryTrackParticle();
+            // d0 significance (Transverse impact parameter)
+            double baseline_muon1_d0sig = xAOD::TrackingHelpers::d0significance( baseline_muon1_tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
+            double baseline_muon2_d0sig = xAOD::TrackingHelpers::d0significance( baseline_muon2_tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
 
             // S-S or O-S charge decision
             float muon_OS = false;
@@ -4534,24 +4543,24 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
             bool m_case1_cut = false;
             bool m_case2_cut = false;
             bool m_case3_cut = false;
-            // Case 1: Fail ID, Fail Iso, Pass OS
-            if ( !m_loosemuonSelection->accept(*m_baselineMuon->at(0)) || !m_loosemuonSelection->accept(*m_baselineMuon->at(1)) ) { // Fail ID
+            // Case 1: Fail d0, Fail Iso, Pass OS
+            if ( std::abs(baseline_muon1_d0sig) > 3.0 || std::abs(baseline_muon2_d0sig) > 3.0 ) { // Fail d0 cut
               if ( !m_IsoToolVBF->accept(*m_baselineMuon->at(0)) || !m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) { // Fail Iso
                 if ( muon_OS ) { // Pass OS
                   m_case1_cut = true;
                 }
               }
             }
-            // Case 2: Fail ID, Pass Iso, Fail OS
-            if ( !m_loosemuonSelection->accept(*m_baselineMuon->at(0)) || !m_loosemuonSelection->accept(*m_baselineMuon->at(1)) ) { // Fail ID
+            // Case 2: Fail d0, Pass Iso, Fail OS
+            if ( std::abs(baseline_muon1_d0sig) > 3.0 || std::abs(baseline_muon2_d0sig) > 3.0 ) { // Fail d0 cut
               if ( m_IsoToolVBF->accept(*m_baselineMuon->at(0)) && m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) { // Pass Iso
                 if ( !muon_OS ) { // Fail OS
                   m_case2_cut = true;
                 }
               }
             }
-            // Case 3: Pass ID, Fail Iso, Fail OS
-            if ( m_loosemuonSelection->accept(*m_baselineMuon->at(0)) && m_loosemuonSelection->accept(*m_baselineMuon->at(1)) ) { // Pass ID
+            // Case 3: Pass d0, Fail Iso, Fail OS
+            if ( std::abs(baseline_muon1_d0sig) <= 3.0 || std::abs(baseline_muon2_d0sig) <= 3.0 ) { // Pass d0 cut
               if ( !m_IsoToolVBF->accept(*m_baselineMuon->at(0)) || !m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) { // Fail Iso
                 if ( !muon_OS ) { // Fail OS
                   m_case3_cut = true;
@@ -4688,7 +4697,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
           } // Reverse cut
         } // At least 1 jet && electron and tau veto
       } // MET trigger
-    } // m_isZmumu with Data
+    } // m_isZmumu
 
 
 
@@ -4699,13 +4708,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Z -> ee + JET Multijet Background study (Method 2)
     //---------------------------------------------------
 
-    ///////////////////////////////////////////
-    // Nominal Electron cut with MC and Data //
-    ///////////////////////////////////////////
-
     if (m_isZee && sysName == "") {
       h_channel = "h_zee_";
 
+      //////////////////////////
+      // Nominal Electron cut //
+      //////////////////////////
       if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")){
 
         if ( m_goodJet->size() > 0 && m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) {
@@ -4726,6 +4734,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               }
 
               // Fill histogram
+              // MET distribution
+              hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
               // 200 < MET < 300 GeV
               if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                 hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
@@ -4756,6 +4766,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               }
 
               // Fill histogram
+              // MET distribution
+              hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
               // 200 < MET < 300 GeV
               if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                 hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
@@ -4776,16 +4788,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
         } // At least 1 jet && muon and tau veto
       } // Electron trigger
-    } // m_isZee with MC and Data
 
 
-    ////////////////////////////////////
-    // Reverse Electron cut with Data //
-    ////////////////////////////////////
-
-    if (m_isZee && m_isData) {
-      h_channel = "h_zee_";
-
+      //////////////////////////
+      // Reverse Electron cut //
+      //////////////////////////
       if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")){
 
         if ( m_goodJet->size() > 0 && m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) {
@@ -4961,7 +4968,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
         } // At least 1 jet && muon and tau veto
       } // Electron trigger
-    } // m_isZee with Data
+    } // m_isZee
+
+
+
+
+
 
 
 
@@ -5888,25 +5900,28 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if (std::abs(mu.eta()) > m_muonEtaCut) return EL::StatusCode::SUCCESS;
     */
 
+    // MuonSelectionTool (Loose)
+    if(!m_loosemuonSelection->accept(mu)) return EL::StatusCode::SUCCESS;
+
     // d0 / z0 cuts applied
-    // d0 significance (Transverse impact parameter)
     const xAOD::TrackParticle* tp;
     //if (mu.muonType() == xAOD::Muon::SiliconAssociatedForwardMuon)
     //  tp = mu.trackParticle(xAOD::Muon::ExtrapolatedMuonSpectrometerTrackParticle);
     //else
-      tp = mu.primaryTrackParticle();
-    double d0sig = xAOD::TrackingHelpers::d0significance( tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
-    if (std::abs(d0sig) > 3.0) return EL::StatusCode::SUCCESS;
+    tp = mu.primaryTrackParticle();
+
     // zo cut
     //float z0sintheta = 1e8;
     //if (primVertex) z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( mu.p4().Theta() );
     float z0sintheta = ( tp->z0() + tp->vz() - primVertex->z() ) * TMath::Sin( tp->theta() );
     if (std::fabs(z0sintheta) > 0.5) return EL::StatusCode::SUCCESS;
 
-    dec_baseline(mu) = true;
+    dec_baseline(mu) = true; // For reverse cut for QCD background study (Fail d0 cut, Fail Iso)
 
-    // MuonSelectionTool (Loose)
-    if(!m_loosemuonSelection->accept(mu)) return EL::StatusCode::SUCCESS;
+    // d0 significance (Transverse impact parameter)
+    double d0sig = xAOD::TrackingHelpers::d0significance( tp, eventInfo->beamPosSigmaX(), eventInfo->beamPosSigmaY(), eventInfo->beamPosSigmaXY() );
+    if (std::abs(d0sig) > 3.0) return EL::StatusCode::SUCCESS;
+
 
     dec_signal_forZ(mu) = true; // For m_goodMuonForZ container where muons are the non-isolated
 
