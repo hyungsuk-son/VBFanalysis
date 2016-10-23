@@ -171,6 +171,8 @@ class ZinvxAODAnalysis : public EL::Algorithm
     float m_jetEtaCut; //!
     float m_monoJetPtCut; //!
     float m_monoJetEtaCut; //!
+    float m_sm1JetPtCut; //!
+    float m_sm1JetEtaCut; //!
     float m_diJet1PtCut; //!
     float m_diJet2PtCut; //!
     float m_diJetRapCut; //!
@@ -187,6 +189,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
     bool m_recoSF; //!
     bool m_idSF; //!
     bool m_isoMuonSF; //!
+    bool m_isoMuonSFforZ; //!
     bool m_isoElectronSF; //!
     bool m_ttvaSF; //!
     bool m_trigSF; //!

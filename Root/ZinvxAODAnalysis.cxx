@@ -298,7 +298,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // Enable Cutflow plot
   m_useArrayCutflow = false;
   m_useBitsetCutflow = true;
-  m_isEmilyCutflow = true;
+  m_isEmilyCutflow = false;
 
   // Event Channel
   m_isZnunu = true;
@@ -308,7 +308,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_isWenu = false;
 
   // Enable Systematics
-  m_doSys = false;
+  m_doSys = true;
 
   // Cut values
   m_muonPtCut = 7000.; /// MeV
@@ -321,6 +321,8 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_jetEtaCut = 4.5;
   m_monoJetPtCut = 120000.; /// MeV
   m_monoJetEtaCut = 2.4;
+  m_sm1JetPtCut = 220000.; /// MeV
+  m_sm1JetEtaCut = 2.4;
   m_diJet1PtCut = 80000.; /// MeV
   m_diJet2PtCut = 50000.; /// MeV
   m_diJetRapCut = 4.4;
@@ -338,6 +340,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_idSF = true;
   m_ttvaSF = true; // for muon
   m_isoMuonSF = true;
+  m_isoMuonSFforZ = false; // Muons in Z->mumu are not isolated
   m_trigSF = true; // for electron
   m_isoElectronSF = true;
   m_isoPtCut = false; // Initialize Setting (Do not change), This bool is for if you want to set pt range for muon Isolation
@@ -851,7 +854,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"monojet_jet_rap"+sysName, 25, -5., 5.);
         addHist(hMap1D, h_channel+"monojet_dPhimetjet"+sysName, 16, 0., 3.2);
         addHist(hMap1D, h_channel+"monojet_dPhiMinmetjet"+sysName, 16, 0., 3.2);
-
         ////////////////////
         // VBF phasespace //
         ////////////////////
@@ -874,6 +876,20 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"vbf_dPhimetj2"+sysName, 16, 0., 3.2);
         addHist(hMap1D, h_channel+"vbf_dPhimetj3"+sysName, 16, 0., 3.2);
         addHist(hMap1D, h_channel+"vbf_dPhiMinmetjet"+sysName, 16, 0., 3.2);
+        ////////////////////
+        // SM1 phasespace //
+        ////////////////////
+        // For publication
+        addHist(hMap1D, h_channel+"sm1_met"+sysName, nbinMET, binsMET);
+        // Jets
+        addHist(hMap1D, h_channel+"sm1_njet"+sysName, 40, 0., 40.);
+        addHist(hMap1D, h_channel+"sm1_jet_pt"+sysName, 60, 0., 3000.);
+        addHist(hMap1D, h_channel+"sm1_jet_phi"+sysName, 32, -3.2, 3.2);
+        addHist(hMap1D, h_channel+"sm1_jet_eta"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_jet_rap"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_dPhimetjet"+sysName, 16, 0., 3.2);
+        addHist(hMap1D, h_channel+"sm1_dPhiMinmetjet"+sysName, 16, 0., 3.2);
+
       }
 
     }
@@ -919,7 +935,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"monojet_lepton1_eta"+sysName, 25, -5., 5.);
         addHist(hMap1D, h_channel+"monojet_lepton2_eta"+sysName, 25, -5., 5.);
         addHist(hMap1D, h_channel+"monojet_mll"+sysName, 150, 0., 300.);
-
         ////////////////////
         // VBF phasespace //
         ////////////////////
@@ -950,10 +965,31 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"vbf_lepton1_eta"+sysName, 25, -5., 5.);
         addHist(hMap1D, h_channel+"vbf_lepton2_eta"+sysName, 25, -5., 5.);
         addHist(hMap1D, h_channel+"vbf_mll"+sysName, 150, 0., 300.);
-      }
+        ////////////////////
+        // SM1 phasespace //
+        ////////////////////
+        // For publication
+        addHist(hMap1D, h_channel+"sm1_met_emulmet"+sysName, nbinMET, binsMET);
+        // Jets
+        addHist(hMap1D, h_channel+"sm1_njet"+sysName, 40, 0., 40.);
+        addHist(hMap1D, h_channel+"sm1_jet_pt"+sysName, 60, 0., 3000.);
+        addHist(hMap1D, h_channel+"sm1_jet_phi"+sysName, 32, -3.2, 3.2);
+        addHist(hMap1D, h_channel+"sm1_jet_eta"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_jet_rap"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_dPhimetjet"+sysName, 16, 0., 3.2);
+        addHist(hMap1D, h_channel+"sm1_dPhiMinmetjet"+sysName, 16, 0., 3.2);
+        // Leptons
+        addHist(hMap1D, h_channel+"sm1_lepton1_pt"+sysName, 30, 0., 1500.);
+        addHist(hMap1D, h_channel+"sm1_lepton2_pt"+sysName, 30, 0., 1500.);
+        addHist(hMap1D, h_channel+"sm1_lepton1_phi"+sysName, 32, -3.2, 3.2);
+        addHist(hMap1D, h_channel+"sm1_lepton2_phi"+sysName, 32, -3.2, 3.2);
+        addHist(hMap1D, h_channel+"sm1_lepton1_eta"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_lepton2_eta"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_mll"+sysName, 150, 0., 300.);
 
-      // MET Trigger Efficiency Study
-      if (m_isData) {
+        //////////////////////////////////
+        // MET Trigger Efficiency Study //
+        //////////////////////////////////
         addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet"+sysName, 250, 0., 500.);
         addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70"+sysName, 250, 0., 500.);
         addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70_tclcw"+sysName, 250, 0., 500.);
@@ -977,7 +1013,8 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"vbf_eff_study_dPhijj_met200_pass_HLT_xe70_tclcw"+sysName, nbinDPhi, binsDPhi);
       }
 
-      // Multijet Background study
+
+      // Multijet Background study (Method 1)
       //
       ////////////////////////
       // Monojet phasespace //
@@ -1004,7 +1041,63 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       addHist(hMap1D, h_channel+"vbf_multijet_study_mjj_ss_lep"+sysName, nbinMjj, binsMjj);
       addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName, nbinDPhi, binsDPhi);
 
-    }
+
+      // Multijet Background study (Method 2)
+      //
+      // Nominal cut
+      if (sysName == "") { // for Data and MC without systematics
+        ////////////////////////
+        // Monojet phasespace //
+        ////////////////////////
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        ////////////////////
+        // VBF phasespace //
+        ////////////////////
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+      }
+      //
+      // Reverse cut
+      if (m_isData) { // only for Data
+        ////////////////////////
+        // Monojet phasespace //
+        ////////////////////////
+        // Case 1
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        // Case 2
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        // Case 3
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        ////////////////////
+        // VBF phasespace //
+        ////////////////////
+        // Case 1
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        // Case 2
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        // Case 3
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+      }
+
+    } // m_isZmumu
+
+
+
 
     if (m_isZee) {
       h_channel = "h_zee_";
@@ -1045,7 +1138,6 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"monojet_lepton1_eta"+sysName, 25, -5., 5.);
         addHist(hMap1D, h_channel+"monojet_lepton2_eta"+sysName, 25, -5., 5.);
         addHist(hMap1D, h_channel+"monojet_mll"+sysName, 150, 0., 300.);
-
         ////////////////////
         // VBF phasespace //
         ////////////////////
@@ -1076,10 +1168,31 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"vbf_lepton1_eta"+sysName, 25, -5., 5.);
         addHist(hMap1D, h_channel+"vbf_lepton2_eta"+sysName, 25, -5., 5.);
         addHist(hMap1D, h_channel+"vbf_mll"+sysName, 150, 0., 300.);
+        ////////////////////
+        // SM1 phasespace //
+        ////////////////////
+        // For publication
+        addHist(hMap1D, h_channel+"sm1_met_emulmet"+sysName, nbinMET, binsMET);
+        // Jets
+        addHist(hMap1D, h_channel+"sm1_njet"+sysName, 40, 0., 40.);
+        addHist(hMap1D, h_channel+"sm1_jet_pt"+sysName, 60, 0., 3000.);
+        addHist(hMap1D, h_channel+"sm1_jet_phi"+sysName, 32, -3.2, 3.2);
+        addHist(hMap1D, h_channel+"sm1_jet_eta"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_jet_rap"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_dPhimetjet"+sysName, 16, 0., 3.2);
+        addHist(hMap1D, h_channel+"sm1_dPhiMinmetjet"+sysName, 16, 0., 3.2);
+        // Leptons
+        addHist(hMap1D, h_channel+"sm1_lepton1_pt"+sysName, 30, 0., 1500.);
+        addHist(hMap1D, h_channel+"sm1_lepton2_pt"+sysName, 30, 0., 1500.);
+        addHist(hMap1D, h_channel+"sm1_lepton1_phi"+sysName, 32, -3.2, 3.2);
+        addHist(hMap1D, h_channel+"sm1_lepton2_phi"+sysName, 32, -3.2, 3.2);
+        addHist(hMap1D, h_channel+"sm1_lepton1_eta"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_lepton2_eta"+sysName, 25, -5., 5.);
+        addHist(hMap1D, h_channel+"sm1_mll"+sysName, 150, 0., 300.);
       }
 
 
-      // Multijet Background study
+      // Multijet Background study (Method 1)
       //
       ////////////////////////
       // Monojet phasespace //
@@ -1107,13 +1220,67 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       addHist(hMap1D, h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName, nbinDPhi, binsDPhi);
 
 
-    }
+      // Multijet Background study (Method 2)
+      //
+      // Nominal cut
+      if (sysName == "") { // for Data and MC without systematics
+        ////////////////////////
+        // Monojet phasespace //
+        ////////////////////////
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        ////////////////////
+        // VBF phasespace //
+        ////////////////////
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+      }
+      //
+      // Reverse cut
+      if (m_isData) { // only for Data
+        ////////////////////////
+        // Monojet phasespace //
+        ////////////////////////
+        // Case 1
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        // Case 2
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        // Case 3
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        ////////////////////
+        // VBF phasespace //
+        ////////////////////
+        // Case 1
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        // Case 2
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        // Case 3
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met200_300_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met300_500_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+      }
+
+    } // m_isZee
 
 
 
 
-    // MET Trigger Efficiency Study
-    if (m_isWmunu && m_isData) {
+    //////////////////////////////////
+    // MET Trigger Efficiency Study //
+    //////////////////////////////////
+    if (m_isWmunu && sysName == "") {
       h_channel = "h_wmunu_";
       // MET Trigger Efficiency Study
       addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet"+sysName, 250, 0., 500.);
@@ -1320,6 +1487,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
+
   //------------
   // MUONS
   //------------
@@ -1391,6 +1559,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
   xAOD::MuonContainer* m_goodMuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
   xAOD::MuonContainer* m_goodMuonForZ = new xAOD::MuonContainer(SG::VIEW_ELEMENTS); // only For Z->mumu selections (goodMuonForZ are the non-isolated muons)
+  xAOD::MuonContainer* m_baselineMuon = new xAOD::MuonContainer(SG::VIEW_ELEMENTS);
 
   xAOD::ElectronContainer* m_goodElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
   xAOD::ElectronContainer* m_baselineElectron = new xAOD::ElectronContainer(SG::VIEW_ELEMENTS);
@@ -1540,6 +1709,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     m_goodJet->clear();
     m_goodMuon->clear();
     m_goodMuonForZ->clear();
+    m_baselineMuon->clear();
     m_goodElectron->clear();
     m_baselineElectron->clear();
     m_goodTau->clear();
@@ -1764,6 +1934,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
         muon->auxdata<bool>("brem") = false; // For overlap removal with electron
         m_goodMuonForZ->push_back( muon );
       }
+      if (dec_baseline(*muon)) {
+        m_baselineMuon->push_back( muon ); // For QCD multijet study
+      }
     } // end for loop over shallow copied muons
 
     ///////////////////
@@ -1814,6 +1987,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Muon
     if (m_goodMuon->size() > 1) std::sort(m_goodMuon->begin(), m_goodMuon->end(), DescendingPt());
     if (m_goodMuonForZ->size() > 1) std::sort(m_goodMuonForZ->begin(), m_goodMuonForZ->end(), DescendingPt());
+    if (m_baselineMuon->size() > 1) std::sort(m_baselineMuon->begin(), m_baselineMuon->end(), DescendingPt());
     // Electron
     if (m_goodElectron->size() > 1) std::sort(m_goodElectron->begin(), m_goodElectron->end(), DescendingPt());
     if (m_baselineElectron->size() > 1) std::sort(m_baselineElectron->begin(), m_baselineElectron->end(), DescendingPt());
@@ -1821,6 +1995,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     if (m_goodMuonForZ->size() > 1) std::partial_sort(m_goodMuonForZ->begin(), m_goodMuonForZ->begin()+2, m_goodMuonForZ->end(), DescendingPt());
     if (m_goodMuon->size() > 1) std::partial_sort(m_goodMuon->begin(), m_goodMuon->begin()+2, m_goodMuon->end(), DescendingPt());
+    if (m_baselineMuon->size() > 1) std::partial_sort(m_baselineMuon->begin(), m_baselineMuon->begin()+2, m_baselineMuon->end(), DescendingPt());
     if (m_goodElectron->size() > 1) std::partial_sort(m_goodElectron->begin(), m_goodElectron->begin()+2, m_goodElectron->end(), DescendingPt());
     if (m_baselineElectron->size() > 1) std::partial_sort(m_baselineElectron->begin(), m_baselineElectron->begin()+2, m_baselineElectron->end(), DescendingPt());
 
@@ -2770,6 +2945,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // Define Monojet and DiJet Properties
     //-------------------------------------
 
+    // Monojet
     float monojet_pt = 0;
     float monojet_phi = 0;
     float monojet_eta = 0;
@@ -2779,6 +2955,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     float dPhiMonojetMet_Wmunu = 0;
     float dPhiMonojetMet_Zee = 0;
     float dPhiMonojetMet_Wenu = 0;
+    // Dijet
     TLorentzVector jet1;
     TLorentzVector jet2;
     float jet1_pt = 0;
@@ -2793,6 +2970,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     float jet1_rapidity = 0;
     float jet2_rapidity = 0;
     float jet3_rapidity = 0;
+    // SM1
+    float sm1jet_pt = 0;
+    float sm1jet_phi = 0;
+    float sm1jet_eta = 0;
+    float sm1jet_rapidity = 0;
+    float dPhiSM1jetMet = 0;
+    float dPhiSM1jetMet_Zmumu = 0;
+    float dPhiSM1jetMet_Zee = 0;
+
 
     float goodJet_ht = 0;
     float dPhiJet1Met = 0;
@@ -2815,6 +3001,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     bool pass_monoJet = false; // Select monoJet
     bool pass_diJet = false; // Select DiJet
     bool pass_CJV = true; // Central Jet Veto (CJV)
+    bool pass_sm1Jet = false; // Select monoJet
     bool pass_dPhijetmet = true; // deltaPhi(Jet_i,MET)
     bool pass_dPhijetmet_Zmumu = true; // deltaPhi(Jet_i,MET_Zmumu)
     bool pass_dPhijetmet_Wmunu = true; // deltaPhi(Jet_i,MET_Wmunu)
@@ -2827,7 +3014,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     float dPhiMinjetmet_Wenu = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
 
 
-    // Monojet Selection
+    ///////////////////////
+    // Monojet Selection //
+    ///////////////////////
     if (m_goodJet->size() > 0) {
 
       monojet_pt = m_goodJet->at(0)->pt();
@@ -2837,7 +3026,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
       // Define Monojet
-      if ( monojet_pt >  m_monoJetPtCut ){
+      if ( monojet_pt > m_monoJetPtCut ){
         if ( fabs(monojet_eta) < m_monoJetEtaCut){
           if ( m_jetCleaningTight->accept( *m_goodJet->at(0) ) ){ //Tight Leading Jet 
             pass_monoJet = true;
@@ -2872,7 +3061,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-    // DiJet Selection
+    /////////////////////
+    // DiJet Selection //
+    /////////////////////
     if (m_goodJet->size() > 1) {
 
       jet1 = m_goodJet->at(0)->p4();
@@ -2928,6 +3119,64 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       }
 
     } // DiJet selection 
+
+
+
+    ///////////////////
+    // SM1 Selection //
+    ///////////////////
+    if (m_goodJet->size() > 0) {
+
+      sm1jet_pt = m_goodJet->at(0)->pt();
+      sm1jet_phi = m_goodJet->at(0)->phi();
+      sm1jet_eta = m_goodJet->at(0)->eta();
+      sm1jet_rapidity = m_goodJet->at(0)->rapidity();
+
+      // Define SM1jet
+      if ( sm1jet_pt > m_sm1JetPtCut ){
+        if ( fabs(sm1jet_eta) < m_sm1JetEtaCut){ // Threshold of leading jet in SM1
+          pass_sm1Jet = true;
+          //Info("execute()", "  Leading jet pt = %.2f GeV", sm1jet_pt * 0.001);
+        }
+      }
+
+      // loop over the jets in the Good Jets Container
+      if (pass_sm1Jet) {
+        for (const auto& jet : *m_goodJet) {
+          uint sm1jet_index = m_goodJet->at(0)->index(); // index for leading jet in SM1
+          if (jet->index() != sm1jet_index) { // For subleading jets in SM1
+            if (jet->pt() > 30000.) pass_sm1Jet = false; // Subleading jets in SM1 should not be greater than 30GeV
+          }
+        }
+      }
+
+      /* // Test SM1 jets
+      if (pass_sm1Jet) {
+        Info("execute()", " [SM1] Event # = %llu", eventInfo->eventNumber());
+        for (const auto& jet : *m_goodJet) {
+          Info("execute()", " [SM1] Jet_pt = %.2f GeV ", jet->pt()*0.001);
+        }
+      }
+      */
+
+
+      // deltaPhi(sm1jet,MET) decision
+
+      // For Znunu
+      if (m_isZnunu){
+        dPhiSM1jetMet = deltaPhi(sm1jet_phi, MET_phi);
+      }
+      // For Zmumu
+      if (m_isZmumu){
+        dPhiSM1jetMet_Zmumu = deltaPhi(sm1jet_phi, emulMET_Zmumu_phi);
+      }
+      // For Zee
+      if (m_isZee){
+        dPhiSM1jetMet_Zee = deltaPhi(sm1jet_phi, emulMET_Zee_phi);
+      }
+
+    } // SM1 selection 
+
 
 
 
@@ -3408,11 +3657,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       if ( pass_dPhijetmet_Zmumu ) {
                         if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu, monojet]dPhi(jet_i,MET) cut");
 
-                        // Calculate muon SF
+                        // Calculate muon SF for Zmumu
                         float mcEventWeight_Zmumu = 1.;
                         if (!m_isData) {
-                          m_isoMuonSF = false; // Muons in Z->mumu are not isolated
-                          double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSF, m_ttvaSF);
+                          double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
                           //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
                           mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
                         }
@@ -3464,11 +3712,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             if (sysName == "" && m_useBitsetCutflow) m_BitsetCutflow->FillCutflow("[Zmumu, VBF]dPhi(jet_i,MET) cut");
                             if (sysName == "" && m_useArrayCutflow) m_eventCutflow[26]+=1;
 
-                            // Calculate muon SF
+                            // Calculate muon SF for Zmumu
                             float mcEventWeight_Zmumu = 1.;
                             if (!m_isData) {
-                              m_isoMuonSF = false; // Muons in Z->mumu are not isolated
-                              double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSF, m_ttvaSF);
+                              double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
                               //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
                               mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
                             }
@@ -3552,10 +3799,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       if ( mjj > m_mjjCut ) {
                         if ( pass_dPhijetmet_Wmunu ) {
                           if ( pass_CJV ) {
-                            // Calculate muon SF
+                            // Calculate muon SF for Wmunu
                             float mcEventWeight_Wmunu = 1.;
                             if (!m_isData) {
-                              m_isoMuonSF = true; // Muons in W->munu are isolated
                               double totalMuonSF_Wmunu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSF, m_ttvaSF);
                               //Info("execute()", " Wmunu Total Muon SF = %.3f ", totalMuonSF_Wmunu);
                               mcEventWeight_Wmunu = mcEventWeight * totalMuonSF_Wmunu;
@@ -3821,7 +4067,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // VBF phasespace //
     ////////////////////
 
-    if (m_isZmumu && m_isData){
+    if (m_isZmumu && sysName == ""){
       h_channel = "h_zmumu_";
 
       if ( m_trigDecisionTool->isPassed("HLT_mu20_iloose_L1MU15") || m_trigDecisionTool->isPassed("HLT_mu50") ) { // pass muon trigger to avoid bias
@@ -3893,7 +4139,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     // W -> munu + JET MET Trigger Efficiency
     //-----------------------------------------
 
-    if (m_isWmunu && m_isData){
+    if (m_isWmunu && sysName == ""){
       h_channel = "h_wmunu_";
 
       if ( m_trigDecisionTool->isPassed("HLT_mu20_iloose_L1MU15") || m_trigDecisionTool->isPassed("HLT_mu50") ) { // pass muon trigger to avoid bias
@@ -3906,6 +4152,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                     if ( mjj > m_mjjCut ) {
                       if ( pass_dPhijetmet_Wmunu ) {
                         if ( pass_CJV ) {
+                          // Fill histogram
+                          // MET Trigger efficiency (for turn-on curve)
+                          hMap1D[h_channel+"vbf_eff_study_met_emulmet"+sysName]->Fill(emulMET_Zmumu * 0.001, 1.);
+                          if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+                            hMap1D[h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70"+sysName]->Fill(emulMET_Zmumu * 0.001, 1.);
+                          }
+                          if ( m_trigDecisionTool->isPassed("HLT_xe70_tc_lcw") ) {
+                            hMap1D[h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70_tclcw"+sysName]->Fill(emulMET_Zmumu * 0.001, 1.);
+                          }
                           // MET Trigger efficiency for mjj and dPhi(j1,j2)
                           // MET > 130 GeV
                           if ( emulMET_Wmunu > 130000. ) {
@@ -3963,9 +4218,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-    //------------------------------------------
-    // Z -> mumu + JET Multijet Background study
-    //------------------------------------------
+    //-----------------------------------------------------
+    // Z -> mumu + JET Multijet Background study (Method 1)
+    //-----------------------------------------------------
 
     if (m_isZmumu) {
       h_channel = "h_zmumu_";
@@ -3981,11 +4236,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 ////////////////////////
                 if ( pass_monoJet && pass_dPhijetmet_Zmumu ) {
 
-                  // Calculate muon SF
+                  // Calculate muon SF for Zmumu
                   float mcEventWeight_Zmumu = 1.;
                   if (!m_isData) {
-                    m_isoMuonSF = false; // Muons in Z->mumu are not isolated
-                    double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSF, m_ttvaSF);
+                    double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
                     //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
                     mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
                   }
@@ -4017,11 +4271,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 ////////////////////
                 if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_Zmumu) {
 
-                  // Calculate muon SF
+                  // Calculate muon SF for Zmumu
                   float mcEventWeight_Zmumu = 1.;
                   if (!m_isData) {
-                    m_isoMuonSF = false; // Muons in Z->mumu are not isolated
-                    double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSF, m_ttvaSF);
+                    double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
                     //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
                     mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
                   }
@@ -4065,9 +4318,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-    //----------------------------------------
-    // Z -> ee + JET Multijet Background study
-    //----------------------------------------
+    //---------------------------------------------------
+    // Z -> ee + JET Multijet Background study (Method 1)
+    //---------------------------------------------------
 
     if (m_isZee) {
       h_channel = "h_zee_";
@@ -4157,52 +4410,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                       hMap1D[h_channel+"vbf_multijet_study_dPhijj_ss_lep"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
                     }
                   }
+
+
                 } // VBF cut
-
-                /*
-                //------------------------------------
-                // Mll fit study for QCD background
-                //------------------------------------
-
-                // Method 2 (Fail LH Loose ID && Loose Iso)
-
-                //-----------------------
-                // Define Zee Selection
-                //-----------------------
-
-                float mll_electron_ = 0.; // Select Zee channel
-                float mT_electron = 0.;// For Wenu channel
-                float electron1_pt = 0.;
-                float electron2_pt = 0.;
-                float electron1_charge = 0.;
-                float electron2_charge = 0.;
-                bool pass_dielectronPtCut = false; // dielectron pT cut
-                bool pass_OSelectron = false; // Opposite sign change electron
-                bool pass_SSelectron = false; // Same sign change electron
-
-
-                if (m_baselineElectron->size() > 1) {
-
-                  TLorentzVector electron1 = m_baselineElectron->at(0)->p4();
-                  TLorentzVector electron2 = m_baselineElectron->at(1)->p4();
-                  electron1_pt = m_baselineElectron->at(0)->pt();
-                  electron2_pt = m_baselineElectron->at(1)->pt();
-                  electron1_charge = m_baselineElectron->at(0)->charge();
-                  electron2_charge = m_baselineElectron->at(1)->charge();
-                  auto Zmass_electron = electron1 + electron2;
-                  mll_electron = Zmass_electron.M();
-
-
-                  if ( electron1_pt >  m_LeadLepPtCut && electron2_pt > m_SubLeadLepPtCut ) pass_dielectronPtCut = true;
-                  if ( electron1_charge * electron2_charge < 0 ) pass_OSelectron = true;
-                  if ( electron1_charge * electron2_charge > 0 ) pass_SSelectron = true;
-
-                }
-*/
-
-
-
-
               } // MET cut
             } // Dielectron cut
           } // Lepton veto
@@ -4213,7 +4423,685 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
+    //-----------------------------------------------------
+    // Z -> mumu + JET Multijet Background study (Method 2)
+    //-----------------------------------------------------
 
+    ///////////////////////////////////////
+    // Nominal Muon cut with MC and Data //
+    ///////////////////////////////////////
+
+    if (m_isZmumu && sysName == "") {
+      h_channel = "h_zmumu_";
+
+      if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+
+        if ( m_goodJet->size() > 0 && m_goodElectron->size() == 0 && m_goodTau->size() == 0 && m_goodMuonForZ->size() > 1 ) {
+
+          if ( pass_dimuonPtCut && pass_OSmuon && numExtra == 0 ) {
+
+            ////////////////////////
+            // MonoJet phasespace //
+            ////////////////////////
+            if ( pass_monoJet && pass_dPhijetmet_Zmumu ) {
+
+              // Calculate muon SF for Zmumu
+              float mcEventWeight_Zmumu = 1.;
+              if (!m_isData) {
+                double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
+                //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
+              }
+
+              // Fill histogram
+              // 200 < MET < 300 GeV
+              if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
+              }
+              // 300 < MET < 500 GeV
+              if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met300_500_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
+              }
+              // MET > 500 GeV
+              if ( emulMET_Zmumu > 500000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met500_inf_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
+              }
+
+            } // Monojet
+
+
+            ////////////////////
+            // VBF phasespace //
+            ////////////////////
+            if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_Zmumu) {
+
+              // Calculate muon SF for Zmumu
+              float mcEventWeight_Zmumu = 1.;
+              if (!m_isData) {
+                double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
+                //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
+              }
+
+              // Fill histogram
+              // 200 < MET < 300 GeV
+              if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
+              }
+              // 300 < MET < 500 GeV
+              if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met300_500_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
+              }
+              // MET > 500 GeV
+              if ( emulMET_Zmumu > 500000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met500_inf_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
+              }
+
+
+            } // VBF
+
+          } // Norminal cut
+
+        } // At least 1 jet && electron and tau veto
+      } // MET Trigger
+    } // m_isZmumu with MC and Data
+
+
+    ////////////////////////////////
+    // Reverse Muon cut with Data //
+    ////////////////////////////////
+
+    if (m_isZmumu && m_isData) {
+      h_channel = "h_zmumu_";
+
+      if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+
+        if ( m_goodJet->size() > 0 && m_goodElectron->size() == 0 && m_goodTau->size() == 0 ) {
+
+          if ( pass_dimuonPtCut && m_baselineMuon->size() == 2 ) {
+
+            // S-S or O-S charge decision
+            float muon_OS = false;
+            if ( m_baselineMuon->at(0)->charge() * m_baselineMuon->at(1)->charge() < 0 ) muon_OS = true;
+
+            // Mll calculation
+            TLorentzVector baselineMuon1 = m_baselineMuon->at(0)->p4();
+            TLorentzVector baselineMuon2 = m_baselineMuon->at(1)->p4();
+            auto Zmass_baselineMuon = baselineMuon1 + baselineMuon2;
+            float mll_baselineMuon = Zmass_baselineMuon.M();
+
+            // Reverse cut decisions
+            bool m_case1_cut = false;
+            bool m_case2_cut = false;
+            bool m_case3_cut = false;
+            // Case 1: Fail ID, Fail Iso, Pass OS
+            if ( !m_loosemuonSelection->accept(*m_baselineMuon->at(0)) || !m_loosemuonSelection->accept(*m_baselineMuon->at(1)) ) { // Fail ID
+              if ( !m_IsoToolVBF->accept(*m_baselineMuon->at(0)) || !m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) { // Fail Iso
+                if ( muon_OS ) { // Pass OS
+                  m_case1_cut = true;
+                }
+              }
+            }
+            // Case 2: Fail ID, Pass Iso, Fail OS
+            if ( !m_loosemuonSelection->accept(*m_baselineMuon->at(0)) || !m_loosemuonSelection->accept(*m_baselineMuon->at(1)) ) { // Fail ID
+              if ( m_IsoToolVBF->accept(*m_baselineMuon->at(0)) && m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) { // Pass Iso
+                if ( !muon_OS ) { // Fail OS
+                  m_case2_cut = true;
+                }
+              }
+            }
+            // Case 3: Pass ID, Fail Iso, Fail OS
+            if ( m_loosemuonSelection->accept(*m_baselineMuon->at(0)) && m_loosemuonSelection->accept(*m_baselineMuon->at(1)) ) { // Pass ID
+              if ( !m_IsoToolVBF->accept(*m_baselineMuon->at(0)) || !m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) { // Fail Iso
+                if ( !muon_OS ) { // Fail OS
+                  m_case3_cut = true;
+                }
+              }
+            }
+
+
+            ////////////////////////
+            // MonoJet phasespace //
+            ////////////////////////
+            if ( pass_monoJet && pass_dPhijetmet_Zmumu ) {
+
+              // Calculate muon SF for Zmumu
+              float mcEventWeight_Zmumu = 1.;
+              if (!m_isData) {
+                double totalMuonSF_Zmumu = GetTotalMuonSF(*m_baselineMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
+                //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
+              }
+
+              // Fill histogram
+              // Case 1
+              if ( m_case1_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met300_500_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zmumu > 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met500_inf_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+              }
+              // Case 2
+              if ( m_case2_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met300_500_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zmumu > 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met500_inf_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+              }
+              // Case 3
+              if ( m_case3_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met300_500_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zmumu > 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met500_inf_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+              }
+
+            } // monojet
+
+
+            ////////////////////
+            // VBF phasespace //
+            ////////////////////
+            if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_Zmumu) {
+
+              // Calculate muon SF for Zmumu
+              float mcEventWeight_Zmumu = 1.;
+              if (!m_isData) {
+                double totalMuonSF_Zmumu = GetTotalMuonSF(*m_baselineMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
+                //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
+              }
+
+              // Fill histogram
+              // Case 1
+              if ( m_case1_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met300_500_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zmumu > 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met500_inf_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+              }
+              // Case 2
+              if ( m_case2_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met300_500_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zmumu > 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met500_inf_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+              }
+              // Case 3
+              if ( m_case3_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met300_500_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zmumu > 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met500_inf_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
+              }
+
+            } // VBF
+
+          } // Reverse cut
+        } // At least 1 jet && electron and tau veto
+      } // MET trigger
+    } // m_isZmumu with Data
+
+
+
+
+
+
+    //---------------------------------------------------
+    // Z -> ee + JET Multijet Background study (Method 2)
+    //---------------------------------------------------
+
+    ///////////////////////////////////////////
+    // Nominal Electron cut with MC and Data //
+    ///////////////////////////////////////////
+
+    if (m_isZee && sysName == "") {
+      h_channel = "h_zee_";
+
+      if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")){
+
+        if ( m_goodJet->size() > 0 && m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) {
+
+          if ( pass_dielectronPtCut && pass_OSelectron && m_goodElectron->size() == 2 ) {
+
+            ////////////////////////
+            // MonoJet phasespace //
+            ////////////////////////
+            if ( pass_monoJet && pass_dPhijetmet_Zee ) {
+
+              // Calculate electron SF
+              float mcEventWeight_Zee = 1.;
+              if (!m_isData) {
+                float totalElectronSF_Zee = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoElectronSF, m_trigSF);
+                //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
+                mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
+              }
+
+              // Fill histogram
+              // 200 < MET < 300 GeV
+              if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
+              }
+              // 300 < MET < 500 GeV
+              if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met300_500_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
+              }
+              // MET > 500 GeV
+              if ( emulMET_Zee > 500000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met500_inf_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
+              }
+
+            } // Monojet
+
+
+            ////////////////////
+            // VBF phasespace //
+            ////////////////////
+            if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_Zee) {
+
+              // Calculate electron SF
+              float mcEventWeight_Zee = 1.;
+              if (!m_isData) {
+                float totalElectronSF_Zee = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoElectronSF, m_trigSF);
+                //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
+                mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
+              }
+
+              // Fill histogram
+              // 200 < MET < 300 GeV
+              if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
+              }
+              // 300 < MET < 500 GeV
+              if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met300_500_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
+              }
+              // MET > 500 GeV
+              if ( emulMET_Zee > 500000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met500_inf_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
+              }
+
+
+            } // VBF
+
+          } // Norminal cut
+
+        } // At least 1 jet && muon and tau veto
+      } // Electron trigger
+    } // m_isZee with MC and Data
+
+
+    ////////////////////////////////////
+    // Reverse Electron cut with Data //
+    ////////////////////////////////////
+
+    if (m_isZee && m_isData) {
+      h_channel = "h_zee_";
+
+      if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")){
+
+        if ( m_goodJet->size() > 0 && m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) {
+
+          if ( pass_dielectronPtCut && m_baselineElectron->size() == 2 ) {
+
+            // S-S or O-S charge decision
+            float elec_OS = false;
+            if ( m_baselineElectron->at(0)->charge() * m_baselineElectron->at(1)->charge() < 0 ) elec_OS = true;
+
+            // Mll calculation
+            TLorentzVector baselineElectron1 = m_baselineElectron->at(0)->p4();
+            TLorentzVector baselineElectron2 = m_baselineElectron->at(1)->p4();
+            auto Zmass_baselineElectron = baselineElectron1 + baselineElectron2;
+            float mll_baselineElectron = Zmass_baselineElectron.M();
+
+            // Reverse cut decisions
+            bool m_case1_cut = false;
+            bool m_case2_cut = false;
+            bool m_case3_cut = false;
+            // Case 1: Fail ID, Fail Iso, Pass OS
+            if ( !m_LHToolLoose2015->accept(*m_baselineElectron->at(0)) || !m_LHToolLoose2015->accept(*m_baselineElectron->at(1)) ) { // Fail ID
+              if ( !m_IsoToolVBF->accept(*m_baselineElectron->at(0)) || !m_IsoToolVBF->accept(*m_baselineElectron->at(1)) ) { // Fail Iso
+                if ( elec_OS ) { // Pass OS
+                  m_case1_cut = true;
+                }
+              }
+            }
+            // Case 2: Fail ID, Pass Iso, Fail OS
+            if ( !m_LHToolLoose2015->accept(*m_baselineElectron->at(0)) || !m_LHToolLoose2015->accept(*m_baselineElectron->at(1)) ) { // Fail ID
+              if ( m_IsoToolVBF->accept(*m_baselineElectron->at(0)) && m_IsoToolVBF->accept(*m_baselineElectron->at(1)) ) { // Pass Iso
+                if ( !elec_OS ) { // Fail OS
+                  m_case2_cut = true;
+                }
+              }
+            }
+            // Case 3: Pass ID, Fail Iso, Fail OS
+            if ( m_LHToolLoose2015->accept(*m_baselineElectron->at(0)) && m_LHToolLoose2015->accept(*m_baselineElectron->at(1)) ) { // Pass ID
+              if ( !m_IsoToolVBF->accept(*m_baselineElectron->at(0)) || !m_IsoToolVBF->accept(*m_baselineElectron->at(1)) ) { // Fail Iso
+                if ( !elec_OS ) { // Fail OS
+                  m_case3_cut = true;
+                }
+              }
+            }
+
+
+            ////////////////////////
+            // MonoJet phasespace //
+            ////////////////////////
+            if ( pass_monoJet && pass_dPhijetmet_Zee ) {
+
+              // Calculate electron SF
+              float mcEventWeight_Zee = 1.;
+              if (!m_isData) {
+                float totalElectronSF_Zee = GetTotalElectronSF(*m_baselineElectron, m_recoSF, m_idSF, m_isoElectronSF, m_trigSF);
+                //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
+                mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
+              }
+
+              // Fill histogram
+              // Case 1
+              if ( m_case1_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met300_500_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zee > 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met500_inf_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+              }
+              // Case 2
+              if ( m_case2_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met300_500_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zee > 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met500_inf_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+              }
+              // Case 3
+              if ( m_case3_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met300_500_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zee > 500000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met500_inf_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+              }
+
+            } // monojet
+
+
+            ////////////////////
+            // VBF phasespace //
+            ////////////////////
+            if (pass_diJet && mjj > m_mjjCut && pass_CJV && pass_dPhijetmet_Zee) {
+
+              // Calculate electron SF
+              float mcEventWeight_Zee = 1.;
+              if (!m_isData) {
+                float totalElectronSF_Zee = GetTotalElectronSF(*m_baselineElectron, m_recoSF, m_idSF, m_isoElectronSF, m_trigSF);
+                //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
+                mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
+              }
+
+              // Fill histogram
+              // Case 1
+              if ( m_case1_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met300_500_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zee > 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met500_inf_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+              }
+              // Case 2
+              if ( m_case2_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met300_500_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zee > 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met500_inf_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+              }
+              // Case 3
+              if ( m_case3_cut ) { 
+                // 200 < MET < 300 GeV
+                if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // 300 < MET < 500 GeV
+                if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met300_500_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+                // MET > 500 GeV
+                if ( emulMET_Zee > 500000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met500_inf_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
+              }
+
+            } // VBF
+
+          } // Reverse cut
+
+        } // At least 1 jet && muon and tau veto
+      } // Electron trigger
+    } // m_isZee with Data
+
+
+
+    //------------------------
+    // Z -> nunu + JET in SM1
+    //------------------------
+
+
+    if (m_isZnunu && sysName == "") {
+      h_channel = "h_znunu_";
+
+      if ( m_trigDecisionTool->isPassed("HLT_xe70_tc_lcw") && MET > 150000. ) {
+
+        if ( m_goodJet->size() > 0 && m_goodElectron->size() == 0 && m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) {
+
+          if ( pass_sm1Jet && pass_dPhijetmet ) {
+
+            // Fill histogram
+            // For publication
+            hMap1D[h_channel+"sm1_met"+sysName]->Fill(MET * 0.001, mcEventWeight);
+            // Jets
+            hMap1D[h_channel+"sm1_njet"+sysName]->Fill(m_goodJet->size(), mcEventWeight);
+            hMap1D[h_channel+"sm1_jet_pt"+sysName]->Fill(sm1jet_pt * 0.001, mcEventWeight);
+            hMap1D[h_channel+"sm1_jet_phi"+sysName]->Fill(sm1jet_phi, mcEventWeight);
+            hMap1D[h_channel+"sm1_jet_eta"+sysName]->Fill(sm1jet_eta, mcEventWeight);
+            hMap1D[h_channel+"sm1_jet_rap"+sysName]->Fill(sm1jet_rapidity, mcEventWeight);
+            hMap1D[h_channel+"sm1_dPhimetjet"+sysName]->Fill(dPhiSM1jetMet, mcEventWeight);
+            hMap1D[h_channel+"sm1_dPhiMinmetjet"+sysName]->Fill(dPhiMinjetmet, mcEventWeight);
+
+          } // sm1jet
+        } // Veto
+      } // MET trigger and MET cut
+    } // m_isZnunu
+
+
+
+    //------------------------
+    // Z -> mumu + JET in SM1
+    //------------------------
+
+
+    if (m_isZmumu && sysName == "") {
+      h_channel = "h_zmumu_";
+
+      if ( m_trigDecisionTool->isPassed("HLT_xe70_tc_lcw") && emulMET_Zmumu > 150000. ) {
+
+        if ( m_goodJet->size() > 0 && m_goodElectron->size() == 0 && m_goodTau->size() == 0 && m_goodMuonForZ->size() > 1 ) {
+
+          if ( pass_dimuonPtCut && pass_OSmuon && numExtra == 0 && mll_muon > m_mllMin && mll_muon < m_mllMax ) {
+
+            if ( pass_sm1Jet && pass_dPhijetmet_Zmumu ) {
+
+              // Calculate muon SF for Zmumu
+              float mcEventWeight_Zmumu = 1.;
+              if (!m_isData) {
+                double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
+                //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
+                mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
+              }
+
+              // Fill histogram
+              // For publication
+              hMap1D[h_channel+"sm1_met_emulmet"+sysName]->Fill(emulMET_Zmumu * 0.001, mcEventWeight_Zmumu);
+              // Jets
+              hMap1D[h_channel+"sm1_njet"+sysName]->Fill(m_goodJet->size(), mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_jet_pt"+sysName]->Fill(sm1jet_pt * 0.001, mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_jet_phi"+sysName]->Fill(sm1jet_phi, mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_jet_eta"+sysName]->Fill(sm1jet_eta, mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_jet_rap"+sysName]->Fill(sm1jet_rapidity, mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_dPhimetjet"+sysName]->Fill(dPhiSM1jetMet_Zmumu, mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_dPhiMinmetjet"+sysName]->Fill(dPhiMinjetmet_Zmumu, mcEventWeight_Zmumu);
+              // Leptons
+              hMap1D[h_channel+"sm1_lepton1_pt"+sysName]->Fill(m_goodMuonForZ->at(0)->pt() * 0.001, mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_lepton2_pt"+sysName]->Fill(m_goodMuonForZ->at(1)->pt() * 0.001, mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_lepton1_phi"+sysName]->Fill(m_goodMuonForZ->at(0)->phi(), mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_lepton2_phi"+sysName]->Fill(m_goodMuonForZ->at(1)->phi(), mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_lepton1_eta"+sysName]->Fill(m_goodMuonForZ->at(0)->eta(), mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_lepton2_eta"+sysName]->Fill(m_goodMuonForZ->at(1)->eta(), mcEventWeight_Zmumu);
+              hMap1D[h_channel+"sm1_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
+
+            } // sm1jet
+          } // dimuon
+        } // Veto
+      } // MET trigger and MET cut
+    } // m_isZmumu
+
+
+
+
+    //----------------------
+    // Z -> ee + JET in SM1
+    //----------------------
+
+    if (m_isZee && sysName == "") {
+      h_channel = "h_zee_";
+
+      if ((!m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM18VH")) || (m_isData && m_trigDecisionTool->isPassed("HLT_e24_lhmedium_L1EM20VH")) || m_trigDecisionTool->isPassed("HLT_e60_lhmedium") || m_trigDecisionTool->isPassed("HLT_e120_lhloose")) {
+
+        if ( emulMET_Zee > 150000. ) {
+
+          if ( m_goodJet->size() > 0 && m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) {
+
+            if ( pass_dielectronPtCut && pass_OSelectron && m_goodElectron->size() == 2 && mll_electron > m_mllMin && mll_electron < m_mllMax ) {
+
+              if ( pass_sm1Jet && pass_dPhijetmet_Zee ) {
+
+                // Calculate electron SF
+                float mcEventWeight_Zee = 1.;
+                if (!m_isData) {
+                  float totalElectronSF_Zee = GetTotalElectronSF(*m_goodElectron, m_recoSF, m_idSF, m_isoElectronSF, m_trigSF);
+                  //Info("execute()", " Zee Total Electron SF = %.3f ", totalElectronSF_Zee);
+                  mcEventWeight_Zee = mcEventWeight * totalElectronSF_Zee;
+                }
+
+                // Fill histogram
+                // For publication
+                hMap1D[h_channel+"sm1_met_emulmet"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
+                // Jets
+                hMap1D[h_channel+"sm1_njet"+sysName]->Fill(m_goodJet->size(), mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_jet_pt"+sysName]->Fill(sm1jet_pt * 0.001, mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_jet_phi"+sysName]->Fill(sm1jet_phi, mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_jet_eta"+sysName]->Fill(sm1jet_eta, mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_jet_rap"+sysName]->Fill(sm1jet_rapidity, mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_dPhimetjet"+sysName]->Fill(dPhiSM1jetMet_Zee, mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_dPhiMinmetjet"+sysName]->Fill(dPhiMinjetmet_Zee, mcEventWeight_Zee);
+                // Leptons
+                hMap1D[h_channel+"sm1_lepton1_pt"+sysName]->Fill(m_goodElectron->at(0)->pt() * 0.001, mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_lepton2_pt"+sysName]->Fill(m_goodElectron->at(1)->pt() * 0.001, mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_lepton1_phi"+sysName]->Fill(m_goodElectron->at(0)->phi(), mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_lepton2_phi"+sysName]->Fill(m_goodElectron->at(1)->phi(), mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_lepton1_eta"+sysName]->Fill(m_goodElectron->at(0)->eta(), mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_lepton2_eta"+sysName]->Fill(m_goodElectron->at(1)->eta(), mcEventWeight_Zee);
+                hMap1D[h_channel+"sm1_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
+
+              } // sm1jet
+            } // dilepton
+          } // Veto
+        } // MET cut
+      } // Electron trigger
+    } // m_isZee
 
 
 
@@ -4294,11 +5182,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             Info("execute()", " mcEventWeight (mcWeight * pu_weight * sherpa_weight) = %f", print_mcWeight_nohigh*print_puweight*print_sherpaReweightValue);
                             Info("execute()", " mcEventWeight = %f", mcEventWeight);
 */
-                            // Calculate muon SF
+                            // Calculate muon SF for Zmumu
                             float mcEventWeight_Zmumu = 1.;
                             if (!m_isData) {
-                              m_isoMuonSF = false; // Muons in Z->mumu are not isolated
-                              double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSF, m_ttvaSF);
+                              double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
                               //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
                               mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
                             }
@@ -4322,11 +5209,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             Info("execute()", " mcEventWeight (mcWeight * pu_weight * sherpa_weight) = %f", print_mcWeight_nohigh*print_puweight*print_sherpaReweightValue);
                             Info("execute()", " mcEventWeight = %f", mcEventWeight);
 */
-                            // Calculate muon SF
+                            // Calculate muon SF for Zmumu
                             float mcEventWeight_Zmumu = 1.;
                             if (!m_isData) {
-                              m_isoMuonSF = false; // Muons in Z->mumu are not isolated
-                              double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSF, m_ttvaSF);
+                              double totalMuonSF_Zmumu = GetTotalMuonSF(*m_goodMuon, m_recoSF, m_isoMuonSFforZ, m_ttvaSF);
                               //Info("execute()", " Zmumu Total Muon SF = %.3f ", totalMuonSF_Zmumu);
                               mcEventWeight_Zmumu = mcEventWeight * totalMuonSF_Zmumu;
                             }
@@ -4499,6 +5385,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   // VBF study
   delete m_goodMuonForZ;
   delete m_goodMuon;
+  delete m_baselineMuon;
   delete m_goodElectron;
   delete m_baselineElectron;
   delete m_goodTau;
