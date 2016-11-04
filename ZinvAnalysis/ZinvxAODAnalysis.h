@@ -29,6 +29,8 @@
 #include "xAODTracking/VertexContainer.h"
 #include "xAODTracking/TrackParticleContainer.h"
 #include "xAODTracking/TrackParticlexAODHelpers.h"
+#include "xAODTruth/TruthEventContainer.h"
+#include "xAODTruth/TruthParticleContainer.h"
 
 // GRL
 #include "GoodRunsLists/GoodRunsListSelectionTool.h"
@@ -162,7 +164,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
 
     // Cut values
     float m_muonPtCut; //!
-    float m_muonEtaCut; //!
+    float m_lepEtaCut; //!
     float m_elecPtCut; //!
     float m_elecEtaCut; //!
     float m_photPtCut; //!
@@ -265,7 +267,7 @@ class ZinvxAODAnalysis : public EL::Algorithm
     ToolHandle<IJERTool> m_jerHandle; //!
     JERSmearingTool* m_jerSmearingTool; //!
     JetVertexTaggerTool* m_jvtag; //!
-    ToolHandle<IJetUpdateJvt> m_jvtagup; //!
+    //ToolHandle<IJetUpdateJvt> m_jvtagup; //!
     JetCleaningTool *m_jetCleaningTight; //!
     JetCleaningTool *m_jetCleaningLoose; //!
 

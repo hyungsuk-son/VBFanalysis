@@ -308,11 +308,11 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_isWenu = false;
 
   // Enable Systematics
-  m_doSys = true;
+  m_doSys = false;
 
   // Cut values
   m_muonPtCut = 7000.; /// MeV
-  m_muonEtaCut = 2.5;
+  m_lepEtaCut = 2.5;
   m_elecPtCut = 7000.; /// MeV
   m_elecEtaCut = 2.47;
   m_photPtCut = 20000.; /// MeV
@@ -739,8 +739,10 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("DataScaleFactorUP",   1.) );
   EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("DataScaleFactorDOWN", 1. / 1.23) );
   EL_RETURN_CHECK("initialize()",m_prwTool->setProperty("UnrepresentedDataAction", 2));
-  if ( !(mcChannelNumber == 363121 || mcChannelNumber == 363351 || // One of the Ztautau or Wtaunu (from Valentinos)
-        (mcChannelNumber >= 361063 && mcChannelNumber <= 361068) || mcChannelNumber == 361088 || mcChannelNumber == 361089) ) // Diboson samples
+  if ( !( mcChannelNumber == 363121 || mcChannelNumber == 363351 || // One of the Ztautau or Wtaunu (from Valentinos)
+        (mcChannelNumber >= 361063 && mcChannelNumber <= 361068) || mcChannelNumber == 361088 || mcChannelNumber == 361089 || // Diboson samples
+        (mcChannelNumber >= 363123 && mcChannelNumber <= 363170) // Madgraph Z boson samples
+        ) )
   { // These samples have missing mu values and the pileup reweighting tool doesn't like that and crashes.
     EL_RETURN_CHECK("initialize()",m_prwTool->initialize() );
   }    
@@ -1095,6 +1097,18 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
       }
 
+      /////////////////////////////////
+      // Truth Z -> mumu + JET EVENT //
+      /////////////////////////////////
+      if (!m_isData && sysName == "") {
+        addHist(hMap1D, h_channel+"truth_monojet_met_emulmet"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"truth_monojet_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"truth_vbf_met_emulmet"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"truth_vbf_mjj"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"truth_vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"truth_vbf_mll"+sysName, 150, 0., 300.);
+      }
+
     } // m_isZmumu
 
 
@@ -1277,6 +1291,18 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+      }
+
+      ///////////////////////////////
+      // Truth Z -> ee + JET EVENT //
+      ///////////////////////////////
+      if (!m_isData && sysName == "") {
+        addHist(hMap1D, h_channel+"truth_monojet_met_emulmet"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"truth_monojet_mll"+sysName, 150, 0., 300.);
+        addHist(hMap1D, h_channel+"truth_vbf_met_emulmet"+sysName, nbinMET, binsMET);
+        addHist(hMap1D, h_channel+"truth_vbf_mjj"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"truth_vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"truth_vbf_mll"+sysName, 150, 0., 300.);
       }
 
     } // m_isZee
@@ -1495,6 +1521,8 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
+
+
   //------------
   // MUONS
   //------------
@@ -1579,6 +1607,734 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   xAOD::MissingETContainer* m_met = new xAOD::MissingETContainer();
   xAOD::MissingETAuxContainer* m_metAux = new xAOD::MissingETAuxContainer();
   m_met->setStore(m_metAux);
+
+
+  // Create Truth Container
+  ConstDataVector<xAOD::TruthParticleContainer> * m_selectedTruthNeutrino = new ConstDataVector<xAOD::TruthParticleContainer>(SG::VIEW_ELEMENTS);
+  ConstDataVector<xAOD::TruthParticleContainer> * m_selectedTruthMuon = new ConstDataVector<xAOD::TruthParticleContainer>(SG::VIEW_ELEMENTS);
+  ConstDataVector<xAOD::TruthParticleContainer> * m_selectedTruthElectron = new ConstDataVector<xAOD::TruthParticleContainer>(SG::VIEW_ELEMENTS);
+  ConstDataVector<xAOD::TruthParticleContainer> * m_selectedTruthTau = new ConstDataVector<xAOD::TruthParticleContainer>(SG::VIEW_ELEMENTS);
+  ConstDataVector<xAOD::JetContainer> * m_selectedTruthJet = new ConstDataVector<xAOD::JetContainer>(SG::VIEW_ELEMENTS);
+  //ConstDataVector<xAOD::JetContainer> * m_selectedTruthWZJet = new ConstDataVector<xAOD::JetContainer>(SG::VIEW_ELEMENTS);
+
+
+  //--------------------
+  // MC Truth selection
+  //--------------------
+
+
+  // real MET
+  float truthMET;
+  float truthMET_phi;
+  // Zmumu
+  float truth_mll_muon = 0.;
+  float truth_muon1_pt = 0.;
+  float truth_muon2_pt = 0.;
+  bool pass_truth_dimuonCut = false; // dimuon cut
+  bool pass_truth_OSmuon = false; // Opposite sign change muon
+  float m_truthEmulMETZmumu = 0.;
+  float m_truthEmulMETPhiZmumu = 0.;
+  float m_truthMll_muon = 0.;
+  // Zee
+  float truth_mll_electron = 0.;
+  float truth_electron1_pt = 0.;
+  float truth_electron2_pt = 0.;
+  bool pass_truth_dielectronCut = false; // dielectron cut
+  bool pass_truth_OSelectron = false; // Opposite sign change electron
+  float m_truthEmulMETZee = 0.;
+  float m_truthEmulMETPhiZee = 0.;
+  float m_truthMll_electron = 0.;
+  // Monojet
+  float truth_monojet_pt = 0;
+  float truth_monojet_phi = 0;
+  float truth_monojet_eta = 0;
+  float truth_monojet_rapidity = 0;
+  float truth_dPhiMonojetMet = 0;
+  float truth_dPhiMonojetMet_Zmumu = 0;
+  float truth_dPhiMonojetMet_Zee = 0;
+  // Dijet
+  TLorentzVector truth_jet1;
+  TLorentzVector truth_jet2;
+  float truth_jet1_pt = 0;
+  float truth_jet2_pt = 0;
+  float truth_jet3_pt = 0;
+  float truth_jet1_phi = 0;
+  float truth_jet2_phi = 0;
+  float truth_jet3_phi = 0;
+  float truth_jet1_eta = 0;
+  float truth_jet2_eta = 0;
+  float truth_jet3_eta = 0;
+  float truth_jet1_rapidity = 0;
+  float truth_jet2_rapidity = 0;
+  float truth_jet3_rapidity = 0;
+
+  float truth_Jet_ht = 0;
+  float truth_dPhiJet1Met = 0;
+  float truth_dPhiJet2Met = 0;
+  float truth_dPhiJet3Met = 0;
+  float truth_dPhiJet1Met_Zmumu = 0;
+  float truth_dPhiJet2Met_Zmumu = 0;
+  float truth_dPhiJet3Met_Zmumu = 0;
+  float truth_dPhiJet1Met_Zee = 0;
+  float truth_dPhiJet2Met_Zee = 0;
+  float truth_dPhiJet3Met_Zee = 0;
+
+  float truth_mjj = 0;
+  bool pass_truth_monoJet = false; // Select monoJet
+  bool pass_truth_diJet = false; // Select DiJet
+  bool pass_truth_CJV = true; // Central Jet Veto (CJV)
+  bool pass_truth_dPhijetmet = true; // deltaPhi(Jet_i,MET)
+  bool pass_truth_dPhijetmet_Zmumu = true; // deltaPhi(Jet_i,MET_Zmumu)
+  bool pass_truth_dPhijetmet_Zee = true; // deltaPhi(Jet_i,MET_Zee)
+  float truth_dPhiMinjetmet = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+  float truth_dPhiMinjetmet_Zmumu = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+  float truth_dPhiMinjetmet_Zee = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+
+  /*
+  // For dressed-level jets
+  // MonoWZjet
+  float truth_monoWZjet_pt = 0;
+  float truth_monoWZjet_phi = 0;
+  float truth_monoWZjet_eta = 0;
+  float truth_monoWZjet_rapidity = 0;
+  float truth_dPhiMonoWZjetMet = 0;
+  float truth_dPhiMonoWZjetMet_Zmumu = 0;
+  float truth_dPhiMonoWZjetMet_Zee = 0;
+  // DiWZjet
+  TLorentzVector truth_WZjet1;
+  TLorentzVector truth_WZjet2;
+  float truth_WZjet1_pt = 0;
+  float truth_WZjet2_pt = 0;
+  float truth_WZjet3_pt = 0;
+  float truth_WZjet1_phi = 0;
+  float truth_WZjet2_phi = 0;
+  float truth_WZjet3_phi = 0;
+  float truth_WZjet1_eta = 0;
+  float truth_WZjet2_eta = 0;
+  float truth_WZjet3_eta = 0;
+  float truth_WZjet1_rapidity = 0;
+  float truth_WZjet2_rapidity = 0;
+  float truth_WZjet3_rapidity = 0;
+
+  float truth_WZJet_ht = 0;
+  float truth_dPhiWZJet1Met = 0;
+  float truth_dPhiWZJet2Met = 0;
+  float truth_dPhiWZJet3Met = 0;
+  float truth_dPhiWZJet1Met_Zmumu = 0;
+  float truth_dPhiWZJet2Met_Zmumu = 0;
+  float truth_dPhiWZJet3Met_Zmumu = 0;
+  float truth_dPhiWZJet1Met_Zee = 0;
+  float truth_dPhiWZJet2Met_Zee = 0;
+  float truth_dPhiWZJet3Met_Zee = 0;
+
+  float truth_WZmjj = 0;
+  bool pass_truth_monoWZJet = false; // Select monoJet
+  bool pass_truth_diWZJet = false; // Select DiJet
+  bool pass_truth_WZ_CJV = true; // Central Jet Veto (CJV)
+  bool pass_truth_dPhiWZjetmet = true; // deltaPhi(Jet_i,MET)
+  bool pass_truth_dPhiWZjetmet_Zmumu = true; // deltaPhi(Jet_i,MET_Zmumu)
+  bool pass_truth_dPhiWZjetmet_Zee = true; // deltaPhi(Jet_i,MET_Zee)
+  float truth_dPhiMinWZjetmet = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+  float truth_dPhiMinWZjetmet_Zmumu = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+  float truth_dPhiMinWZjetmet_Zee = 10.; // initialize with 10. to obtain minimum value of deltaPhi(Jet_i,MET)
+  */
+
+
+  if (!m_isData) {
+
+    const xAOD::TruthEventContainer* m_truthEvents = nullptr;
+    if ( !m_event->retrieve( m_truthEvents, "TruthEvents" ).isSuccess() ){
+      Error("execute()", "Failed to retrieve TruthEvents container. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+
+    const xAOD::JetContainer* m_truthJets = nullptr;
+    if ( !m_event->retrieve( m_truthJets, "AntiKt4TruthJets" ).isSuccess() ){
+      Error("execute()", "Failed to retrieve AntiKt4TruthJets container. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+/*
+    const xAOD::JetContainer* m_truthWZJets = nullptr;
+    if ( !m_event->retrieve( m_truthWZJets, "AntiKt4TruthWZJets" ).isSuccess() ){
+      Error("execute()", "Failed to retrieve AntiKt4TruthWZJets container. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+*/
+    const xAOD::MissingETContainer*  m_truthMET = nullptr;
+    if ( !m_event->retrieve( m_truthMET, "MET_Truth" ).isSuccess() ){
+      Error("execute()", "Failed to retrieve MET_Truth container. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+
+    const xAOD::MissingET* truthmet = (*m_truthMET)["NonInt"];
+    truthMET = truthmet->met();
+    truthMET_phi = truthmet->phi();
+
+    const xAOD::TruthParticleContainer* m_truthNeutrinos = nullptr;
+    if ( !m_event->retrieve( m_truthNeutrinos, "EXOT5TruthNeutrinos" ).isSuccess() ){
+      Error("execute()", "Failed to retrieve EXOT5TruthNeutrinos container. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+
+    const xAOD::TruthParticleContainer* m_truthMuons = nullptr;
+    if ( !m_event->retrieve( m_truthMuons, "EXOT5TruthMuons" ).isSuccess() ){
+      Error("execute()", "Failed to retrieve EXOT5TruthMuons container. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+
+    const xAOD::TruthParticleContainer* m_truthElectrons = nullptr;
+    if ( !m_event->retrieve( m_truthElectrons, "EXOT5TruthElectrons" ).isSuccess() ){
+      Error("execute()", "Failed to retrieve EXOT5TruthElectrons container. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+
+    const xAOD::TruthParticleContainer* m_truthTaus = nullptr;
+    if ( !m_event->retrieve( m_truthTaus, "TruthTaus" ).isSuccess() ){
+      Error("execute()", "Failed to retrieve TruthTaus container. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+
+
+    //----------------
+    // Truth Neutinos
+    //----------------
+    /// shallow copy to retrive auxdata variables
+    std::pair< xAOD::TruthParticleContainer*, xAOD::ShallowAuxContainer* > truth_neutrino_shallowCopy = xAOD::shallowCopyContainer( *m_truthNeutrinos );
+    xAOD::TruthParticleContainer* truth_neutrinoSC = truth_neutrino_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    bool setLinksTruthNeutrino = xAOD::setOriginalObjectLink(*m_truthNeutrinos,*truth_neutrinoSC);
+    if(!setLinksTruthNeutrino) {
+      Error("execute()", "Failed to set original object links");
+      return StatusCode::FAILURE;
+    }
+
+    TLorentzVector truthNeutrinoVector;
+
+    for (const auto &neutrino : *truth_neutrinoSC) {
+      truthNeutrinoVector += neutrino->p4();
+      if (std::abs(neutrino->auxdata<int>("motherID")) < 111 && std::abs(neutrino->auxdata<int>("motherID")) != 15) {
+        m_selectedTruthNeutrino->push_back(neutrino);
+      }
+    } 
+
+
+    //-------------
+    // Truth Muons
+    //-------------
+    /// shallow copy to retrive auxdata variables
+    std::pair< xAOD::TruthParticleContainer*, xAOD::ShallowAuxContainer* > truth_muon_shallowCopy = xAOD::shallowCopyContainer( *m_truthMuons );
+    xAOD::TruthParticleContainer* truth_muonSC = truth_muon_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    bool setLinksTruthMuon = xAOD::setOriginalObjectLink(*m_truthMuons,*truth_muonSC);
+    if(!setLinksTruthMuon) {
+      Error("execute()", "Failed to set original object links");
+      return StatusCode::FAILURE;
+    }
+
+    for (const auto &muon : *truth_muonSC) {
+      if (std::abs(muon->auxdata<int>("motherID")) < 111 && std::abs(muon->auxdata<int>("motherID")) != 15) {
+        TLorentzVector fourVector;
+        fourVector.SetPtEtaPhiE(muon->auxdata<float>("pt_dressed"), muon->auxdata<float>("eta_dressed"), muon->auxdata<float>("phi_dressed"), muon->auxdata<float>("e_dressed"));
+        muon->setE(fourVector.E());                
+        muon->setPx(fourVector.Px());
+        muon->setPy(fourVector.Py());
+        muon->setPz(fourVector.Pz());
+        m_selectedTruthMuon->push_back(muon);
+      }
+    } 
+
+
+    //-----------------
+    // Truth Electrons
+    //-----------------
+    /// shallow copy to retrive auxdata variables
+    std::pair< xAOD::TruthParticleContainer*, xAOD::ShallowAuxContainer* > truth_elec_shallowCopy = xAOD::shallowCopyContainer( *m_truthElectrons );
+    xAOD::TruthParticleContainer* truth_elecSC = truth_elec_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    bool setLinksTruthElec = xAOD::setOriginalObjectLink(*m_truthElectrons,*truth_elecSC);
+    if(!setLinksTruthElec) {
+      Error("execute()", "Failed to set original object links");
+      return StatusCode::FAILURE;
+    }
+
+    // iterate over our shallow copy
+    for (const auto &electron : *truth_elecSC) {
+      if (std::abs(electron->auxdata<int>("motherID")) < 111 && std::abs(electron->auxdata<int>("motherID")) != 15) {
+        TLorentzVector fourVector;
+        fourVector.SetPtEtaPhiE(electron->auxdata<float>("pt_dressed"), electron->auxdata<float>("eta_dressed"), electron->auxdata<float>("phi_dressed"), electron->auxdata<float>("e_dressed"));
+        electron->setE(fourVector.E());                
+        electron->setPx(fourVector.Px());
+        electron->setPy(fourVector.Py());
+        electron->setPz(fourVector.Pz());
+        m_selectedTruthElectron->push_back(electron);
+      }
+    }
+
+
+    //------------
+    // Truth Taus
+    //------------
+    /// shallow copy to retrive auxdata variables
+    std::pair< xAOD::TruthParticleContainer*, xAOD::ShallowAuxContainer* > truth_tau_shallowCopy = xAOD::shallowCopyContainer( *m_truthTaus );
+    xAOD::TruthParticleContainer* truth_tauSC = truth_tau_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    bool setLinksTruthTau = xAOD::setOriginalObjectLink(*m_truthTaus,*truth_tauSC);
+    if(!setLinksTruthTau) {
+      Error("execute()", "Failed to set original object links");
+      return StatusCode::FAILURE;
+    }
+
+    for (const auto &tau : *truth_tauSC) {
+      if (tau->auxdata<unsigned int>("classifierParticleOrigin") == 12 || tau->auxdata<unsigned int>("classifierParticleOrigin") == 13) {
+        m_selectedTruthTau->push_back(tau);
+      }
+    }
+
+
+
+
+    //------------
+    // Truth Jets
+    //------------
+    /// shallow copy to retrive auxdata variables
+    std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > truth_jet_shallowCopy = xAOD::shallowCopyContainer( *m_truthJets );
+    xAOD::JetContainer* truth_jetSC = truth_jet_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    bool setLinksTruthJet = xAOD::setOriginalObjectLink(*m_truthJets,*truth_jetSC);
+    if(!setLinksTruthJet) {
+      Error("execute()", "Failed to set original object links");
+      return StatusCode::FAILURE;
+    }
+
+    //if (m_truthNeutrinos->size() > 1) m_truthNeutrinoMET = truthNeutrinoVector.Pt();
+
+    for (const auto &jet : *truth_jetSC) {
+      if (jet->pt() < 20000. || std::abs(jet->rapidity()) > 4.4) continue;
+      bool fakeJet = false;
+      float dRmin = 9.;
+      for (const auto &muon : *truth_muonSC) {
+        if (muon->pt() > 7000. &&  std::abs(muon->eta()) < 2.5){
+          float dR = deltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi());
+          if (dR < dRmin) dRmin = dR;
+          if (dR < m_ORJETdeltaR) fakeJet = true;
+        }
+      }
+      for (const auto &electron : *truth_elecSC) {
+        if (electron->pt() > 7000. &&  std::abs(electron->eta()) < 2.5 && deltaR(jet->eta(), electron->eta(), jet->phi(), electron->phi()) < m_ORJETdeltaR) fakeJet = true;
+      }
+      if (fakeJet) continue;
+
+      m_selectedTruthJet->push_back(jet);
+    }
+
+/*
+    //---------------------------------------
+    // Truth WZJets (dressed-level truth jet)
+    //---------------------------------------
+    /// shallow copy to retrive auxdata variables
+    std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > truth_WZjet_shallowCopy = xAOD::shallowCopyContainer( *m_truthWZJets );
+    xAOD::JetContainer* truth_WZjetSC = truth_WZjet_shallowCopy.first;
+
+    // Decorate objects with ElementLink to their originals -- this is needed to retrieve the contribution of each object to the MET terms.
+    bool setLinksTruthWZJet = xAOD::setOriginalObjectLink(*m_truthWZJets,*truth_WZjetSC);
+    if(!setLinksTruthWZJet) {
+      Error("execute()", "Failed to set original object links");
+      return StatusCode::FAILURE;
+    }
+
+    for (const auto &jet : *truth_WZjetSC) {
+      if (jet->pt() < 20000. || std::abs(jet->rapidity()) > 4.4) continue;
+      bool fakeJet = false;
+      float dRmin = 9.;
+      for (const auto &muon : *truth_muonSC) {
+        if (muon->pt() > 7000. &&  std::abs(muon->eta()) < 2.5){
+          float dR = deltaR(jet->eta(), muon->eta(), jet->phi(), muon->phi());
+          if (dR < dRmin) dRmin = dR;
+          if (dR < m_ORJETdeltaR) fakeJet = true;
+        }
+      }
+      for (const auto &electron : *truth_elecSC) {
+        if (electron->pt() > 7000. &&  std::abs(electron->eta()) < 2.5 && deltaR(jet->eta(), electron->eta(), jet->phi(), electron->phi()) < m_ORJETdeltaR) fakeJet = true;
+      }
+      if (fakeJet) continue;
+
+      xAOD::Jet* truthWZJet = new xAOD::Jet();
+      m_selectedTruthWZJet->push_back(truthWZJet);
+      *truthWZJet = *jet;
+    }
+*/
+
+
+
+
+
+    if (m_selectedTruthJet->size() > 1) std::sort(m_selectedTruthJet->begin(), m_selectedTruthJet->end(), DescendingPt());
+    //if (m_selectedTruthWZJet->size() > 1) std::sort(m_selectedTruthWZJet->begin(), m_selectedTruthWZJet->end(), DescendingPt());
+    if (m_selectedTruthElectron->size() > 1) std::partial_sort(m_selectedTruthElectron->begin(), m_selectedTruthElectron->begin()+2, m_selectedTruthElectron->end(), DescendingPt());
+    if (m_selectedTruthMuon->size() > 1) std::partial_sort(m_selectedTruthMuon->begin(), m_selectedTruthMuon->begin()+2, m_selectedTruthMuon->end(), DescendingPt());
+
+
+
+    //--------------------------------------
+    // Define Truth Zmumu and Zee Selection
+    //--------------------------------------
+
+    // Zmumu
+    if (m_selectedTruthMuon->size() > 1) {
+
+      TLorentzVector truth_muon1 = m_selectedTruthMuon->at(0)->p4();
+      TLorentzVector truth_muon2 = m_selectedTruthMuon->at(1)->p4();
+      truth_muon1_pt = truth_muon1.Perp();
+      truth_muon2_pt = truth_muon2.Perp();
+      auto truth_Zmumu = truth_muon1 + truth_muon2;
+      truth_mll_muon = truth_Zmumu.M();
+      m_truthEmulMETZmumu = truth_Zmumu.Pt();
+      m_truthEmulMETPhiZmumu = truth_Zmumu.Phi();
+
+      if ( truth_muon1_pt >  m_LeadLepPtCut && truth_muon2_pt > m_SubLeadLepPtCut
+          && TMath::Abs(truth_muon1.Eta()) < m_lepEtaCut && TMath::Abs(truth_muon2.Eta()) < m_lepEtaCut ) pass_truth_dimuonCut = true;
+      if ( m_selectedTruthMuon->at(0)->pdgId() * m_selectedTruthMuon->at(1)->pdgId() < 0 ) pass_truth_OSmuon = true;
+
+    } // Zmumu selection loop
+
+    // Zee
+    if (m_selectedTruthElectron->size() > 1) {
+
+      TLorentzVector truth_electron1 = m_selectedTruthElectron->at(0)->p4();
+      TLorentzVector truth_electron2 = m_selectedTruthElectron->at(1)->p4();
+      truth_electron1_pt = truth_electron1.Perp();
+      truth_electron2_pt = truth_electron2.Perp();
+      auto truth_Zee = truth_electron1 + truth_electron2;
+      truth_mll_electron = truth_Zee.M();
+      m_truthEmulMETZee = truth_Zee.Pt();
+      m_truthEmulMETPhiZee = truth_Zee.Phi();
+
+      if ( truth_electron1_pt >  m_LeadLepPtCut && truth_electron2_pt > m_SubLeadLepPtCut
+          && TMath::Abs(truth_electron1.Eta()) < m_lepEtaCut && TMath::Abs(truth_electron2.Eta()) < m_lepEtaCut ) pass_truth_dielectronCut = true;
+      if ( m_selectedTruthElectron->at(0)->pdgId() * m_selectedTruthElectron->at(1)->pdgId() < 0 ) pass_truth_OSelectron = true;
+
+    } // Zee selection loop
+
+
+
+
+
+    //------------------------------------------
+    // Define Truth Monojet and DiJet Properties
+    //------------------------------------------
+
+    ///////////////////////
+    // Monojet Selection //
+    ///////////////////////
+    if (m_selectedTruthJet->size() > 0) {
+
+      truth_monojet_pt = m_selectedTruthJet->at(0)->pt();
+      truth_monojet_phi = m_selectedTruthJet->at(0)->phi();
+      truth_monojet_eta = m_selectedTruthJet->at(0)->eta();
+      truth_monojet_rapidity = m_selectedTruthJet->at(0)->rapidity();
+
+
+      // Define Monojet
+      if ( truth_monojet_pt > m_monoJetPtCut ){
+        if ( fabs(truth_monojet_eta) < m_monoJetEtaCut){
+          pass_truth_monoJet = true;
+        }
+      }
+
+      // deltaPhi(truth_monojet,MET) decision
+      // For Zmumu
+      if (m_isZmumu){
+        truth_dPhiMonojetMet_Zmumu = deltaPhi(truth_monojet_phi, m_truthEmulMETPhiZmumu);
+      }
+      // For Zee
+      if (m_isZee){
+        truth_dPhiMonojetMet_Zee = deltaPhi(truth_monojet_phi, m_truthEmulMETPhiZmumu);
+      }
+
+    } // MonoJet selection 
+
+
+
+    /////////////////////
+    // DiJet Selection //
+    /////////////////////
+    if (m_selectedTruthJet->size() > 1) {
+
+      truth_jet1 = m_selectedTruthJet->at(0)->p4();
+      truth_jet2 = m_selectedTruthJet->at(1)->p4();
+      truth_jet1_pt = m_selectedTruthJet->at(0)->pt();
+      truth_jet2_pt = m_selectedTruthJet->at(1)->pt();
+      truth_jet1_phi = m_selectedTruthJet->at(0)->phi();
+      truth_jet2_phi = m_selectedTruthJet->at(1)->phi();
+      truth_jet1_eta = m_selectedTruthJet->at(0)->eta();
+      truth_jet2_eta = m_selectedTruthJet->at(1)->eta();
+      truth_jet1_rapidity = m_selectedTruthJet->at(0)->rapidity();
+      truth_jet2_rapidity = m_selectedTruthJet->at(1)->rapidity();
+      auto truth_dijet = truth_jet1 + truth_jet2;
+      truth_mjj = truth_dijet.M();
+
+      // Define Dijet
+      if ( truth_jet1_pt > m_diJet1PtCut && truth_jet2_pt > m_diJet2PtCut ){
+        if ( fabs(truth_jet1_rapidity) < m_diJetRapCut && fabs(truth_jet2_rapidity) < m_diJetRapCut ){
+          pass_truth_diJet = true;
+        }
+      }
+
+      // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET) decision
+      // For Zmumu
+      if (m_isZmumu){
+        truth_dPhiJet1Met_Zmumu = deltaPhi(truth_jet1_phi, m_truthEmulMETPhiZmumu);
+        truth_dPhiJet2Met_Zmumu = deltaPhi(truth_jet2_phi, m_truthEmulMETPhiZmumu);
+      }
+      // For Zee
+      if (m_isZee){
+        truth_dPhiJet1Met_Zee = deltaPhi(truth_jet1_phi, m_truthEmulMETPhiZee);
+        truth_dPhiJet2Met_Zee = deltaPhi(truth_jet2_phi, m_truthEmulMETPhiZee);
+      }
+
+    } // DiJet selection 
+
+    // For jet3
+    if (m_selectedTruthJet->size() > 2) {
+      truth_jet3_pt = m_selectedTruthJet->at(2)->pt();
+      truth_jet3_phi = m_selectedTruthJet->at(2)->phi();
+      truth_jet3_eta = m_selectedTruthJet->at(2)->eta();
+      truth_jet3_rapidity = m_selectedTruthJet->at(2)->rapidity();
+      // deltaPhi(Jet3,MET)
+      truth_dPhiJet3Met = deltaPhi(truth_jet3_phi, truthMET_phi);
+      truth_dPhiJet3Met_Zmumu = deltaPhi(truth_jet3_phi, m_truthEmulMETPhiZmumu);
+      truth_dPhiJet3Met_Zee = deltaPhi(truth_jet3_phi, m_truthEmulMETPhiZee);
+    }
+
+
+    // Define deltaPhi(Jet_i,MET) cut and Central Jet Veto (CJV)
+    if (m_selectedTruthJet->size() > 0) {
+
+      // loop over the jets in the Good Jets Container
+      for (const auto& jet : *m_selectedTruthJet) {
+        float truth_jet_pt = jet->pt();
+        float truth_jet_rapidity = jet->rapidity();
+        float truth_jet_phi = jet->phi();
+
+        // Calculate dPhi(Jet_i,MET) and dPhi_min(Jet_i,MET)
+        if (m_selectedTruthJet->at(0) == jet || m_selectedTruthJet->at(1) == jet || m_selectedTruthJet->at(2) == jet || m_selectedTruthJet->at(3) == jet){ // apply cut only to leading jet1, jet2, jet3 and jet4
+          // For Znunu
+          if (m_isZnunu){
+            float truth_dPhijetmet = deltaPhi(truth_jet_phi,truthMET_phi);
+            if ( truth_jet_pt > 30000. && fabs(truth_jet_rapidity) < 4.4 && truth_dPhijetmet < 0.4 ) pass_truth_dPhijetmet = false;
+            truth_dPhiMinjetmet = std::min(truth_dPhiMinjetmet, truth_dPhijetmet);
+          }
+          // For Zmumu
+          if (m_isZmumu){
+            float truth_dPhijetmet_Zmumu = deltaPhi(truth_jet_phi,m_truthEmulMETPhiZmumu);
+            if ( truth_jet_pt > 30000. && fabs(truth_jet_rapidity) < 4.4 && truth_dPhijetmet_Zmumu < 0.4 ) pass_truth_dPhijetmet_Zmumu = false;
+            truth_dPhiMinjetmet_Zmumu = std::min(truth_dPhiMinjetmet_Zmumu, truth_dPhijetmet_Zmumu);
+          }
+          // For Zee
+          if (m_isZee){
+            float truth_dPhijetmet_Zee = deltaPhi(truth_jet_phi,m_truthEmulMETPhiZee);
+            if ( truth_jet_pt > 30000. && fabs(truth_jet_rapidity) < 4.4 && truth_dPhijetmet_Zee < 0.4 ) pass_truth_dPhijetmet_Zee = false;
+            truth_dPhiMinjetmet_Zee = std::min(truth_dPhiMinjetmet_Zee, truth_dPhijetmet_Zee);
+          }
+        }
+
+        // Central Jet Veto (CJV)
+        if ( m_selectedTruthJet->size() > 2 && pass_truth_diJet ){
+          if (m_selectedTruthJet->at(0) != jet && m_selectedTruthJet->at(1) != jet){
+            if (truth_jet_pt > m_CJVptCut && fabs(truth_jet_rapidity) < m_diJetRapCut) {
+              if ( (truth_jet1_rapidity > truth_jet2_rapidity) && (truth_jet_rapidity < truth_jet1_rapidity && truth_jet_rapidity > truth_jet2_rapidity)){
+                pass_truth_CJV = false;
+              }
+              if ( (truth_jet1_rapidity < truth_jet2_rapidity) && (truth_jet_rapidity > truth_jet1_rapidity && truth_jet_rapidity < truth_jet2_rapidity)){
+                pass_truth_CJV = false;
+              }
+            }
+          }
+        }
+
+        truth_Jet_ht += truth_jet_pt;
+      } // Jet loop
+
+    } // End deltaPhi(Jet_i,MET) cut and Central Jet Veto (CJV)
+
+
+
+
+/*
+    //-----------------------------------------------------------------------
+    // Define Truth WZ Monojet and DiJet Properties (for dressed-level jets)
+    //-----------------------------------------------------------------------
+
+    ///////////////////////
+    // Monojet Selection //
+    ///////////////////////
+    if (m_selectedTruthWZJet->size() > 0) {
+
+      truth_monoWZjet_pt = m_selectedTruthWZJet->at(0)->pt();
+      truth_monoWZjet_phi = m_selectedTruthWZJet->at(0)->phi();
+      truth_monoWZjet_eta = m_selectedTruthWZJet->at(0)->eta();
+      truth_monoWZjet_rapidity = m_selectedTruthWZJet->at(0)->rapidity();
+
+
+      // Define MonoWZjet
+      if ( truth_monoWZjet_pt > m_monoJetPtCut ){
+        if ( fabs(truth_monoWZjet_eta) < m_monoJetEtaCut){
+          pass_truth_monoWZJet = true;
+        }
+      }
+
+      // deltaPhi(truth_monoWZjet,MET) decision
+      // For Zmumu
+      if (m_isZmumu){
+        truth_dPhiMonoWZjetMet_Zmumu = deltaPhi(truth_monoWZjet_phi, m_truthEmulMETPhiZmumu);
+      }
+      // For Zee
+      if (m_isZee){
+        truth_dPhiMonoWZjetMet_Zee = deltaPhi(truth_monoWZjet_phi, m_truthEmulMETPhiZmumu);
+      }
+
+    } // MonoWZJet selection 
+
+
+
+    /////////////////////
+    // DiJet Selection //
+    /////////////////////
+    if (m_selectedTruthJet->size() > 1) {
+
+      truth_WZjet1 = m_selectedTruthWZJet->at(0)->p4();
+      truth_WZjet2 = m_selectedTruthWZJet->at(1)->p4();
+      truth_WZjet1_pt = m_selectedTruthWZJet->at(0)->pt();
+      truth_WZjet2_pt = m_selectedTruthWZJet->at(1)->pt();
+      truth_WZjet1_phi = m_selectedTruthWZJet->at(0)->phi();
+      truth_WZjet2_phi = m_selectedTruthWZJet->at(1)->phi();
+      truth_WZjet1_eta = m_selectedTruthWZJet->at(0)->eta();
+      truth_WZjet2_eta = m_selectedTruthWZJet->at(1)->eta();
+      truth_WZjet1_rapidity = m_selectedTruthWZJet->at(0)->rapidity();
+      truth_WZjet2_rapidity = m_selectedTruthWZJet->at(1)->rapidity();
+      auto truth_diWZjet = truth_WZjet1 + truth_WZjet2;
+      truth_WZmjj = truth_diWZjet.M();
+
+      // Define DiWZjet
+      if ( truth_WZjet1_pt > m_diJet1PtCut && truth_WZjet2_pt > m_diJet2PtCut ){
+        if ( fabs(truth_WZjet1_rapidity) < m_diJetRapCut && fabs(truth_WZjet2_rapidity) < m_diJetRapCut ){
+          pass_truth_diWZJet = true;
+        }
+      }
+
+      // deltaPhi(Jet1,MET) or deltaPhi(Jet2,MET) decision
+      // For Zmumu
+      if (m_isZmumu){
+        truth_dPhiWZJet1Met_Zmumu = deltaPhi(truth_WZjet1_phi, m_truthEmulMETPhiZmumu);
+        truth_dPhiWZJet2Met_Zmumu = deltaPhi(truth_WZjet2_phi, m_truthEmulMETPhiZmumu);
+      }
+      // For Zee
+      if (m_isZee){
+        truth_dPhiWZJet1Met_Zee = deltaPhi(truth_WZjet1_phi, m_truthEmulMETPhiZee);
+        truth_dPhiWZJet2Met_Zee = deltaPhi(truth_WZjet2_phi, m_truthEmulMETPhiZee);
+      }
+
+    } // DiJet selection 
+
+    // For jet3
+    if (m_selectedTruthWZJet->size() > 2) {
+      truth_WZjet3_pt = m_selectedTruthWZJet->at(2)->pt();
+      truth_WZjet3_phi = m_selectedTruthWZJet->at(2)->phi();
+      truth_WZjet3_eta = m_selectedTruthWZJet->at(2)->eta();
+      truth_WZjet3_rapidity = m_selectedTruthWZJet->at(2)->rapidity();
+      // deltaPhi(Jet3,MET)
+      truth_dPhiWZJet3Met = deltaPhi(truth_WZjet3_phi, truthMET_phi);
+      truth_dPhiWZJet3Met_Zmumu = deltaPhi(truth_WZjet3_phi, m_truthEmulMETPhiZmumu);
+      truth_dPhiWZJet3Met_Zee = deltaPhi(truth_WZjet3_phi, m_truthEmulMETPhiZee);
+    }
+
+
+    // Define deltaPhi(Jet_i,MET) cut and Central Jet Veto (CJV)
+    if (m_selectedTruthWZJet->size() > 0) {
+
+      // loop over the jets in the Good Jets Container
+      for (const auto& jet : *m_selectedTruthWZJet) {
+        float truth_jet_pt = jet->pt();
+        float truth_jet_rapidity = jet->rapidity();
+        float truth_jet_phi = jet->phi();
+
+        // Calculate dPhi(Jet_i,MET) and dPhi_min(Jet_i,MET)
+        if (m_selectedTruthWZJet->at(0) == jet || m_selectedTruthWZJet->at(1) == jet || m_selectedTruthWZJet->at(2) == jet || m_selectedTruthWZJet->at(3) == jet){ // apply cut only to leading jet1, jet2, jet3 and jet4
+          // For Znunu
+          if (m_isZnunu){
+            float truth_dPhiWZjetmet = deltaPhi(truth_jet_phi,truthMET_phi);
+            if ( truth_jet_pt > 30000. && fabs(truth_jet_rapidity) < 4.4 && truth_dPhiWZjetmet < 0.4 ) pass_truth_dPhiWZjetmet = false;
+            truth_dPhiMinWZjetmet = std::min(truth_dPhiMinWZjetmet, truth_dPhiWZjetmet);
+          }
+          // For Zmumu
+          if (m_isZmumu){
+            float truth_dPhiWZjetmet_Zmumu = deltaPhi(truth_jet_phi,m_truthEmulMETPhiZmumu);
+            if ( truth_jet_pt > 30000. && fabs(truth_jet_rapidity) < 4.4 && truth_dPhiWZjetmet_Zmumu < 0.4 ) pass_truth_dPhiWZjetmet_Zmumu = false;
+            truth_dPhiMinWZjetmet_Zmumu = std::min(truth_dPhiMinWZjetmet_Zmumu, truth_dPhiWZjetmet_Zmumu);
+          }
+          // For Zee
+          if (m_isZee){
+            float truth_dPhiWZjetmet_Zee = deltaPhi(truth_jet_phi,m_truthEmulMETPhiZee);
+            if ( truth_jet_pt > 30000. && fabs(truth_jet_rapidity) < 4.4 && truth_dPhiWZjetmet_Zee < 0.4 ) pass_truth_dPhiWZjetmet_Zee = false;
+            truth_dPhiMinWZjetmet_Zee = std::min(truth_dPhiMinWZjetmet_Zee, truth_dPhiWZjetmet_Zee);
+          }
+        }
+
+        // Central Jet Veto (CJV)
+        if ( m_selectedTruthWZJet->size() > 2 && pass_truth_diWZJet ){
+          if (m_selectedTruthWZJet->at(0) != jet && m_selectedTruthWZJet->at(1) != jet){
+            if (truth_jet_pt > m_CJVptCut && fabs(truth_jet_rapidity) < m_diJetRapCut) {
+              if ( (truth_WZjet1_rapidity > truth_WZjet2_rapidity) && (truth_jet_rapidity < truth_WZjet1_rapidity && truth_jet_rapidity > truth_WZjet2_rapidity)){
+                pass_truth_WZ_CJV = false;
+              }
+              if ( (truth_WZjet1_rapidity < truth_WZjet2_rapidity) && (truth_jet_rapidity > truth_WZjet1_rapidity && truth_jet_rapidity < truth_WZjet2_rapidity)){
+                pass_truth_WZ_CJV = false;
+              }
+            }
+          }
+        }
+
+        truth_WZJet_ht += truth_jet_pt;
+      } // Jet loop
+
+    } // End deltaPhi(Jet_i,MET) cut and Central Jet Veto (CJV)
+*/
+
+
+
+
+
+    //////////////////////////////////
+    // Delete shallow copy containers
+    //////////////////////////////////
+
+    // The containers created by the shallow copy are owned by you. Remember to delete them
+    delete truth_neutrino_shallowCopy.first;
+    delete truth_neutrino_shallowCopy.second;
+
+    delete truth_muon_shallowCopy.first;
+    delete truth_muon_shallowCopy.second;
+
+    delete truth_elec_shallowCopy.first;
+    delete truth_elec_shallowCopy.second;
+
+    delete truth_tau_shallowCopy.first;
+    delete truth_tau_shallowCopy.second;
+
+    delete truth_jet_shallowCopy.first;
+    delete truth_jet_shallowCopy.second;
+
+    //delete truth_WZjet_shallowCopy.first;
+    //delete truth_WZjet_shallowCopy.second;
+
+  } // MC
+
+  // End of Truth selection
 
 
 
@@ -1696,7 +2452,9 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     //---------------------
     if (!m_isData) {
       if ( mcChannelNumber == 363121 || mcChannelNumber == 363351 || // One of the Ztautau or Wtaunu (from Valentinos)
-          (mcChannelNumber >= 361063 && mcChannelNumber <= 361068) || mcChannelNumber == 361088 || mcChannelNumber == 361089 ) // Diboson samples
+           (mcChannelNumber >= 361063 && mcChannelNumber <= 361068) || mcChannelNumber == 361088 || mcChannelNumber == 361089 || // Diboson samples
+           (mcChannelNumber >= 363123 && mcChannelNumber <= 363170) // Madgraph Z samples
+         )
       { // These samples have missing mu values and the pileup reweighting tool doesn't like that and crashes.
         mcEventWeight = mcWeight;
       }
@@ -3129,65 +3887,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
-    ///////////////////
-    // SM1 Selection //
-    ///////////////////
-    if (m_goodJet->size() > 0) {
-
-      sm1jet_pt = m_goodJet->at(0)->pt();
-      sm1jet_phi = m_goodJet->at(0)->phi();
-      sm1jet_eta = m_goodJet->at(0)->eta();
-      sm1jet_rapidity = m_goodJet->at(0)->rapidity();
-
-      // Define SM1jet
-      if ( sm1jet_pt > m_sm1JetPtCut ){
-        if ( fabs(sm1jet_eta) < m_sm1JetEtaCut){ // Threshold of leading jet in SM1
-          pass_sm1Jet = true;
-          //Info("execute()", "  Leading jet pt = %.2f GeV", sm1jet_pt * 0.001);
-        }
-      }
-
-      // loop over the jets in the Good Jets Container
-      if (pass_sm1Jet) {
-        for (const auto& jet : *m_goodJet) {
-          uint sm1jet_index = m_goodJet->at(0)->index(); // index for leading jet in SM1
-          if (jet->index() != sm1jet_index) { // For subleading jets in SM1
-            if (jet->pt() > 30000.) pass_sm1Jet = false; // Subleading jets in SM1 should not be greater than 30GeV
-          }
-        }
-      }
-
-      /* // Test SM1 jets
-      if (pass_sm1Jet) {
-        Info("execute()", " [SM1] Event # = %llu", eventInfo->eventNumber());
-        for (const auto& jet : *m_goodJet) {
-          Info("execute()", " [SM1] Jet_pt = %.2f GeV ", jet->pt()*0.001);
-        }
-      }
-      */
-
-
-      // deltaPhi(sm1jet,MET) decision
-
-      // For Znunu
-      if (m_isZnunu){
-        dPhiSM1jetMet = deltaPhi(sm1jet_phi, MET_phi);
-      }
-      // For Zmumu
-      if (m_isZmumu){
-        dPhiSM1jetMet_Zmumu = deltaPhi(sm1jet_phi, emulMET_Zmumu_phi);
-      }
-      // For Zee
-      if (m_isZee){
-        dPhiSM1jetMet_Zee = deltaPhi(sm1jet_phi, emulMET_Zee_phi);
-      }
-
-    } // SM1 selection 
-
-
-
-
-
     // For jet3
     if (m_goodJet->size() > 2) {
       jet3_pt = m_goodJet->at(2)->pt();
@@ -3286,6 +3985,67 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       } // Jet loop
 
     } // End deltaPhi(Jet_i,MET) cut and Central Jet Veto (CJV)
+
+
+
+
+    ///////////////////
+    // SM1 Selection //
+    ///////////////////
+    if (m_goodJet->size() > 0) {
+
+      sm1jet_pt = m_goodJet->at(0)->pt();
+      sm1jet_phi = m_goodJet->at(0)->phi();
+      sm1jet_eta = m_goodJet->at(0)->eta();
+      sm1jet_rapidity = m_goodJet->at(0)->rapidity();
+
+      // Define SM1jet
+      if ( sm1jet_pt > m_sm1JetPtCut ){
+        if ( fabs(sm1jet_eta) < m_sm1JetEtaCut){ // Threshold of leading jet in SM1
+          pass_sm1Jet = true;
+          //Info("execute()", "  Leading jet pt = %.2f GeV", sm1jet_pt * 0.001);
+        }
+      }
+
+      // loop over the jets in the Good Jets Container
+      if (pass_sm1Jet) {
+        for (const auto& jet : *m_goodJet) {
+          uint sm1jet_index = m_goodJet->at(0)->index(); // index for leading jet in SM1
+          if (jet->index() != sm1jet_index) { // For subleading jets in SM1
+            if (jet->pt() > 30000.) pass_sm1Jet = false; // Subleading jets in SM1 should not be greater than 30GeV
+          }
+        }
+      }
+
+      /* // Test SM1 jets
+      if (pass_sm1Jet) {
+        Info("execute()", " [SM1] Event # = %llu", eventInfo->eventNumber());
+        for (const auto& jet : *m_goodJet) {
+          Info("execute()", " [SM1] Jet_pt = %.2f GeV ", jet->pt()*0.001);
+        }
+      }
+      */
+
+
+      // deltaPhi(sm1jet,MET) decision
+
+      // For Znunu
+      if (m_isZnunu){
+        dPhiSM1jetMet = deltaPhi(sm1jet_phi, MET_phi);
+      }
+      // For Zmumu
+      if (m_isZmumu){
+        dPhiSM1jetMet_Zmumu = deltaPhi(sm1jet_phi, emulMET_Zmumu_phi);
+      }
+      // For Zee
+      if (m_isZee){
+        dPhiSM1jetMet_Zee = deltaPhi(sm1jet_phi, emulMET_Zee_phi);
+      }
+
+    } // SM1 selection 
+
+
+
 
 
 
@@ -5119,6 +5879,140 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
+    //-----------------------------
+    // Truth Z -> mumu + JET EVENT
+    //-----------------------------
+
+    if (m_isZmumu && !m_isData && sysName == "") {
+
+      h_channel = "h_zmumu_";
+
+      //////////////////////////
+      // Nominal Truth level //
+      //////////////////////////
+      if (m_selectedTruthMuon->size() == 2 || m_selectedTruthElectron->size() == 0 || m_selectedTruthTau->size() == 0) {
+        if (pass_truth_OSmuon) {
+          if ( pass_truth_dimuonCut ) {
+            if ( truth_mll_muon > m_mllMin && truth_mll_muon < m_mllMax ) {
+              if ( m_truthEmulMETZmumu > m_metCut ) {
+
+                ////////////////////////
+                // MonoJet phasespace //
+                ////////////////////////
+                if (pass_truth_monoJet && pass_truth_dPhijetmet_Zmumu) {
+
+                  // Fill histogram
+                  hMap1D[h_channel+"truth_monojet_met_emulmet"+sysName]->Fill(m_truthEmulMETZmumu * 0.001, mcEventWeight);
+                  hMap1D[h_channel+"truth_monojet_mll"+sysName]->Fill(truth_mll_muon * 0.001, mcEventWeight);
+                }
+
+                ////////////////////
+                // VBF phasespace //
+                ////////////////////
+                if (pass_truth_diJet && truth_mjj > m_mjjCut && pass_truth_CJV && pass_truth_dPhijetmet_Zmumu) {
+
+                  // Fill histogram
+                  hMap1D[h_channel+"truth_vbf_met_emulmet"+sysName]->Fill(m_truthEmulMETZmumu * 0.001, mcEventWeight);
+                  hMap1D[h_channel+"truth_vbf_mjj"+sysName]->Fill(truth_mjj * 0.001, mcEventWeight);
+                  hMap1D[h_channel+"truth_vbf_dPhijj"+sysName]->Fill(deltaPhi(truth_jet1_phi, truth_jet2_phi), mcEventWeight);
+                  hMap1D[h_channel+"truth_vbf_mll"+sysName]->Fill(truth_mll_muon * 0.001, mcEventWeight);
+
+                }
+
+              } // MET cut
+            } // Mll cut
+          } // Dimuon Cut
+        } // OS lepton cut
+      } // Lepton Veto
+/*
+      ////////////////////////////////////////////
+      // WZ Truth level (For dressed-level jets //
+      ////////////////////////////////////////////
+      if (m_selectedTruthMuon->size() == 2 || m_selectedTruthElectron->size() == 0 || m_selectedTruthTau->size() == 0) {
+        if (pass_truth_OSmuon) {
+          if ( pass_truth_dimuonCut ) {
+            if ( truth_mll_muon > m_mllMin && truth_mll_muon < m_mllMax ) {
+              if ( m_truthEmulMETZmumu > m_metCut ) {
+
+                ////////////////////////
+                // MonoJet phasespace //
+                ////////////////////////
+                if (pass_truth_monoJet && pass_truth_dPhijetmet_Zmumu) {
+
+                  // Fill histogram
+                  hMap1D[h_channel+"truth_monojet_met_emulmet"+sysName]->Fill(m_truthEmulMETZmumu * 0.001, mcEventWeight);
+                  hMap1D[h_channel+"truth_monojet_mll"+sysName]->Fill(truth_mll_muon * 0.001, mcEventWeight);
+                }
+
+                ////////////////////
+                // VBF phasespace //
+                ////////////////////
+                if (pass_truth_diJet && truth_mjj > m_mjjCut && pass_truth_CJV && pass_truth_dPhijetmet_Zmumu) {
+
+                  // Fill histogram
+                  hMap1D[h_channel+"truth_vbf_met_emulmet"+sysName]->Fill(m_truthEmulMETZmumu * 0.001, mcEventWeight);
+                  hMap1D[h_channel+"truth_vbf_mjj"+sysName]->Fill(truth_mjj * 0.001, mcEventWeight);
+                  hMap1D[h_channel+"truth_vbf_dPhijj"+sysName]->Fill(deltaPhi(truth_jet1_phi, truth_jet2_phi), mcEventWeight);
+                  hMap1D[h_channel+"truth_vbf_mll"+sysName]->Fill(truth_mll_muon * 0.001, mcEventWeight);
+
+                }
+
+              } // MET cut
+            } // Mll cut
+          } // Dimuon Cut
+        } // OS lepton cut
+      } // Lepton Veto
+*/
+    } // Zmumu
+
+
+
+    //---------------------------
+    // Truth Z -> ee + JET EVENT
+    //---------------------------
+
+    if (m_isZee && !m_isData && sysName == "") {
+
+      h_channel = "h_zee_";
+      if (m_selectedTruthElectron->size() == 2 || m_selectedTruthMuon->size() == 0 || m_selectedTruthTau->size() == 0) {
+        if (pass_truth_OSelectron) {
+          if ( pass_truth_dielectronCut ) {
+            if ( truth_mll_electron > m_mllMin && truth_mll_electron < m_mllMax ) {
+              if ( m_truthEmulMETZee > m_metCut ) {
+
+                ////////////////////////
+                // MonoJet phasespace //
+                ////////////////////////
+                if (pass_truth_monoJet && pass_truth_dPhijetmet_Zee) {
+
+                  // Fill histogram
+                  hMap1D[h_channel+"truth_monojet_met_emulmet"+sysName]->Fill(m_truthEmulMETZee * 0.001, mcEventWeight);
+                  hMap1D[h_channel+"truth_monojet_mll"+sysName]->Fill(truth_mll_electron * 0.001, mcEventWeight);
+                }
+
+                ////////////////////
+                // VBF phasespace //
+                ////////////////////
+                if (pass_truth_diJet && truth_mjj > m_mjjCut && pass_truth_CJV && pass_truth_dPhijetmet_Zee) {
+
+                  // Fill histogram
+                  hMap1D[h_channel+"truth_vbf_met_emulmet"+sysName]->Fill(m_truthEmulMETZee * 0.001, mcEventWeight);
+                  hMap1D[h_channel+"truth_vbf_mjj"+sysName]->Fill(truth_mjj * 0.001, mcEventWeight);
+                  hMap1D[h_channel+"truth_vbf_dPhijj"+sysName]->Fill(deltaPhi(truth_jet1_phi, truth_jet2_phi), mcEventWeight);
+                  hMap1D[h_channel+"truth_vbf_mll"+sysName]->Fill(truth_mll_electron * 0.001, mcEventWeight);
+
+                }
+
+              } // MET cut
+            } // Mll cut
+          } // Dielectron Cut
+        } // OS lepton cut
+      } // Lepton Veto
+    } // Zee
+
+
+
+
 
 
 
@@ -5406,6 +6300,14 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
   delete m_met;
   delete m_metAux;
 
+  // Truth containers
+  delete m_selectedTruthNeutrino;
+  delete m_selectedTruthMuon;
+  delete m_selectedTruthElectron;
+  delete m_selectedTruthTau;
+  delete m_selectedTruthJet;
+  //delete m_selectedTruthWZJet;
+
 
   return EL::StatusCode::SUCCESS;
 }
@@ -5497,6 +6399,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       m_LHToolLoose2015 = 0;
     }
 
+    /// Electron Photon Shower Shape Fundge Tool
+   if(m_electronPhotonShowerShapeFudgeTool){
+     delete m_electronPhotonShowerShapeFudgeTool;
+     m_electronPhotonShowerShapeFudgeTool = 0;
+   }
 
     /// Recomputing the photon ID flags
     if(m_photonTightIsEMSelector){
@@ -5524,6 +6431,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       m_IsoToolVBF = 0;
     }
 
+    /// Isolation Correction Tool
+    if(m_isoCorrTool){
+      delete m_isoCorrTool;
+      m_isoCorrTool = 0;
+    }
+
     /// Tau Smearing Tool
     if(m_tauSmearingTool){
       delete m_tauSmearingTool;
@@ -5540,6 +6453,12 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
     if(m_tauSelToolVBF){
       delete m_tauSelToolVBF;
       m_tauSelToolVBF = 0;
+    }
+
+    /// TauOverlappingElectronLLHDecorator
+    if(m_tauOverlappingElectronLLHDecorator){
+      delete m_tauOverlappingElectronLLHDecorator;
+      m_tauOverlappingElectronLLHDecorator = 0;
     }
 
     /// JES Calibration
@@ -5587,7 +6506,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       delete m_metMaker;
       m_metMaker = 0;
     }
-
+/*
+    /// Overlap Removal Tool
+    if(m_orTool){
+      delete m_orTool;
+      m_orTool = 0;
+    }
+*/
     /// Muon Efficiency Tool
     if(m_muonEfficiencySFTool){
       delete m_muonEfficiencySFTool;
@@ -5676,16 +6601,16 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       m_metSystTool = 0;
     }
 
-    /// Isolation Correction Tool
-    if(m_isoCorrTool){
-      delete m_isoCorrTool;
-      m_isoCorrTool = 0;
-    }
-
     /// PileupReweighting Tool
     if(m_prwTool){
       delete m_prwTool;
       m_prwTool = 0;
+    }
+
+    /// PMGTools (MGSherpa22VJetsWeightTool)
+    if(m_PMGSherpa22VJetsWeightTool){
+      delete m_PMGSherpa22VJetsWeightTool;
+      m_PMGSherpa22VJetsWeightTool = 0;
     }
 
     /// Cutflow
@@ -5693,7 +6618,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       delete m_BitsetCutflow;
       m_BitsetCutflow = 0;
     }
-
 
 /*
     // print out the number of Overlap removal
@@ -5897,7 +6821,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
     /* // eta cut is included in MuonSelectionTool
     // Muon eta cut
-    if (std::abs(mu.eta()) > m_muonEtaCut) return EL::StatusCode::SUCCESS;
+    if (std::abs(mu.eta()) > m_lepEtaCut) return EL::StatusCode::SUCCESS;
     */
 
     // MuonSelectionTool (Loose)
