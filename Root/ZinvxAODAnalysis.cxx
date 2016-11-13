@@ -308,7 +308,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_isWenu = false;
 
   // Enable Systematics
-  m_doSys = false;
+  m_doSys = true;
 
   // Cut values
   m_muonPtCut = 7000.; /// MeV
@@ -331,7 +331,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   m_mjjCut = 200000.; ///MeV
   m_LeadLepPtCut = 80000.; ///MeV
   m_SubLeadLepPtCut = 7000.; ///MeV
-  m_ORJETdeltaR = 0.2;
+  m_ORJETdeltaR = 0.5;
   m_isoMuonPtMin = 10000.; ///MeV
   m_isoMuonPtMax = 500000.; ///MeV
   m_mllMin = 66000.; ///MeV
@@ -671,6 +671,21 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_jetCleaningTight->initialize());
   EL_RETURN_CHECK("initialize()",m_jetCleaningLoose->initialize());
 
+  //////////
+  // bJet //
+  //////////
+  // initialize the BJetSelectionTool
+  m_BJetSelectTool = new BTaggingSelectionTool("BJetSelectTool");
+  EL_RETURN_CHECK("initialize()", m_BJetSelectTool->setProperty("MaxEta", 2.5));
+  EL_RETURN_CHECK("initialize()", m_BJetSelectTool->setProperty("MinPt", 30000.));
+  EL_RETURN_CHECK("initialize()", m_BJetSelectTool->setProperty("FlvTagCutDefinitionsFileName", "xAODBTaggingEfficiency/cutprofiles_22072015.root"));
+  EL_RETURN_CHECK("initialize()", m_BJetSelectTool->setProperty("TaggerName", "MV2c20"));
+  EL_RETURN_CHECK("initialize()", m_BJetSelectTool->setProperty("OperatingPoint", "FixedCutBEff_70"));
+  EL_RETURN_CHECK("initialize()", m_BJetSelectTool->setProperty("JetAuthor", "AntiKt4EMTopoJets"));
+  EL_RETURN_CHECK("initialize()", m_BJetSelectTool->initialize());
+
+
+
   /////////
   // MET //
   /////////
@@ -686,7 +701,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   EL_RETURN_CHECK("initialize()",m_metMaker->initialize());
 
   // Initialize the harmonization reccommendation tools
-  const bool doTaus = true, doPhotons = true;
+  const bool doTaus = true, doPhotons = false;
   const bool boostedLeptons = false;
   EL_RETURN_CHECK("initialize()",ORUtils::recommendedTools(m_toolBox, "OverlapRemovalTool", 
                                                           inputLabel, outputLabel, bJetLabel, 
@@ -700,8 +715,14 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   // Initialize all tools
   m_orTool = static_cast<ORUtils::OverlapRemovalTool*>(m_toolBox.getMasterTool());
   m_orTool->setName("ORTool");
-  auto t = m_toolBox.getTool("MuJetORT");
-  EL_RETURN_CHECK("initialize()",t->setProperty("NumJetTrk", 5) );
+  auto t_mu = m_toolBox.getTool("MuJetORT");
+  //EL_RETURN_CHECK("initialize()",t_mu->setProperty("NumJetTrk", 5) );
+  EL_RETURN_CHECK("initialize()",t_mu->setProperty("NumJetTrk", 100000000) );
+  EL_RETURN_CHECK("initialize()",t_mu->setProperty("InnerDR", 0.5) );
+  EL_RETURN_CHECK("initialize()",t_mu->setProperty("OuterDR", 0.5) );
+  auto t_el = m_toolBox.getTool("EleJetORT");
+  EL_RETURN_CHECK("initialize()",t_el->setProperty("InnerDR", 0.5) );
+  EL_RETURN_CHECK("initialize()",t_el->setProperty("OuterDR", 0.5) );
   EL_RETURN_CHECK("initialize()",m_toolBox.initialize());
 
 
@@ -783,9 +804,9 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
   }
 
 
-  ///////////////////////////////
-  // Create Histograms //////////
-  ///////////////////////////////
+  ////////////////////////
+  // Create Histograms ///
+  ////////////////////////
 
   // Publication bins
   // Monojet and VBF MET
@@ -913,6 +934,18 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       addHist(hMap1D, h_channel+"vbf_mjj"+sysName, nbinMjj, binsMjj);
       addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
 
+      // For Top enhanced control region
+      // At least 1 bJet
+      addHist(hMap1D, h_channel+"monojet_met_emulmet_1bJet"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_met_emulmet_1bJet"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_mjj_1bJet"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_dPhijj_1bJet"+sysName, nbinDPhi, binsDPhi);
+      // At least 2 bJet
+      addHist(hMap1D, h_channel+"monojet_met_emulmet_2bJet"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_met_emulmet_2bJet"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_mjj_2bJet"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_dPhijj_2bJet"+sysName, nbinDPhi, binsDPhi);
+
       // Number of Interactions
       addHist(hMap1D, h_channel+"monojet_avg_interaction"+sysName, 40, 0., 40.);
       addHist(hMap1D, h_channel+"vbf_avg_interaction"+sysName, 40, 0., 40.);
@@ -995,6 +1028,12 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet"+sysName, 250, 0., 500.);
         addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70"+sysName, 250, 0., 500.);
         addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70_tclcw"+sysName, 250, 0., 500.);
+        addHist(hMap1D, h_channel+"vbf_eff_study_mjj_allmet"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"vbf_eff_study_dPhijj_allmet"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"vbf_eff_study_mjj_allmet_pass_HLT_xe70"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"vbf_eff_study_dPhijj_allmet_pass_HLT_xe70"+sysName, nbinDPhi, binsDPhi);
+        addHist(hMap1D, h_channel+"vbf_eff_study_mjj_allmet_pass_HLT_xe70_tclcw"+sysName, nbinMjj, binsMjj);
+        addHist(hMap1D, h_channel+"vbf_eff_study_dPhijj_allmet_pass_HLT_xe70_tclcw"+sysName, nbinDPhi, binsDPhi);
         addHist(hMap1D, h_channel+"vbf_eff_study_mjj_met130"+sysName, nbinMjj, binsMjj);
         addHist(hMap1D, h_channel+"vbf_eff_study_dPhijj_met130"+sysName, nbinDPhi, binsDPhi);
         addHist(hMap1D, h_channel+"vbf_eff_study_mjj_met130_pass_HLT_xe70"+sysName, nbinMjj, binsMjj);
@@ -1053,15 +1092,34 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         ////////////////////////
         // Monojet phasespace //
         ////////////////////////
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
         ////////////////////
         // VBF phasespace //
         ////////////////////
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        //-----------//
+        // Count cut //
+        //-----------//
+        ////////////////////////
+        // Monojet phasespace //
+        ////////////////////////
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_met150_200_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_met200_300_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_met300_500_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_met500_inf_count_mll"+sysName, 16, 0.5, 16.5);
+        ////////////////////
+        // VBF phasespace //
+        ////////////////////
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_met150_200_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_met200_300_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_met300_500_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_met500_inf_count_mll"+sysName, 16, 0.5, 16.5);
         //-------------//
         // Reverse cut //
         //-------------//
@@ -1069,14 +1127,17 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         // Monojet phasespace //
         ////////////////////////
         // Case 1
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met500_inf_mll"+sysName, 150, 0., 300.);
         // Case 2
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met500_inf_mll"+sysName, 150, 0., 300.);
         // Case 3
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
@@ -1084,14 +1145,17 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         // VBF phasespace //
         ////////////////////
         // Case 1
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met500_inf_mll"+sysName, 150, 0., 300.);
         // Case 2
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met500_inf_mll"+sysName, 150, 0., 300.);
         // Case 3
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
@@ -1128,6 +1192,18 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       addHist(hMap1D, h_channel+"vbf_met_emulmet"+sysName, nbinMET, binsMET);
       addHist(hMap1D, h_channel+"vbf_mjj"+sysName, nbinMjj, binsMjj);
       addHist(hMap1D, h_channel+"vbf_dPhijj"+sysName, nbinDPhi, binsDPhi);
+
+      // For Top enhanced control region
+      // At least 1 bJet
+      addHist(hMap1D, h_channel+"monojet_met_emulmet_1bJet"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_met_emulmet_1bJet"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_mjj_1bJet"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_dPhijj_1bJet"+sysName, nbinDPhi, binsDPhi);
+      // At least 2 bJet
+      addHist(hMap1D, h_channel+"monojet_met_emulmet_2bJet"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_met_emulmet_2bJet"+sysName, nbinMET, binsMET);
+      addHist(hMap1D, h_channel+"vbf_mjj_2bJet"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_dPhijj_2bJet"+sysName, nbinDPhi, binsDPhi);
 
       // Number of Interactions
       addHist(hMap1D, h_channel+"monojet_avg_interaction"+sysName, 40, 0., 40.);
@@ -1247,6 +1323,7 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         // Monojet phasespace //
         ////////////////////////
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met"+sysName, nbinMET_method2, binsMET_method2);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
@@ -1255,9 +1332,27 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         // VBF phasespace //
         ////////////////////
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met"+sysName, nbinMET_method2, binsMET_method2);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_nominal_cut_met500_inf_mll"+sysName, 150, 0., 300.);
+        //-----------//
+        // Count cut //
+        //-----------//
+        ////////////////////////
+        // Monojet phasespace //
+        ////////////////////////
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_met150_200_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_met200_300_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_met300_500_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_met500_inf_count_mll"+sysName, 16, 0.5, 16.5);
+        ////////////////////
+        // VBF phasespace //
+        ////////////////////
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_met150_200_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_met200_300_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_met300_500_count_mll"+sysName, 16, 0.5, 16.5);
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_met500_inf_count_mll"+sysName, 16, 0.5, 16.5);
         //-------------//
         // Reverse cut //
         //-------------//
@@ -1265,14 +1360,17 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         // Monojet phasespace //
         ////////////////////////
         // Case 1
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case1_cut_met500_inf_mll"+sysName, 150, 0., 300.);
         // Case 2
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case2_cut_met500_inf_mll"+sysName, 150, 0., 300.);
         // Case 3
+        addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"monojet_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
@@ -1280,14 +1378,17 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
         // VBF phasespace //
         ////////////////////
         // Case 1
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case1_cut_met500_inf_mll"+sysName, 150, 0., 300.);
         // Case 2
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case2_cut_met500_inf_mll"+sysName, 150, 0., 300.);
         // Case 3
+        addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met150_200_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met200_300_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met300_500_mll"+sysName, 150, 0., 300.);
         addHist(hMap1D, h_channel+"vbf_qcd_method2_case3_cut_met500_inf_mll"+sysName, 150, 0., 300.);
@@ -1319,6 +1420,12 @@ EL::StatusCode ZinvxAODAnalysis :: initialize ()
       addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet"+sysName, 250, 0., 500.);
       addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70"+sysName, 250, 0., 500.);
       addHist(hMap1D, h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70_tclcw"+sysName, 250, 0., 500.);
+      addHist(hMap1D, h_channel+"vbf_eff_study_mjj_allmet"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_eff_study_dPhijj_allmet"+sysName, nbinDPhi, binsDPhi);
+      addHist(hMap1D, h_channel+"vbf_eff_study_mjj_allmet_pass_HLT_xe70"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_eff_study_dPhijj_allmet_pass_HLT_xe70"+sysName, nbinDPhi, binsDPhi);
+      addHist(hMap1D, h_channel+"vbf_eff_study_mjj_allmet_pass_HLT_xe70_tclcw"+sysName, nbinMjj, binsMjj);
+      addHist(hMap1D, h_channel+"vbf_eff_study_dPhijj_allmet_pass_HLT_xe70_tclcw"+sysName, nbinDPhi, binsDPhi);
       addHist(hMap1D, h_channel+"vbf_eff_study_mjj_met130"+sysName, nbinMjj, binsMjj);
       addHist(hMap1D, h_channel+"vbf_eff_study_dPhijj_met130"+sysName, nbinDPhi, binsDPhi);
       addHist(hMap1D, h_channel+"vbf_eff_study_mjj_met130_pass_HLT_xe70"+sysName, nbinMjj, binsMjj);
@@ -3988,6 +4095,24 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
 
 
+    ////////////////////
+    // bJet Selection //
+    ////////////////////
+    int n_bJet = 0;
+    if (m_goodJet->size() > 0) {
+      // loop over the jets in the Good Jets Container
+      for (const auto& jet : *m_goodJet) {
+        //Info("execute()", "  jet pt = %.2f GeV", jet->pt() * 0.001);
+        if (m_BJetSelectTool->accept(*jet)) {
+          n_bJet ++;
+          //Info("execute()", "  bJet pt = %.2f GeV", jet->pt() * 0.001);
+        }
+      }
+    }
+    //Info("execute()", "  # bJet = %i", n_bJet);
+
+
+
 
     ///////////////////
     // SM1 Selection //
@@ -4441,6 +4566,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         hMap1D[h_channel+"monojet_met_emulmet"+sysName]->Fill(emulMET_Zmumu * 0.001, mcEventWeight_Zmumu);
                         // Average Interaction
                         hMap1D[h_channel+"monojet_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zmumu);
+
+                        // For top enhanced control region
+                        if (n_bJet > 0) { // At least 1 bJet
+                          hMap1D[h_channel+"monojet_met_emulmet_1bJet"+sysName]->Fill(emulMET_Zmumu * 0.001, mcEventWeight_Zmumu);
+                        }
+                        if (n_bJet > 1) { // At least 2 bJet
+                          hMap1D[h_channel+"monojet_met_emulmet_2bJet"+sysName]->Fill(emulMET_Zmumu * 0.001, mcEventWeight_Zmumu);
+                        }
+
                         if (sysName == ""){
                           // Jets
                           hMap1D[h_channel+"monojet_njet"+sysName]->Fill(m_goodJet->size(), mcEventWeight_Zmumu);
@@ -4500,6 +4634,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             hMap1D[h_channel+"vbf_dPhijj"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
                             // Average Interaction
                             hMap1D[h_channel+"vbf_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zmumu);
+
+                            // For top enhanced control region
+                            if (n_bJet > 0) { // At least 1 bJet
+                              hMap1D[h_channel+"vbf_met_emulmet_1bJet"+sysName]->Fill(emulMET_Zmumu * 0.001, mcEventWeight_Zmumu);
+                              hMap1D[h_channel+"vbf_mjj_1bJet"+sysName]->Fill(mjj * 0.001, mcEventWeight_Zmumu);
+                              hMap1D[h_channel+"vbf_dPhijj_1bJet"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                            }
+                            if (n_bJet > 1) { // At least 2 bJet
+                              hMap1D[h_channel+"vbf_met_emulmet_2bJet"+sysName]->Fill(emulMET_Zmumu * 0.001, mcEventWeight_Zmumu);
+                              hMap1D[h_channel+"vbf_mjj_2bJet"+sysName]->Fill(mjj * 0.001, mcEventWeight_Zmumu);
+                              hMap1D[h_channel+"vbf_dPhijj_2bJet"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zmumu);
+                            }
+
                             if (sysName == ""){
                               // Jets
                               hMap1D[h_channel+"vbf_njet"+sysName]->Fill(m_goodJet->size(), mcEventWeight_Zmumu);
@@ -4642,6 +4789,15 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                         hMap1D[h_channel+"monojet_met_emulmet"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
                         // Average Interaction
                         hMap1D[h_channel+"monojet_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zee);
+
+                        // For top enhanced control region
+                        if (n_bJet > 0) { // At least 1 bJet
+                          hMap1D[h_channel+"monojet_met_emulmet_1bJet"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
+                        }
+                        if (n_bJet > 1) { // At least 2 bJet
+                          hMap1D[h_channel+"monojet_met_emulmet_2bJet"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
+                        }
+
                         if (sysName == ""){
                           // Jets
                           hMap1D[h_channel+"monojet_njet"+sysName]->Fill(m_goodJet->size(), mcEventWeight_Zee);
@@ -4701,6 +4857,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             hMap1D[h_channel+"vbf_dPhijj"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
                             // Average Interaction
                             hMap1D[h_channel+"vbf_avg_interaction"+sysName]->Fill(m_AverageInteractionsPerCrossing, mcEventWeight_Zee);
+
+                            // For top enhanced control region
+                            if (n_bJet > 0) { // At least 1 bJet
+                              hMap1D[h_channel+"vbf_met_emulmet_1bJet"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
+                              hMap1D[h_channel+"vbf_mjj_1bJet"+sysName]->Fill(mjj * 0.001, mcEventWeight_Zee);
+                              hMap1D[h_channel+"vbf_dPhijj_1bJet"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                            }
+                            if (n_bJet > 1) { // At least 2 bJet
+                              hMap1D[h_channel+"vbf_met_emulmet_2bJet"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
+                              hMap1D[h_channel+"vbf_mjj_2bJet"+sysName]->Fill(mjj * 0.001, mcEventWeight_Zee);
+                              hMap1D[h_channel+"vbf_dPhijj_2bJet"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), mcEventWeight_Zee);
+                            }
+
                             if (sysName == ""){
                               // Jets
                               hMap1D[h_channel+"vbf_njet"+sysName]->Fill(m_goodJet->size(), mcEventWeight_Zee);
@@ -4852,6 +5021,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                   hMap1D[h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70_tclcw"+sysName]->Fill(emulMET_Zmumu * 0.001, 1.);
                 }
                 // MET Trigger efficiency for mjj and dPhi(j1,j2)
+                // For all MET
+                if ( emulMET_Zmumu > 0. ) {
+                  hMap1D[h_channel+"vbf_eff_study_mjj_allmet"+sysName]->Fill(mjj * 0.001, 1.);
+                  hMap1D[h_channel+"vbf_eff_study_dPhijj_allmet"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), 1.);
+                  if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+                    hMap1D[h_channel+"vbf_eff_study_mjj_allmet_pass_HLT_xe70"+sysName]->Fill(mjj * 0.001, 1.);
+                    hMap1D[h_channel+"vbf_eff_study_dPhijj_allmet_pass_HLT_xe70"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), 1.);
+                  }
+                  if ( m_trigDecisionTool->isPassed("HLT_xe70_tc_lcw") ) {
+                    hMap1D[h_channel+"vbf_eff_study_mjj_allmet_pass_HLT_xe70_tclcw"+sysName]->Fill(mjj * 0.001, 1.);
+                    hMap1D[h_channel+"vbf_eff_study_dPhijj_allmet_pass_HLT_xe70_tclcw"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), 1.);
+                  }
+                }
                 // MET > 130 GeV
                 if ( emulMET_Zmumu > 130000. ) {
                   hMap1D[h_channel+"vbf_eff_study_mjj_met130"+sysName]->Fill(mjj * 0.001, 1.);
@@ -4929,6 +5111,19 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                             hMap1D[h_channel+"vbf_eff_study_met_emulmet_pass_HLT_xe70_tclcw"+sysName]->Fill(emulMET_Zmumu * 0.001, 1.);
                           }
                           // MET Trigger efficiency for mjj and dPhi(j1,j2)
+                          // For all MET
+                          if ( emulMET_Wmunu > 0. ) {
+                            hMap1D[h_channel+"vbf_eff_study_mjj_allmet"+sysName]->Fill(mjj * 0.001, 1.);
+                            hMap1D[h_channel+"vbf_eff_study_dPhijj_allmet"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), 1.);
+                            if ( m_trigDecisionTool->isPassed("HLT_xe70") ) {
+                              hMap1D[h_channel+"vbf_eff_study_mjj_allmet_pass_HLT_xe70"+sysName]->Fill(mjj * 0.001, 1.);
+                              hMap1D[h_channel+"vbf_eff_study_dPhijj_allmet_pass_HLT_xe70"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), 1.);
+                            }
+                            if ( m_trigDecisionTool->isPassed("HLT_xe70_tc_lcw") ) {
+                              hMap1D[h_channel+"vbf_eff_study_mjj_allmet_pass_HLT_xe70_tclcw"+sysName]->Fill(mjj * 0.001, 1.);
+                              hMap1D[h_channel+"vbf_eff_study_dPhijj_allmet_pass_HLT_xe70_tclcw"+sysName]->Fill(deltaPhi(jet1_phi, jet2_phi), 1.);
+                            }
+                          }
                           // MET > 130 GeV
                           if ( emulMET_Wmunu > 130000. ) {
                             hMap1D[h_channel+"vbf_eff_study_mjj_met130"+sysName]->Fill(mjj * 0.001, 1.);
@@ -5220,6 +5415,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               }
 
               // Fill histogram
+              // 150 < MET < 200 GeV
+              if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met150_200_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
+              }
               // 200 < MET < 300 GeV
               if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
                 hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
@@ -5249,6 +5448,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               }
 
               // Fill histogram
+              // 150 < MET < 200 GeV
+              if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met150_200_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
+              }
               // 200 < MET < 300 GeV
               if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
                 hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_muon * 0.001, mcEventWeight_Zmumu);
@@ -5278,7 +5481,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
         if ( m_goodJet->size() > 0 && m_goodElectron->size() == 0 && m_goodTau->size() == 0 ) {
 
-          if ( pass_dimuonPtCut && m_baselineMuon->size() == 2 ) {
+          if ( pass_dimuonPtCut && m_baselineMuon->size() > 1 ) {
 
             // d0 decision
             const xAOD::TrackParticle* baseline_muon1_tp;
@@ -5299,34 +5502,40 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
             auto Zmass_baselineMuon = baselineMuon1 + baselineMuon2;
             float mll_baselineMuon = Zmass_baselineMuon.M();
 
-            // Reverse cut decisions
-            bool m_case1_cut = false;
-            bool m_case2_cut = false;
-            bool m_case3_cut = false;
-            // Case 1: Fail d0, Fail Iso, Pass OS
-            if ( std::abs(baseline_muon1_d0sig) > 3.0 || std::abs(baseline_muon2_d0sig) > 3.0 ) { // Fail d0 cut
-              if ( !m_IsoToolVBF->accept(*m_baselineMuon->at(0)) || !m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) { // Fail Iso
-                if ( muon_OS ) { // Pass OS
-                  m_case1_cut = true;
-                }
-              }
-            }
-            // Case 2: Fail d0, Pass Iso, Fail OS
-            if ( std::abs(baseline_muon1_d0sig) > 3.0 || std::abs(baseline_muon2_d0sig) > 3.0 ) { // Fail d0 cut
-              if ( m_IsoToolVBF->accept(*m_baselineMuon->at(0)) && m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) { // Pass Iso
-                if ( !muon_OS ) { // Fail OS
-                  m_case2_cut = true;
-                }
-              }
-            }
-            // Case 3: Pass d0, Fail Iso, Fail OS
-            if ( std::abs(baseline_muon1_d0sig) <= 3.0 || std::abs(baseline_muon2_d0sig) <= 3.0 ) { // Pass d0 cut
-              if ( !m_IsoToolVBF->accept(*m_baselineMuon->at(0)) || !m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) { // Fail Iso
-                if ( !muon_OS ) { // Fail OS
-                  m_case3_cut = true;
-                }
-              }
-            }
+            // Pass or Fail decision for reverse cuts
+            // d0 cut
+            bool muon_d0 = false;
+            if (std::abs(baseline_muon1_d0sig) <= 3.0 && std::abs(baseline_muon2_d0sig) <= 3.0) muon_d0 = true;
+            // Iso cut
+            bool muon_iso = false;
+            if ( m_IsoToolVBF->accept(*m_baselineMuon->at(0)) && m_IsoToolVBF->accept(*m_baselineMuon->at(1)) ) muon_iso = true;
+            // Exact 2 muons
+            bool muon_2lep = false;
+            if ( m_baselineMuon->size() == 2 ) muon_2lep = true;
+
+            // Count # events for each cuts
+            int count_reverse_cut = 0;
+            // 4 pass
+            if ( muon_d0 && muon_iso && muon_2lep && muon_OS ) count_reverse_cut = 1.;
+            // 1 pass
+            if ( muon_d0 && !muon_iso && !muon_2lep && !muon_OS ) count_reverse_cut = 2.;
+            if ( !muon_d0 && muon_iso && !muon_2lep && !muon_OS ) count_reverse_cut = 3.;
+            if ( !muon_d0 && !muon_iso && muon_2lep && !muon_OS ) count_reverse_cut = 4.;
+            if ( !muon_d0 && !muon_iso && !muon_2lep && muon_OS ) count_reverse_cut = 5.;
+            // 2 pass
+            if ( muon_d0 && muon_iso && !muon_2lep && !muon_OS ) count_reverse_cut = 6.;
+            if ( muon_d0 && !muon_iso && muon_2lep && !muon_OS ) count_reverse_cut = 7.;
+            if ( muon_d0 && !muon_iso && !muon_2lep && muon_OS ) count_reverse_cut = 8.;
+            if ( !muon_d0 && muon_iso && muon_2lep && !muon_OS ) count_reverse_cut = 9.;
+            if ( !muon_d0 && muon_iso && !muon_2lep && muon_OS ) count_reverse_cut = 10.;
+            if ( !muon_d0 && !muon_iso && muon_2lep && muon_OS ) count_reverse_cut = 11.;
+            // 3 pass
+            if ( muon_d0 && muon_iso && muon_2lep && !muon_OS ) count_reverse_cut = 12.;
+            if ( muon_d0 && muon_iso && !muon_2lep && muon_OS ) count_reverse_cut = 13.;
+            if ( muon_d0 && !muon_iso && muon_2lep && muon_OS ) count_reverse_cut = 14.;
+            if ( !muon_d0 && muon_iso && muon_2lep && muon_OS ) count_reverse_cut = 15.;
+            // 0 pass
+            if ( !muon_d0 && !muon_iso && !muon_2lep && !muon_OS ) count_reverse_cut = 16.;
 
 
             ////////////////////////
@@ -5343,8 +5552,30 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               }
 
               // Fill histogram
+              // 150 < MET < 200 GeV
+              if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_met150_200_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zmumu);
+              }
+              // 200 < MET < 300 GeV
+              if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_met200_300_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zmumu);
+              }
+              // 300 < MET < 500 GeV
+              if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_met300_500_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zmumu);
+              }
+              // MET > 500 GeV
+              if ( emulMET_Zmumu > 500000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_met500_inf_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zmumu);
+              }
+
+              // Fill histogram
               // Case 1
-              if ( m_case1_cut ) { 
+              if ( muon_d0 && !muon_iso && !muon_2lep && !muon_OS ) {
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met150_200_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
                   hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
@@ -5359,7 +5590,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 }
               }
               // Case 2
-              if ( m_case2_cut ) { 
+              if ( muon_d0 && !muon_iso && !muon_2lep && muon_OS ) {
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met150_200_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
                   hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
@@ -5374,7 +5609,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 }
               }
               // Case 3
-              if ( m_case3_cut ) { 
+              if ( muon_d0 && !muon_iso && muon_2lep && !muon_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met150_200_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
                   hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
@@ -5406,8 +5645,31 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               }
 
               // Fill histogram
+              // Count reverse cut
+              // 150 < MET < 200 GeV
+              if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_met150_200_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zmumu);
+              }
+              // 200 < MET < 300 GeV
+              if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_met200_300_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zmumu);
+              }
+              // 300 < MET < 500 GeV
+              if ( emulMET_Zmumu > 300000. && emulMET_Zmumu < 500000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_met300_500_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zmumu);
+              }
+              // MET > 500 GeV
+              if ( emulMET_Zmumu > 500000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_met500_inf_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zmumu);
+              }
+
+              // Reverse cuts
               // Case 1
-              if ( m_case1_cut ) { 
+              if ( muon_d0 && !muon_iso && !muon_2lep && !muon_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met150_200_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
                   hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
@@ -5422,7 +5684,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 }
               }
               // Case 2
-              if ( m_case2_cut ) { 
+              if ( muon_d0 && !muon_iso && !muon_2lep && muon_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met150_200_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
                   hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
@@ -5437,7 +5703,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 }
               }
               // Case 3
-              if ( m_case3_cut ) { 
+              if ( muon_d0 && !muon_iso && muon_2lep && !muon_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zmumu > 150000. && emulMET_Zmumu < 200000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met150_200_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zmumu > 200000. && emulMET_Zmumu < 300000.  ) {
                   hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met200_300_mll"+sysName]->Fill(mll_baselineMuon * 0.001, mcEventWeight_Zmumu);
@@ -5496,6 +5766,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               // Fill histogram
               // MET distribution
               hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
+              // 150 < MET < 200 GeV
+              if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met150_200_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
+              }
               // 200 < MET < 300 GeV
               if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                 hMap1D[h_channel+"monojet_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
@@ -5528,6 +5802,10 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               // Fill histogram
               // MET distribution
               hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met"+sysName]->Fill(emulMET_Zee * 0.001, mcEventWeight_Zee);
+              // 150 < MET < 200 GeV
+              if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met150_200_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
+              }
               // 200 < MET < 300 GeV
               if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                 hMap1D[h_channel+"vbf_qcd_method2_nominal_cut_met200_300_mll"+sysName]->Fill(mll_electron * 0.001, mcEventWeight_Zee);
@@ -5557,7 +5835,7 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
         if ( m_goodJet->size() > 0 && m_goodMuon->size() == 0 && m_goodTau->size() == 0 ) {
 
-          if ( pass_dielectronPtCut && m_baselineElectron->size() == 2 ) {
+          if ( pass_dielectronPtCut && m_baselineElectron->size() > 1 ) {
 
             // S-S or O-S charge decision
             float elec_OS = false;
@@ -5569,34 +5847,40 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
             auto Zmass_baselineElectron = baselineElectron1 + baselineElectron2;
             float mll_baselineElectron = Zmass_baselineElectron.M();
 
-            // Reverse cut decisions
-            bool m_case1_cut = false;
-            bool m_case2_cut = false;
-            bool m_case3_cut = false;
-            // Case 1: Fail ID, Fail Iso, Pass OS
-            if ( !m_LHToolLoose2015->accept(*m_baselineElectron->at(0)) || !m_LHToolLoose2015->accept(*m_baselineElectron->at(1)) ) { // Fail ID
-              if ( !m_IsoToolVBF->accept(*m_baselineElectron->at(0)) || !m_IsoToolVBF->accept(*m_baselineElectron->at(1)) ) { // Fail Iso
-                if ( elec_OS ) { // Pass OS
-                  m_case1_cut = true;
-                }
-              }
-            }
-            // Case 2: Fail ID, Pass Iso, Fail OS
-            if ( !m_LHToolLoose2015->accept(*m_baselineElectron->at(0)) || !m_LHToolLoose2015->accept(*m_baselineElectron->at(1)) ) { // Fail ID
-              if ( m_IsoToolVBF->accept(*m_baselineElectron->at(0)) && m_IsoToolVBF->accept(*m_baselineElectron->at(1)) ) { // Pass Iso
-                if ( !elec_OS ) { // Fail OS
-                  m_case2_cut = true;
-                }
-              }
-            }
-            // Case 3: Pass ID, Fail Iso, Fail OS
-            if ( m_LHToolLoose2015->accept(*m_baselineElectron->at(0)) && m_LHToolLoose2015->accept(*m_baselineElectron->at(1)) ) { // Pass ID
-              if ( !m_IsoToolVBF->accept(*m_baselineElectron->at(0)) || !m_IsoToolVBF->accept(*m_baselineElectron->at(1)) ) { // Fail Iso
-                if ( !elec_OS ) { // Fail OS
-                  m_case3_cut = true;
-                }
-              }
-            }
+            // Pass or Fail decision for reverse cuts
+            // id cut
+            bool elec_id = false;
+            if ( m_LHToolLoose2015->accept(*m_baselineElectron->at(0)) && m_LHToolLoose2015->accept(*m_baselineElectron->at(1)) ) elec_id = true;
+            // Iso cut
+            bool elec_iso = false;
+            if ( m_IsoToolVBF->accept(*m_baselineElectron->at(0)) && m_IsoToolVBF->accept(*m_baselineElectron->at(1)) ) elec_iso = true;
+            // Exact 2 elecs
+            bool elec_2lep = false;
+            if ( m_baselineElectron->size() == 2 ) elec_2lep = true;
+
+            // Count # events for each cuts
+            int count_reverse_cut = 0;
+            // 4 pass
+            if ( elec_id && elec_iso && elec_2lep && elec_OS ) count_reverse_cut = 1.;
+            // 1 pass
+            if ( elec_id && !elec_iso && !elec_2lep && !elec_OS ) count_reverse_cut = 2.;
+            if ( !elec_id && elec_iso && !elec_2lep && !elec_OS ) count_reverse_cut = 3.;
+            if ( !elec_id && !elec_iso && elec_2lep && !elec_OS ) count_reverse_cut = 4.;
+            if ( !elec_id && !elec_iso && !elec_2lep && elec_OS ) count_reverse_cut = 5.;
+            // 2 pass
+            if ( elec_id && elec_iso && !elec_2lep && !elec_OS ) count_reverse_cut = 6.;
+            if ( elec_id && !elec_iso && elec_2lep && !elec_OS ) count_reverse_cut = 7.;
+            if ( elec_id && !elec_iso && !elec_2lep && elec_OS ) count_reverse_cut = 8.;
+            if ( !elec_id && elec_iso && elec_2lep && !elec_OS ) count_reverse_cut = 9.;
+            if ( !elec_id && elec_iso && !elec_2lep && elec_OS ) count_reverse_cut = 10.;
+            if ( !elec_id && !elec_iso && elec_2lep && elec_OS ) count_reverse_cut = 11.;
+            // 3 pass
+            if ( elec_id && elec_iso && elec_2lep && !elec_OS ) count_reverse_cut = 12.;
+            if ( elec_id && elec_iso && !elec_2lep && elec_OS ) count_reverse_cut = 13.;
+            if ( elec_id && !elec_iso && elec_2lep && elec_OS ) count_reverse_cut = 14.;
+            if ( !elec_id && elec_iso && elec_2lep && elec_OS ) count_reverse_cut = 15.;
+            // 0 pass
+            if ( !elec_id && !elec_iso && !elec_2lep && !elec_OS ) count_reverse_cut = 16.;
 
 
             ////////////////////////
@@ -5613,8 +5897,31 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               }
 
               // Fill histogram
+              // Count reverse cut
+              // 150 < MET < 200 GeV
+              if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_met150_200_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zee);
+              }
+              // 200 < MET < 300 GeV
+              if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_met200_300_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zee);
+              }
+              // 300 < MET < 500 GeV
+              if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_met300_500_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zee);
+              }
+              // MET > 500 GeV
+              if ( emulMET_Zee > 500000.  ) {
+                hMap1D[h_channel+"monojet_qcd_method2_met500_inf_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zee);
+              }
+
+              // Reverse cuts
               // Case 1
-              if ( m_case1_cut ) { 
+              if ( !elec_id && elec_iso && !elec_2lep && !elec_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met150_200_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                   hMap1D[h_channel+"monojet_qcd_method2_case1_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
@@ -5629,7 +5936,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 }
               }
               // Case 2
-              if ( m_case2_cut ) { 
+              if ( !elec_id && !elec_iso && !elec_2lep && elec_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met150_200_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                   hMap1D[h_channel+"monojet_qcd_method2_case2_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
@@ -5644,7 +5955,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 }
               }
               // Case 3
-              if ( m_case3_cut ) { 
+              if ( !elec_id && !elec_iso && !elec_2lep && !elec_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                  hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met150_200_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                   hMap1D[h_channel+"monojet_qcd_method2_case3_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
@@ -5661,7 +5976,6 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
 
             } // monojet
 
-
             ////////////////////
             // VBF phasespace //
             ////////////////////
@@ -5676,8 +5990,31 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
               }
 
               // Fill histogram
+              // Count reverse cut
+              // 150 < MET < 200 GeV
+              if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_met150_200_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zee);
+              }
+              // 200 < MET < 300 GeV
+              if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_met200_300_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zee);
+              }
+              // 300 < MET < 500 GeV
+              if ( emulMET_Zee > 300000. && emulMET_Zee < 500000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_met300_500_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zee);
+              }
+              // MET > 500 GeV
+              if ( emulMET_Zee > 500000.  ) {
+                hMap1D[h_channel+"vbf_qcd_method2_met500_inf_count_mll"+sysName]->Fill(count_reverse_cut, mcEventWeight_Zee);
+              }
+
+              // Reverse cuts
               // Case 1
-              if ( m_case1_cut ) { 
+              if ( !elec_id && elec_iso && !elec_2lep && !elec_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met150_200_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                   hMap1D[h_channel+"vbf_qcd_method2_case1_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
@@ -5692,7 +6029,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 }
               }
               // Case 2
-              if ( m_case2_cut ) { 
+              if ( !elec_id && !elec_iso && !elec_2lep && elec_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met150_200_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                   hMap1D[h_channel+"vbf_qcd_method2_case2_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
@@ -5707,7 +6048,11 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
                 }
               }
               // Case 3
-              if ( m_case3_cut ) { 
+              if ( !elec_id && !elec_iso && !elec_2lep && !elec_OS ) { 
+                // 150 < MET < 200 GeV
+                if ( emulMET_Zee > 150000. && emulMET_Zee < 200000.  ) {
+                  hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met150_200_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
+                }
                 // 200 < MET < 300 GeV
                 if ( emulMET_Zee > 200000. && emulMET_Zee < 300000.  ) {
                   hMap1D[h_channel+"vbf_qcd_method2_case3_cut_met200_300_mll"+sysName]->Fill(mll_baselineElectron * 0.001, mcEventWeight_Zee);
@@ -6500,6 +6845,13 @@ EL::StatusCode ZinvxAODAnalysis :: execute ()
       delete m_jetCleaningLoose;
       m_jetCleaningLoose = 0;
     }
+
+    /// bJet
+    if(m_BJetSelectTool) {
+      delete m_BJetSelectTool;
+      m_BJetSelectTool = 0;
+    }
+
 
     /// MET Tool
     if(m_metMaker){

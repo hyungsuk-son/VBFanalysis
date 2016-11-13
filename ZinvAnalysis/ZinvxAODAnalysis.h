@@ -65,6 +65,9 @@
 #include "JetResolution/JERSmearingTool.h"
 #include "JetUncertainties/JetUncertaintiesTool.h"
 
+// BJet
+#include "xAODBTaggingEfficiency/BTaggingSelectionTool.h"
+
 // MET builder
 #include "METUtilities/METMaker.h"
 #include "METUtilities/CutsMETMaker.h"
@@ -270,6 +273,9 @@ class ZinvxAODAnalysis : public EL::Algorithm
     //ToolHandle<IJetUpdateJvt> m_jvtagup; //!
     JetCleaningTool *m_jetCleaningTight; //!
     JetCleaningTool *m_jetCleaningLoose; //!
+
+    // bJet
+    BTaggingSelectionTool *m_BJetSelectTool; //!
 
     // MET builder
     met::METMaker* m_metMaker; //!
